@@ -16,6 +16,7 @@ import {
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/logo";
+import { authClient } from "@/lib/auth-client";
 
 export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -70,7 +71,9 @@ export function SiteHeader() {
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Billing</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => authClient.signOut()}>
+                Log out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 

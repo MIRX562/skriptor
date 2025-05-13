@@ -41,7 +41,6 @@ export function LandingHeader() {
     (async () => {
       try {
         const { data } = await authClient.getSession();
-        console.log({ data: data });
         setSession(data || null);
       } catch (e) {
         setSession(null);
@@ -110,12 +109,12 @@ export function LandingHeader() {
               </Link>
             ) : (
               <>
-                <Link href="/login">
+                <Link href="/sign-in">
                   <Button variant="outline" className="w-full justify-center">
                     Log in
                   </Button>
                 </Link>
-                <Link href="/signup">
+                <Link href="/sign-up">
                   <Button className="w-full justify-center bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700">
                     Sign up
                   </Button>
@@ -189,7 +188,7 @@ export function LandingHeader() {
                   </Link>
                 ) : (
                   <>
-                    <Link href="/login">
+                    <Link href="/sign-in">
                       <Button
                         variant="outline"
                         className="w-full justify-center"
@@ -197,7 +196,7 @@ export function LandingHeader() {
                         Log in
                       </Button>
                     </Link>
-                    <Link href="/signup">
+                    <Link href="/sign-up">
                       <Button className="w-full justify-center bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700">
                         Sign up
                       </Button>
