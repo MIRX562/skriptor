@@ -16,6 +16,5 @@ export async function signInEmail(formData: SignInEmail) {
   if (data) {
     return data;
   }
-  // If neither data nor error, throw a generic error
   throw new Error("Unknown error occurred during sign in.");
 }

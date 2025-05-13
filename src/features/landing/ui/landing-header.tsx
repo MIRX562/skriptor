@@ -4,21 +4,50 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, SquareArrowOutUpRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import Logo from "@/components/logo";
+import { authClient } from "@/lib/auth-client";
 
 export function LandingHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [session, setSession] = useState<{
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      emailVerified: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+      image?: string | null;
+    };
+    session: {
+      id: string;
+      createdAt: Date;
+      expiresAt: Date;
+      ipAddress?: string | null;
+      userAgent?: string;
+    };
+  } | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-
     window.addEventListener("scroll", handleScroll);
+
+    // Fetch session status asynchronously
+    (async () => {
+      try {
+        const { data } = await authClient.getSession();
+        console.log({ data: data });
+        setSession(data || null);
+      } catch (e) {
+        setSession(null);
+      }
+    })();
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -72,19 +101,27 @@ export function LandingHeader() {
 
         <div className="flex items-center space-x-3">
           <div className="hidden md:flex items-center space-x-3">
-            <Link href="/sign-in">
-              <Button variant="ghost" size="sm">
-                Log in
-              </Button>
-            </Link>
-            <Link href="/sign-up">
-              <Button
-                size="sm"
-                className="bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700"
-              >
-                Sign up
-              </Button>
-            </Link>
+            {session ? (
+              <Link href="/dashboard">
+                <Button variant="outline" className="w-full justify-center">
+                  Dashboard
+                  <SquareArrowOutUpRight />
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="outline" className="w-full justify-center">
+                    Log in
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="w-full justify-center bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700">
+                    Sign up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           <ModeToggle />
@@ -143,16 +180,30 @@ export function LandingHeader() {
                 FAQ
               </Link>
               <div className="pt-2 flex flex-col space-y-2">
-                <Link href="/login">
-                  <Button variant="outline" className="w-full justify-center">
-                    Log in
-                  </Button>
-                </Link>
-                <Link href="/signup">
-                  <Button className="w-full justify-center bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700">
-                    Sign up
-                  </Button>
-                </Link>
+                {session ? (
+                  <Link href="/dashboard">
+                    <Button variant="outline" className="w-full justify-center">
+                      Dashboard
+                      <SquareArrowOutUpRight />
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/login">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center"
+                      >
+                        Log in
+                      </Button>
+                    </Link>
+                    <Link href="/signup">
+                      <Button className="w-full justify-center bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700">
+                        Sign up
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

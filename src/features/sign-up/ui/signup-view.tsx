@@ -26,23 +26,27 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { signUpEmailSchema } from "../model/schema";
 import { signUpEmail } from "../model/query";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
   const form = useForm<z.infer<typeof signUpEmailSchema>>({
     resolver: zodResolver(signUpEmailSchema),
   });
 
+  const router = useRouter();
+
   function onSubmit(values: z.infer<typeof signUpEmailSchema>) {
     try {
       toast.promise(signUpEmail(values), {
         loading: "Creating account...",
         error: "Error occured, try again",
-        success: "Account created, Logging In...",
+        success: "Verification email sent, check your inbox!.",
       });
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
     }
+    router.push("/sign-in");
   }
 
   return (
