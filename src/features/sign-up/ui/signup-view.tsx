@@ -25,15 +25,16 @@ import {
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { signUpEmailSchema } from "../model/schema";
+import { signUpEmail } from "../model/query";
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const form = useForm<z.infer<typeof signUpEmailSchema>>({
     resolver: zodResolver(signUpEmailSchema),
   });
 
   function onSubmit(values: z.infer<typeof signUpEmailSchema>) {
     try {
-      toast.promise(authClient.signUp.email(values), {
+      toast.promise(signUpEmail(values), {
         loading: "Creating account...",
         error: "Error occured, try again",
         success: "Account created, Logging In...",

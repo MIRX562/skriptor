@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { signInEmail } from "../model/query";
 
 export default function SignInPage() {
   const form = useForm<z.infer<typeof signInEmailSchema>>({
@@ -33,10 +34,10 @@ export default function SignInPage() {
 
   function onSubmit(values: z.infer<typeof signInEmailSchema>) {
     try {
-      toast.promise(authClient.signIn.email(values), {
+      toast.promise(signInEmail(values), {
         loading: "Logging in....",
-        error: "Error occured, try again",
-        success: "Logged In, Welcome",
+        error: (err) => err.message,
+        success: (ctx) => `Welcome Back, ${ctx?.user.name}`,
       });
     } catch (error) {
       console.error("Form submission error", error);

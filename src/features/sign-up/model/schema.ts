@@ -12,4 +12,4 @@ export const signUpEmailSchema = z.object({
     ),
 });
 
-export type SignInEmail = z.infer<typeof signUpEmailSchema>;
+export type SignUpEmail = z.infer<typeof signUpEmailSchema>;

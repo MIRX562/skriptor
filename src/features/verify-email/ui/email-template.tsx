@@ -21,11 +21,11 @@ interface VerificationEmailProps {
 }
 
 export const VerificationEmail = ({
-  username = "User",
-  userEmail = "user@example.com",
-  verificationUrl = "https://whisper-transcription.com/auth/verify-email?token=123456789",
+  username,
+  userEmail,
+  verificationUrl,
 }: VerificationEmailProps) => {
-  const previewText = `Verify your email address for Whisper`;
+  const previewText = `Verify your email address for Skriptor`;
 
   return (
     <Html>
@@ -36,10 +36,10 @@ export const VerificationEmail = ({
           <Container className="border border-solid border-slate-200 rounded-lg p-8 my-10 mx-auto max-w-[600px] bg-white">
             <Section className="text-center">
               <Img
-                src="https://placeholder.svg?height=48&width=48&text=W"
+                src="/logo.png"
                 width="48"
                 height="48"
-                alt="Whisper Logo"
+                alt="Skriptor Logo"
                 className="mx-auto"
               />
             </Section>
@@ -48,7 +48,7 @@ export const VerificationEmail = ({
             </Heading>
             <Text className="text-slate-600 mb-6">Hello {username},</Text>
             <Text className="text-slate-600 mb-6">
-              Thank you for signing up for Whisper! To complete your
+              Thank you for signing up for Skriptor! To complete your
               registration and access all features, please verify your email
               address by clicking the button below:
             </Text>
@@ -74,11 +74,11 @@ export const VerificationEmail = ({
             </Text>
             <Text className="text-slate-600 mb-6">
               This verification link will expire in 24 hours. If you didn&apos;t
-              create an account with Whisper, you can safely ignore this email.
+              create an account with Skriptor, you can safely ignore this email.
             </Text>
             <Hr className="border-slate-200 my-6" />
             <Text className="text-xs text-slate-500 text-center">
-              © 2023 Whisper. All rights reserved.
+              © 2023 Skriptor. All rights reserved.
               <br />
               123 Transcription Lane, Audio City, AC 12345
             </Text>
