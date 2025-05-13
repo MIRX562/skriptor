@@ -30,6 +30,7 @@ export const auth = betterAuth({
       await redis.del(key);
     },
   },
+
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,

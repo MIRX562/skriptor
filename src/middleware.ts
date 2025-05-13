@@ -6,7 +6,10 @@ export async function middleware(request: NextRequest) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-
+  console.log(session);
+  if (session) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
   if (!session) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
@@ -16,5 +19,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   runtime: "nodejs",
-  matcher: ["/dashboard"], // Apply middleware to specific routes
+  matcher: ["/dashboard", "/sign-in", "/sign-up"],
 };

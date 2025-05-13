@@ -108,6 +108,7 @@ export default function SignInPage() {
 
               <Button
                 type="submit"
+                variant="outline"
                 className="w-full bg-teal-500 dark:bg-teal-400 text-primary-foreground"
               >
                 Login
