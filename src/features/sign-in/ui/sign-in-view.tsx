@@ -23,9 +23,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { signInEmail } from "../model/query";
+import { signInEmail, signInGoogle } from "../model/query";
 
 export default function SignInPage() {
   const form = useForm<z.infer<typeof signInEmailSchema>>({
@@ -56,7 +55,7 @@ export default function SignInPage() {
           <Button
             variant="outline"
             className="w-full bg-teal-500 dark:bg-teal-400 text-primary-foreground"
-            onClick={() => authClient.signIn.social({ provider: "google" })}
+            onClick={() => signInGoogle()}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path

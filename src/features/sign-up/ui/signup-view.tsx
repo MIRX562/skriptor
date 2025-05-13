@@ -22,11 +22,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { signUpEmailSchema } from "../model/schema";
 import { signUpEmail } from "../model/query";
 import { useRouter } from "next/navigation";
+import { signInGoogle } from "@/features/sign-in/model/query";
 
 export default function SignUpPage() {
   const form = useForm<z.infer<typeof signUpEmailSchema>>({
@@ -126,7 +126,7 @@ export default function SignUpPage() {
           <Button
             variant="outline"
             className="w-full bg-teal-500 dark:bg-teal-400 text-primary-foreground"
-            onClick={() => authClient.signIn.social({ provider: "google" })}
+            onClick={() => signInGoogle()}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path

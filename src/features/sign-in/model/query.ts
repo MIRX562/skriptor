@@ -18,3 +18,10 @@ export async function signInEmail(formData: SignInEmail) {
   }
   throw new Error("Unknown error occurred during sign in.");
 }
+
+export async function signInGoogle() {
+  await authClient.signIn.social({
+    provider: "google",
+    callbackURL: "/dashboard",
+  });
+}
