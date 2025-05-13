@@ -30,7 +30,9 @@ export function SettingsTabs({ children }: SettingsTabsProps) {
   const currentTab = pathname.split("/").pop() || "profile";
 
   const handleTabChange = (value: string) => {
-    router.push(`/settings/${value}`);
+    if (value !== "back" && value !== "") {
+      router.push(`/settings/${value}`);
+    }
   };
 
   const tabs = [
@@ -106,7 +108,7 @@ export function SettingsTabs({ children }: SettingsTabsProps) {
               Go to Dashboard
             </TabsTrigger>
             <TabsTrigger
-              value="logout"
+              value=""
               className="justify-start px-3 py-2 h-9 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
               onClick={() => SignOut()}
             >
