@@ -9,8 +9,10 @@ import {
   HelpCircle,
   LifeBuoy,
   Lock,
+  LogIn,
   LogOut,
   Settings,
+  SquareArrowUpLeft,
   User,
   Wallet,
 } from "lucide-react";
@@ -96,6 +98,14 @@ export function SettingsTabs({ children }: SettingsTabsProps) {
           ))}
           <Separator />
           <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800 mx-2">
+            <TabsTrigger
+              value="back"
+              className="justify-start px-3 py-2 h-9 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/20"
+              onClick={() => router.push("/dashboard")}
+            >
+              <SquareArrowUpLeft className="h-4 w-4 mr-2" />
+              Go to Dashboard
+            </TabsTrigger>
             <TabsTrigger
               value="logout"
               className="justify-start px-3 py-2 h-9 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
