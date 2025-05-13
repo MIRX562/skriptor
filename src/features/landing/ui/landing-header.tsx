@@ -72,12 +72,12 @@ export function LandingHeader() {
 
         <div className="flex items-center space-x-3">
           <div className="hidden md:flex items-center space-x-3">
-            <Link href="/login">
+            <Link href="/sign-in">
               <Button variant="ghost" size="sm">
                 Log in
               </Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/sign-up">
               <Button
                 size="sm"
                 className="bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700"

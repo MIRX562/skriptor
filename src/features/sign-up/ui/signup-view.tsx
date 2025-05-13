@@ -1,7 +1,4 @@
 "use client";
-
-import type React from "react";
-
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import Google from "@/components/google-svg";
 
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -250,8 +248,8 @@ export default function SignupPage() {
           </div>
         </div>
 
-        <Button variant="outline" className="w-full" disabled={isLoading}>
-          <Github className="mr-2 h-4 w-4" />
+        <Button variant="outline" className="w-full" disabled={isLoading} onClick={()=>}>
+          <Google className="mr-2 h-4 w-4" />
           GitHub
         </Button>
 
