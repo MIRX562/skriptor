@@ -31,7 +31,7 @@ export default function DashboardUserMenu() {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href="/dashboard/settings">
+        <Link href="/settings">
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />

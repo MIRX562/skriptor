@@ -1,17 +1,17 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { TranscriptionDashboard } from "@/features/dashboard/ui/transcription-dashboard";
-import { TranscriptionUpload } from "@/features/dashboard/ui/transcription-upload";
-import { TranscriptionList } from "@/features/dashboard/ui/transcription-list";
-import { TranscriptionView } from "@/features/dashboard/ui/transcription-view";
+import { TranscriptionDashboard } from "@/features/dashboard/ui/dashboard/transcription-dashboard";
+import { TranscriptionUpload } from "@/features/dashboard/ui/transcribe/transcription-upload";
+import { TranscriptionList } from "@/features/dashboard/ui/manage/transcription-list";
+import { TranscriptionView } from "@/features/dashboard/ui/manage/transcription-view";
 import { SiteHeader } from "@/features/dashboard/ui/dashboard-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatePresence, motion } from "framer-motion";
 import DashboardLoading from "@/app/dashboard/loading";
-import { TranscriptionUploadLoading } from "./transcription-upload-loading";
-import { TranscriptionViewLoading } from "./transcription-view-loading";
-import { TranscriptionListLoading } from "./transcription-list-loading";
+import { TranscriptionUploadLoading } from "./transcribe/transcription-upload-loading";
+import { TranscriptionViewLoading } from "./manage/transcription-view-loading";
+import { TranscriptionListLoading } from "./manage/transcription-list-loading";
 
 export function DashboardPage() {
   const [selectedView, setSelectedView] = useState<string | null>(null);
@@ -27,7 +27,7 @@ export function DashboardPage() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            <Tabs defaultValue="dashboard" className="space-y-6">
+            <Tabs defaultValue="transcribe" orientation="vertical">
               <div className="flex justify-center">
                 <TabsList className="grid w-full max-w-md grid-cols-3">
                   <TabsTrigger

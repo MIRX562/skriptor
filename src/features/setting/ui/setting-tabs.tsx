@@ -9,7 +9,6 @@ import {
   HelpCircle,
   LifeBuoy,
   Lock,
-  LogIn,
   LogOut,
   Settings,
   SquareArrowUpLeft,
