@@ -1,17 +1,17 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { TranscriptionDashboard } from "@/features/dashboard/ui/dashboard/transcription-dashboard";
-import { TranscriptionUpload } from "@/features/dashboard/ui/transcribe/transcription-upload";
-import { TranscriptionList } from "@/features/dashboard/ui/manage/transcription-list";
-import { TranscriptionView } from "@/features/dashboard/ui/manage/transcription-view";
-import { SiteHeader } from "@/features/dashboard/ui/dashboard-header";
+import { TranscriptionDashboard } from "@/features/transcribe-dashboard/ui/transcription-dashboard";
+import { TranscriptionList } from "@/features/transcribe-manage/ui/transcription-list";
+import { TranscriptionView } from "@/features/transcribe-manage/ui/transcription-view";
+import { SiteHeader } from "@/features/transcribe-dashboard/ui/dashboard-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatePresence, motion } from "framer-motion";
 import DashboardLoading from "@/app/dashboard/loading";
-import { TranscriptionUploadLoading } from "./transcribe/transcription-upload-loading";
-import { TranscriptionViewLoading } from "./manage/transcription-view-loading";
-import { TranscriptionListLoading } from "./manage/transcription-list-loading";
+import { TranscriptionViewLoading } from "@/features/transcribe-manage/ui/transcription-view-loading";
+import { TranscriptionListLoading } from "@/features/transcribe-manage/ui/transcription-list-loading";
+import { TranscriptionUploadLoading } from "@/features/transcibe-upload/ui/transcription-upload-loading";
+import { TranscriptionUpload } from "@/features/transcibe-upload/ui/transcription-upload";
 
 export function DashboardPage() {
   const [selectedView, setSelectedView] = useState<string | null>(null);

@@ -31,6 +31,11 @@ export const auth = betterAuth({
       await redis.del(key);
     },
   },
+  rateLimit: {
+    enabled: true,
+    window: 5,
+    max: 5,
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
@@ -47,7 +52,7 @@ export const auth = betterAuth({
         react: VerificationEmail({
           userEmail: user.email,
           username: user.name,
-          verificationUrl: `${url}dashboard`,
+          verificationUrl: `${url}`,
         }),
       });
     },

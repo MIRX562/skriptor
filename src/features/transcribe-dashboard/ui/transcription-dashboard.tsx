@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Clock, FileText, Mic, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { RecentTranscriptions } from "@/components/recent-transcriptions";
-import { TranscriptionStats } from "@/features/dashboard/ui/dashboard/transcription-stats";
+import { TranscriptionStats } from "@/features/transcribe-dashboard/ui/transcription-stats";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function TranscriptionDashboard() {

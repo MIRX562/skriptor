@@ -5,12 +5,28 @@ import {
   uuid,
   real,
   boolean,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
+// Enums >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+export const transcriptionStatus = pgEnum("transcription_status", [
+  "queued",
+  "processing",
+  "completed",
+  "failed",
+]);
+
+// Tables >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 export const transcriptions = pgTable("transcriptions", {
   id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
   filename: text("filename").notNull(),
+  language: text("language").notNull(),
+  status: transcriptionStatus("status").notNull().default("queued"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -78,9 +94,16 @@ export const verification = pgTable("verification", {
 });
 
 // Relations >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-export const transcriptionRelations = relations(transcriptions, ({ many }) => ({
-  segments: many(segments),
-}));
+export const transcriptionRelations = relations(
+  transcriptions,
+  ({ many, one }) => ({
+    segments: many(segments),
+    user: one(user, {
+      fields: [transcriptions.userId],
+      references: [user.id],
+    }),
+  })
+);
 
 export const segmentRelations = relations(segments, ({ one }) => ({
   transcription: one(transcriptions, {

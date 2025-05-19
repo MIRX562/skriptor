@@ -18,6 +18,41 @@ import { Label } from "@/components/ui/label";
 import { FileUp, Mic, Pause, Play, Upload } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
+import { uploadAudio } from "../server/upload-audio";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+
+const LANGUAGE_OPTIONS = [
+  { value: "auto", label: "Auto-detect" },
+  { value: "id", label: "Indonesian" },
+  { value: "en", label: "English" },
+  { value: "ar", label: "Arabic" },
+  { value: "zh", label: "Chinese" },
+  { value: "cs", label: "Czech" },
+  { value: "da", label: "Danish" },
+  { value: "nl", label: "Dutch" },
+  { value: "de", label: "German" },
+  { value: "es", label: "Spanish" },
+  { value: "fi", label: "Finnish" },
+  { value: "fr", label: "French" },
+  { value: "he", label: "Hebrew" },
+  { value: "hu", label: "Hungarian" },
+  { value: "it", label: "Italian" },
+  { value: "ja", label: "Japanese" },
+  { value: "ko", label: "Korean" },
+  { value: "pl", label: "Polish" },
+  { value: "pt", label: "Portuguese" },
+  { value: "ro", label: "Romanian" },
+  { value: "ru", label: "Russian" },
+  { value: "sv", label: "Swedish" },
+  { value: "tr", label: "Turkish" },
+  { value: "vi", label: "Vietnamese" },
+];
 
 export function TranscriptionUpload() {
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -25,6 +60,8 @@ export function TranscriptionUpload() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [title, setTitle] = useState("");
+  const [language, setLanguage] = useState("auto");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -34,41 +71,65 @@ export function TranscriptionUpload() {
     }
   };
 
-  const handleUpload = () => {
-    if (!selectedFile) return;
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
 
+  const handleRecordToggle = async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      mediaRecorderRef.current?.stream.getTracks().forEach((t) => t.stop());
+      setIsRecording(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+    } else {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => chunksRef.current.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        setRecordedBlob(blob);
+        // Set the recorded audio as the selected file for upload
+        const file = new File([blob], "recording.webm", { type: "audio/webm" });
+        setSelectedFile(file);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      timerRef.current = setInterval(
+        () => setRecordingTime((t) => t + 1),
+        1000
+      );
+    }
+  };
+
+  const handleUpload = async () => {
     setIsUploading(true);
     setUploadProgress(0);
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 200);
-  };
+    const formData = new FormData();
 
-  const handleRecordToggle = () => {
-    if (isRecording) {
-      // Stop recording
-      setIsRecording(false);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+    if (selectedFile) {
+      formData.append("audio", selectedFile);
+    } else if (recordedBlob) {
+      const file = new File([recordedBlob], "recording.webm", {
+        type: "audio/webm",
+      });
+      formData.append("audio", file);
     } else {
-      // Start recording
-      setIsRecording(true);
-      setRecordingTime(0);
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
+      return;
     }
+
+    formData.append("title", title);
+    formData.append("language", language);
+
+    await uploadAudio(formData);
+
+    setUploadProgress(100);
+    setTimeout(() => setIsUploading(false), 500);
   };
 
   const formatTime = (seconds: number) => {
@@ -238,23 +299,25 @@ export function TranscriptionUpload() {
               <Input
                 id="title"
                 placeholder="Enter a title for your transcription"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="language">Language (Optional)</Label>
-              <select
-                id="language"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="auto">Auto-detect</option>
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="ja">Japanese</option>
-                <option value="zh">Chinese</option>
-              </select>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>

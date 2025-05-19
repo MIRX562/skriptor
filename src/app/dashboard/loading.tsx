@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { SiteHeader } from "@/features/dashboard/ui/dashboard-header";
+import { SiteHeader } from "@/features/transcribe-dashboard/ui/dashboard-header";
 
 export default function DashboardLoading() {
   return (

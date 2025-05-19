@@ -1,4 +1,4 @@
-import { SiteHeader } from "@/features/dashboard/ui/dashboard-header";
+import { SiteHeader } from "@/features/transcribe-dashboard/ui/dashboard-header";
 import { SettingsTabs } from "@/features/setting/ui/setting-tabs";
 import type { ReactNode } from "react";
 

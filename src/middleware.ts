@@ -28,5 +28,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [publicRoutes, authRoutes, protectedRoutes],
+  matcher: [...publicRoutes, ...authRoutes, ...protectedRoutes],
 };

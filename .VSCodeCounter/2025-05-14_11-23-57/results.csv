@@ -1,0 +1,95 @@
+"filename", "language", "TypeScript", "TypeScript JSX", "CSS", "JSON", "comment", "blank", "total"
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\forget-password\loading.tsx", "TypeScript JSX", 0, 21, 0, 0, 0, 5, 26
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\forget-password\page.tsx", "TypeScript JSX", 0, 126, 0, 0, 2, 18, 146
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\layout.tsx", "TypeScript JSX", 0, 5, 0, 0, 0, 2, 7
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\loading.tsx", "TypeScript JSX", 0, 35, 0, 0, 0, 9, 44
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\reset-password\loading.tsx", "TypeScript JSX", 0, 23, 0, 0, 0, 5, 28
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\reset-password\page.tsx", "TypeScript JSX", 0, 170, 0, 0, 5, 21, 196
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\sign-in\loading.tsx", "TypeScript JSX", 0, 41, 0, 0, 0, 9, 50
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\sign-in\page.tsx", "TypeScript JSX", 0, 5, 0, 0, 0, 2, 7
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\sign-up\loading.tsx", "TypeScript JSX", 0, 46, 0, 0, 0, 10, 56
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\sign-up\page.tsx", "TypeScript JSX", 0, 5, 0, 0, 0, 2, 7
+"c:\Programming\AI-Transcriptor\skriptor\src\app\(landing)\tos\page.tsx", "TypeScript JSX", 0, 4, 0, 0, 0, 2, 6
+"c:\Programming\AI-Transcriptor\skriptor\src\app\api\auth\[...all]\route.ts", "TypeScript", 3, 0, 0, 0, 0, 2, 5
+"c:\Programming\AI-Transcriptor\skriptor\src\app\dashboard\loading.tsx", "TypeScript JSX", 0, 29, 0, 0, 5, 5, 39
+"c:\Programming\AI-Transcriptor\skriptor\src\app\dashboard\page.tsx", "TypeScript JSX", 0, 5, 0, 0, 0, 3, 8
+"c:\Programming\AI-Transcriptor\skriptor\src\app\globals.css", "CSS", 0, 0, 117, 0, 0, 6, 123
+"c:\Programming\AI-Transcriptor\skriptor\src\app\layout.tsx", "TypeScript JSX", 0, 40, 0, 0, 0, 5, 45
+"c:\Programming\AI-Transcriptor\skriptor\src\app\manifest.json", "JSON", 0, 0, 0, 21, 0, 0, 21
+"c:\Programming\AI-Transcriptor\skriptor\src\app\page.tsx", "TypeScript JSX", 0, 4, 0, 0, 0, 2, 6
+"c:\Programming\AI-Transcriptor\skriptor\src\app\settings\layout.tsx", "TypeScript JSX", 0, 13, 0, 0, 0, 2, 15
+"c:\Programming\AI-Transcriptor\skriptor\src\app\settings\page.tsx", "TypeScript JSX", 0, 4, 0, 0, 1, 2, 7
+"c:\Programming\AI-Transcriptor\skriptor\src\app\settings\profile\page.tsx", "TypeScript JSX", 0, 5, 0, 0, 0, 3, 8
+"c:\Programming\AI-Transcriptor\skriptor\src\components\google-svg.tsx", "TypeScript JSX", 0, 30, 0, 0, 0, 1, 31
+"c:\Programming\AI-Transcriptor\skriptor\src\components\logo.tsx", "TypeScript JSX", 0, 12, 0, 0, 0, 2, 14
+"c:\Programming\AI-Transcriptor\skriptor\src\components\mode-toggle.tsx", "TypeScript JSX", 0, 27, 0, 0, 0, 4, 31
+"c:\Programming\AI-Transcriptor\skriptor\src\components\recent-transcriptions.tsx", "TypeScript JSX", 0, 68, 0, 0, 0, 3, 71
+"c:\Programming\AI-Transcriptor\skriptor\src\components\theme-provider.tsx", "TypeScript JSX", 0, 9, 0, 0, 0, 3, 12
+"c:\Programming\AI-Transcriptor\skriptor\src\components\theme-toggle.tsx", "TypeScript JSX", 0, 29, 0, 0, 1, 6, 36
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\accordion.tsx", "TypeScript JSX", 0, 59, 0, 0, 0, 8, 67
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\alert-dialog.tsx", "TypeScript JSX", 0, 143, 0, 0, 0, 15, 158
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\avatar.tsx", "TypeScript JSX", 0, 47, 0, 0, 0, 7, 54
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\badge.tsx", "TypeScript JSX", 0, 41, 0, 0, 0, 6, 47
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\button.tsx", "TypeScript JSX", 0, 54, 0, 0, 0, 6, 60
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\card.tsx", "TypeScript JSX", 0, 83, 0, 0, 0, 10, 93
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\chart.tsx", "TypeScript JSX", 0, 315, 0, 0, 2, 37, 354
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\checkbox.tsx", "TypeScript JSX", 0, 28, 0, 0, 0, 5, 33
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\dropdown-menu.tsx", "TypeScript JSX", 0, 239, 0, 0, 0, 19, 258
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\form.tsx", "TypeScript JSX", 0, 143, 0, 0, 0, 25, 168
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\input.tsx", "TypeScript JSX", 0, 18, 0, 0, 0, 4, 22
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\label.tsx", "TypeScript JSX", 0, 20, 0, 0, 0, 5, 25
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\password-input.tsx", "TypeScript JSX", 0, 51, 0, 0, 1, 7, 59
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\progress.tsx", "TypeScript JSX", 0, 27, 0, 0, 0, 5, 32
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\scroll-area.tsx", "TypeScript JSX", 0, 53, 0, 0, 0, 6, 59
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\select.tsx", "TypeScript JSX", 0, 172, 0, 0, 0, 14, 186
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\separator.tsx", "TypeScript JSX", 0, 24, 0, 0, 0, 5, 29
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\sheet.tsx", "TypeScript JSX", 0, 126, 0, 0, 0, 14, 140
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\sidebar.tsx", "TypeScript JSX", 0, 660, 0, 0, 12, 55, 727
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\skeleton.tsx", "TypeScript JSX", 0, 11, 0, 0, 0, 3, 14
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\sonner.tsx", "TypeScript JSX", 0, 21, 0, 0, 0, 5, 26
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\tabs.tsx", "TypeScript JSX", 0, 59, 0, 0, 0, 8, 67
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\textarea.tsx", "TypeScript JSX", 0, 15, 0, 0, 0, 4, 19
+"c:\Programming\AI-Transcriptor\skriptor\src\components\ui\tooltip.tsx", "TypeScript JSX", 0, 54, 0, 0, 0, 8, 62
+"c:\Programming\AI-Transcriptor\skriptor\src\db\index.ts", "TypeScript", 6, 0, 0, 0, 0, 3, 9
+"c:\Programming\AI-Transcriptor\skriptor\src\db\schema.ts", "TypeScript", 81, 0, 0, 0, 1, 9, 91
+"c:\Programming\AI-Transcriptor\skriptor\src\features\auth\model\query.ts", "TypeScript", 0, 0, 0, 0, 0, 1, 1
+"c:\Programming\AI-Transcriptor\skriptor\src\features\auth\ui\auth-layout.tsx", "TypeScript JSX", 0, 75, 0, 0, 3, 4, 82
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard-header-user-menu.tsx", "TypeScript JSX", 0, 41, 0, 0, 0, 2, 43
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard-header.tsx", "TypeScript JSX", 0, 94, 0, 0, 0, 8, 102
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard-page.tsx", "TypeScript JSX", 0, 80, 0, 0, 0, 7, 87
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard\transcription-dashboard.tsx", "TypeScript JSX", 0, 142, 0, 0, 0, 8, 150
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard\transcription-stats.tsx", "TypeScript JSX", 0, 55, 0, 0, 0, 7, 62
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\manage\transcription-list-loading.tsx", "TypeScript JSX", 0, 20, 0, 0, 0, 4, 24
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\manage\transcription-list.tsx", "TypeScript JSX", 0, 195, 0, 0, 0, 9, 204
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\manage\transcription-view-loading.tsx", "TypeScript JSX", 0, 36, 0, 0, 0, 6, 42
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\manage\transcription-view.tsx", "TypeScript JSX", 0, 224, 0, 0, 1, 16, 241
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\transcribe\transcription-upload-loading.tsx", "TypeScript JSX", 0, 8, 0, 0, 0, 2, 10
+"c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\transcribe\transcription-upload.tsx", "TypeScript JSX", 0, 253, 0, 0, 3, 19, 275
+"c:\Programming\AI-Transcriptor\skriptor\src\features\landing\model\query.ts", "TypeScript", 0, 0, 0, 0, 0, 1, 1
+"c:\Programming\AI-Transcriptor\skriptor\src\features\landing\ui\landing-header.tsx", "TypeScript JSX", 0, 201, 0, 0, 1, 12, 214
+"c:\Programming\AI-Transcriptor\skriptor\src\features\landing\ui\landing-view.tsx", "TypeScript JSX", 0, 829, 0, 0, 67, 19, 915
+"c:\Programming\AI-Transcriptor\skriptor\src\features\setting\model\query.ts", "TypeScript", 1, 0, 0, 0, 0, 0, 1
+"c:\Programming\AI-Transcriptor\skriptor\src\features\setting\ui\profile-form.tsx", "TypeScript JSX", 0, 185, 0, 0, 0, 14, 199
+"c:\Programming\AI-Transcriptor\skriptor\src\features\setting\ui\profile-view.tsx", "TypeScript JSX", 0, 16, 0, 0, 0, 3, 19
+"c:\Programming\AI-Transcriptor\skriptor\src\features\setting\ui\setting-tabs.tsx", "TypeScript JSX", 0, 120, 0, 0, 1, 9, 130
+"c:\Programming\AI-Transcriptor\skriptor\src\features\sign-in\model\query.ts", "TypeScript", 25, 0, 0, 0, 0, 3, 28
+"c:\Programming\AI-Transcriptor\skriptor\src\features\sign-in\model\schema.ts", "TypeScript", 6, 0, 0, 0, 0, 3, 9
+"c:\Programming\AI-Transcriptor\skriptor\src\features\sign-in\ui\sign-in-view.tsx", "TypeScript JSX", 0, 127, 0, 0, 0, 6, 133
+"c:\Programming\AI-Transcriptor\skriptor\src\features\sign-out\model\query.ts", "TypeScript", 6, 0, 0, 0, 0, 2, 8
+"c:\Programming\AI-Transcriptor\skriptor\src\features\sign-out\ui\logout-button.tsx", "TypeScript JSX", 0, 4, 0, 0, 0, 1, 5
+"c:\Programming\AI-Transcriptor\skriptor\src\features\sign-up\model\query.ts", "TypeScript", 32, 0, 0, 0, 3, 2, 37
+"c:\Programming\AI-Transcriptor\skriptor\src\features\sign-up\model\schema.ts", "TypeScript", 13, 0, 0, 0, 0, 3, 16
+"c:\Programming\AI-Transcriptor\skriptor\src\features\sign-up\ui\signup-view.tsx", "TypeScript JSX", 0, 145, 0, 0, 0, 9, 154
+"c:\Programming\AI-Transcriptor\skriptor\src\features\verify-email\model\query.ts", "TypeScript", 0, 0, 0, 0, 0, 1, 1
+"c:\Programming\AI-Transcriptor\skriptor\src\features\verify-email\ui\email-template.tsx", "TypeScript JSX", 0, 97, 0, 0, 0, 5, 102
+"c:\Programming\AI-Transcriptor\skriptor\src\features\verify-email\ui\verify-email-view.tsx", "TypeScript JSX", 0, 275, 0, 0, 11, 30, 316
+"c:\Programming\AI-Transcriptor\skriptor\src\hooks\use-mobile.ts", "TypeScript", 15, 0, 0, 0, 0, 5, 20
+"c:\Programming\AI-Transcriptor\skriptor\src\hooks\use-toast.ts", "TypeScript", 157, 0, 0, 0, 3, 32, 192
+"c:\Programming\AI-Transcriptor\skriptor\src\lib\auth-client.ts", "TypeScript", 2, 0, 0, 0, 0, 1, 3
+"c:\Programming\AI-Transcriptor\skriptor\src\lib\auth.ts", "TypeScript", 67, 0, 0, 0, 0, 2, 69
+"c:\Programming\AI-Transcriptor\skriptor\src\lib\email.ts", "TypeScript", 28, 0, 0, 0, 0, 5, 33
+"c:\Programming\AI-Transcriptor\skriptor\src\lib\minio.ts", "TypeScript", 8, 0, 0, 0, 0, 2, 10
+"c:\Programming\AI-Transcriptor\skriptor\src\lib\redis.ts", "TypeScript", 4, 0, 0, 0, 0, 2, 6
+"c:\Programming\AI-Transcriptor\skriptor\src\lib\utils.ts", "TypeScript", 24, 0, 0, 0, 0, 4, 28
+"c:\Programming\AI-Transcriptor\skriptor\src\middleware.ts", "TypeScript", 22, 0, 0, 0, 4, 7, 33
+"Total", "-", 500, 6441, 117, 21, 127, 703, 7909

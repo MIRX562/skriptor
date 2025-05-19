@@ -1,0 +1,172 @@
+Date : 2025-05-14 11:23:57
+Directory : c:\Programming\AI-Transcriptor\skriptor\src
+Total : 93 files,  7079 codes, 127 comments, 703 blanks, all 7909 lines
+
+Languages
++----------------+------------+------------+------------+------------+------------+
+| language       | files      | code       | comment    | blank      | total      |
++----------------+------------+------------+------------+------------+------------+
+| TypeScript JSX |         70 |      6,441 |        116 |        607 |      7,164 |
+| TypeScript     |         21 |        500 |         11 |         90 |        601 |
+| CSS            |          1 |        117 |          0 |          6 |        123 |
+| JSON           |          1 |         21 |          0 |          0 |         21 |
++----------------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                          | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                             |         93 |      7,079 |        127 |        703 |      7,909 |
+| . (Files)                                                                                                     |          1 |         22 |          4 |          7 |         33 |
+| app                                                                                                           |         21 |        722 |         13 |        115 |        850 |
+| app (Files)                                                                                                   |          4 |        182 |          0 |         13 |        195 |
+| app\(auth)                                                                                                    |         10 |        477 |          7 |         83 |        567 |
+| app\(auth) (Files)                                                                                            |          2 |         40 |          0 |         11 |         51 |
+| app\(auth)\forget-password                                                                                    |          2 |        147 |          2 |         23 |        172 |
+| app\(auth)\reset-password                                                                                     |          2 |        193 |          5 |         26 |        224 |
+| app\(auth)\sign-in                                                                                            |          2 |         46 |          0 |         11 |         57 |
+| app\(auth)\sign-up                                                                                            |          2 |         51 |          0 |         12 |         63 |
+| app\(landing)                                                                                                 |          1 |          4 |          0 |          2 |          6 |
+| app\(landing)\tos                                                                                             |          1 |          4 |          0 |          2 |          6 |
+| app\api                                                                                                       |          1 |          3 |          0 |          2 |          5 |
+| app\api\auth                                                                                                  |          1 |          3 |          0 |          2 |          5 |
+| app\api\auth\[...all]                                                                                         |          1 |          3 |          0 |          2 |          5 |
+| app\dashboard                                                                                                 |          2 |         34 |          5 |          8 |         47 |
+| app\settings                                                                                                  |          3 |         22 |          1 |          7 |         30 |
+| app\settings (Files)                                                                                          |          2 |         17 |          1 |          4 |         22 |
+| app\settings\profile                                                                                          |          1 |          5 |          0 |          3 |          8 |
+| components                                                                                                    |         30 |      2,638 |         16 |        300 |      2,954 |
+| components (Files)                                                                                            |          6 |        175 |          1 |         19 |        195 |
+| components\ui                                                                                                 |         24 |      2,463 |         15 |        281 |      2,759 |
+| db                                                                                                            |          2 |         87 |          1 |         12 |        100 |
+| features                                                                                                      |         31 |      3,305 |         90 |        216 |      3,611 |
+| features\auth                                                                                                 |          2 |         75 |          3 |          5 |         83 |
+| features\auth\model                                                                                           |          1 |          0 |          0 |          1 |          1 |
+| features\auth\ui                                                                                              |          1 |         75 |          3 |          4 |         82 |
+| features\dashboard                                                                                            |         11 |      1,148 |          4 |         88 |      1,240 |
+| features\dashboard\ui                                                                                         |         11 |      1,148 |          4 |         88 |      1,240 |
+| features\dashboard\ui (Files)                                                                                 |          3 |        215 |          0 |         17 |        232 |
+| features\dashboard\ui\dashboard                                                                               |          2 |        197 |          0 |         15 |        212 |
+| features\dashboard\ui\manage                                                                                  |          4 |        475 |          1 |         35 |        511 |
+| features\dashboard\ui\transcribe                                                                              |          2 |        261 |          3 |         21 |        285 |
+| features\landing                                                                                              |          3 |      1,030 |         68 |         32 |      1,130 |
+| features\landing\model                                                                                        |          1 |          0 |          0 |          1 |          1 |
+| features\landing\ui                                                                                           |          2 |      1,030 |         68 |         31 |      1,129 |
+| features\setting                                                                                              |          4 |        322 |          1 |         26 |        349 |
+| features\setting\model                                                                                        |          1 |          1 |          0 |          0 |          1 |
+| features\setting\ui                                                                                           |          3 |        321 |          1 |         26 |        348 |
+| features\sign-in                                                                                              |          3 |        158 |          0 |         12 |        170 |
+| features\sign-in\model                                                                                        |          2 |         31 |          0 |          6 |         37 |
+| features\sign-in\ui                                                                                           |          1 |        127 |          0 |          6 |        133 |
+| features\sign-out                                                                                             |          2 |         10 |          0 |          3 |         13 |
+| features\sign-out\model                                                                                       |          1 |          6 |          0 |          2 |          8 |
+| features\sign-out\ui                                                                                          |          1 |          4 |          0 |          1 |          5 |
+| features\sign-up                                                                                              |          3 |        190 |          3 |         14 |        207 |
+| features\sign-up\model                                                                                        |          2 |         45 |          3 |          5 |         53 |
+| features\sign-up\ui                                                                                           |          1 |        145 |          0 |          9 |        154 |
+| features\verify-email                                                                                         |          3 |        372 |         11 |         36 |        419 |
+| features\verify-email\model                                                                                   |          1 |          0 |          0 |          1 |          1 |
+| features\verify-email\ui                                                                                      |          2 |        372 |         11 |         35 |        418 |
+| hooks                                                                                                         |          2 |        172 |          3 |         37 |        212 |
+| lib                                                                                                           |          6 |        133 |          0 |         16 |        149 |
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| filename                                                                                                      | language       | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\forget-password\loading.tsx                            | TypeScript JSX |         21 |          0 |          5 |         26 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\forget-password\page.tsx                               | TypeScript JSX |        126 |          2 |         18 |        146 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\layout.tsx                                             | TypeScript JSX |          5 |          0 |          2 |          7 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\loading.tsx                                            | TypeScript JSX |         35 |          0 |          9 |         44 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\reset-password\loading.tsx                             | TypeScript JSX |         23 |          0 |          5 |         28 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\reset-password\page.tsx                                | TypeScript JSX |        170 |          5 |         21 |        196 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\sign-in\loading.tsx                                    | TypeScript JSX |         41 |          0 |          9 |         50 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\sign-in\page.tsx                                       | TypeScript JSX |          5 |          0 |          2 |          7 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\sign-up\loading.tsx                                    | TypeScript JSX |         46 |          0 |         10 |         56 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(auth)\sign-up\page.tsx                                       | TypeScript JSX |          5 |          0 |          2 |          7 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\(landing)\tos\page.tsx                                        | TypeScript JSX |          4 |          0 |          2 |          6 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\api\auth\[...all]\route.ts                                    | TypeScript     |          3 |          0 |          2 |          5 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\dashboard\loading.tsx                                         | TypeScript JSX |         29 |          5 |          5 |         39 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\dashboard\page.tsx                                            | TypeScript JSX |          5 |          0 |          3 |          8 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\globals.css                                                   | CSS            |        117 |          0 |          6 |        123 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\layout.tsx                                                    | TypeScript JSX |         40 |          0 |          5 |         45 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\manifest.json                                                 | JSON           |         21 |          0 |          0 |         21 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\page.tsx                                                      | TypeScript JSX |          4 |          0 |          2 |          6 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\settings\layout.tsx                                           | TypeScript JSX |         13 |          0 |          2 |         15 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\settings\page.tsx                                             | TypeScript JSX |          4 |          1 |          2 |          7 |
+| c:\Programming\AI-Transcriptor\skriptor\src\app\settings\profile\page.tsx                                     | TypeScript JSX |          5 |          0 |          3 |          8 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\google-svg.tsx                                         | TypeScript JSX |         30 |          0 |          1 |         31 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\logo.tsx                                               | TypeScript JSX |         12 |          0 |          2 |         14 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\mode-toggle.tsx                                        | TypeScript JSX |         27 |          0 |          4 |         31 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\recent-transcriptions.tsx                              | TypeScript JSX |         68 |          0 |          3 |         71 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\theme-provider.tsx                                     | TypeScript JSX |          9 |          0 |          3 |         12 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\theme-toggle.tsx                                       | TypeScript JSX |         29 |          1 |          6 |         36 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\accordion.tsx                                       | TypeScript JSX |         59 |          0 |          8 |         67 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\alert-dialog.tsx                                    | TypeScript JSX |        143 |          0 |         15 |        158 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\avatar.tsx                                          | TypeScript JSX |         47 |          0 |          7 |         54 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\badge.tsx                                           | TypeScript JSX |         41 |          0 |          6 |         47 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\button.tsx                                          | TypeScript JSX |         54 |          0 |          6 |         60 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\card.tsx                                            | TypeScript JSX |         83 |          0 |         10 |         93 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\chart.tsx                                           | TypeScript JSX |        315 |          2 |         37 |        354 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\checkbox.tsx                                        | TypeScript JSX |         28 |          0 |          5 |         33 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\dropdown-menu.tsx                                   | TypeScript JSX |        239 |          0 |         19 |        258 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\form.tsx                                            | TypeScript JSX |        143 |          0 |         25 |        168 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\input.tsx                                           | TypeScript JSX |         18 |          0 |          4 |         22 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\label.tsx                                           | TypeScript JSX |         20 |          0 |          5 |         25 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\password-input.tsx                                  | TypeScript JSX |         51 |          1 |          7 |         59 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\progress.tsx                                        | TypeScript JSX |         27 |          0 |          5 |         32 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\scroll-area.tsx                                     | TypeScript JSX |         53 |          0 |          6 |         59 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\select.tsx                                          | TypeScript JSX |        172 |          0 |         14 |        186 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\separator.tsx                                       | TypeScript JSX |         24 |          0 |          5 |         29 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\sheet.tsx                                           | TypeScript JSX |        126 |          0 |         14 |        140 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\sidebar.tsx                                         | TypeScript JSX |        660 |         12 |         55 |        727 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\skeleton.tsx                                        | TypeScript JSX |         11 |          0 |          3 |         14 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\sonner.tsx                                          | TypeScript JSX |         21 |          0 |          5 |         26 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\tabs.tsx                                            | TypeScript JSX |         59 |          0 |          8 |         67 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\textarea.tsx                                        | TypeScript JSX |         15 |          0 |          4 |         19 |
+| c:\Programming\AI-Transcriptor\skriptor\src\components\ui\tooltip.tsx                                         | TypeScript JSX |         54 |          0 |          8 |         62 |
+| c:\Programming\AI-Transcriptor\skriptor\src\db\index.ts                                                       | TypeScript     |          6 |          0 |          3 |          9 |
+| c:\Programming\AI-Transcriptor\skriptor\src\db\schema.ts                                                      | TypeScript     |         81 |          1 |          9 |         91 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\auth\model\query.ts                                      | TypeScript     |          0 |          0 |          1 |          1 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\auth\ui\auth-layout.tsx                                  | TypeScript JSX |         75 |          3 |          4 |         82 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard-header-user-menu.tsx              | TypeScript JSX |         41 |          0 |          2 |         43 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard-header.tsx                        | TypeScript JSX |         94 |          0 |          8 |        102 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard-page.tsx                          | TypeScript JSX |         80 |          0 |          7 |         87 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard\transcription-dashboard.tsx       | TypeScript JSX |        142 |          0 |          8 |        150 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\dashboard\transcription-stats.tsx           | TypeScript JSX |         55 |          0 |          7 |         62 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\manage\transcription-list-loading.tsx       | TypeScript JSX |         20 |          0 |          4 |         24 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\manage\transcription-list.tsx               | TypeScript JSX |        195 |          0 |          9 |        204 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\manage\transcription-view-loading.tsx       | TypeScript JSX |         36 |          0 |          6 |         42 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\manage\transcription-view.tsx               | TypeScript JSX |        224 |          1 |         16 |        241 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\transcribe\transcription-upload-loading.tsx | TypeScript JSX |          8 |          0 |          2 |         10 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\dashboard\ui\transcribe\transcription-upload.tsx         | TypeScript JSX |        253 |          3 |         19 |        275 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\landing\model\query.ts                                   | TypeScript     |          0 |          0 |          1 |          1 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\landing\ui\landing-header.tsx                            | TypeScript JSX |        201 |          1 |         12 |        214 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\landing\ui\landing-view.tsx                              | TypeScript JSX |        829 |         67 |         19 |        915 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\setting\model\query.ts                                   | TypeScript     |          1 |          0 |          0 |          1 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\setting\ui\profile-form.tsx                              | TypeScript JSX |        185 |          0 |         14 |        199 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\setting\ui\profile-view.tsx                              | TypeScript JSX |         16 |          0 |          3 |         19 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\setting\ui\setting-tabs.tsx                              | TypeScript JSX |        120 |          1 |          9 |        130 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\sign-in\model\query.ts                                   | TypeScript     |         25 |          0 |          3 |         28 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\sign-in\model\schema.ts                                  | TypeScript     |          6 |          0 |          3 |          9 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\sign-in\ui\sign-in-view.tsx                              | TypeScript JSX |        127 |          0 |          6 |        133 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\sign-out\model\query.ts                                  | TypeScript     |          6 |          0 |          2 |          8 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\sign-out\ui\logout-button.tsx                            | TypeScript JSX |          4 |          0 |          1 |          5 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\sign-up\model\query.ts                                   | TypeScript     |         32 |          3 |          2 |         37 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\sign-up\model\schema.ts                                  | TypeScript     |         13 |          0 |          3 |         16 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\sign-up\ui\signup-view.tsx                               | TypeScript JSX |        145 |          0 |          9 |        154 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\verify-email\model\query.ts                              | TypeScript     |          0 |          0 |          1 |          1 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\verify-email\ui\email-template.tsx                       | TypeScript JSX |         97 |          0 |          5 |        102 |
+| c:\Programming\AI-Transcriptor\skriptor\src\features\verify-email\ui\verify-email-view.tsx                    | TypeScript JSX |        275 |         11 |         30 |        316 |
+| c:\Programming\AI-Transcriptor\skriptor\src\hooks\use-mobile.ts                                               | TypeScript     |         15 |          0 |          5 |         20 |
+| c:\Programming\AI-Transcriptor\skriptor\src\hooks\use-toast.ts                                                | TypeScript     |        157 |          3 |         32 |        192 |
+| c:\Programming\AI-Transcriptor\skriptor\src\lib\auth-client.ts                                                | TypeScript     |          2 |          0 |          1 |          3 |
+| c:\Programming\AI-Transcriptor\skriptor\src\lib\auth.ts                                                       | TypeScript     |         67 |          0 |          2 |         69 |
+| c:\Programming\AI-Transcriptor\skriptor\src\lib\email.ts                                                      | TypeScript     |         28 |          0 |          5 |         33 |
+| c:\Programming\AI-Transcriptor\skriptor\src\lib\minio.ts                                                      | TypeScript     |          8 |          0 |          2 |         10 |
+| c:\Programming\AI-Transcriptor\skriptor\src\lib\redis.ts                                                      | TypeScript     |          4 |          0 |          2 |          6 |
+| c:\Programming\AI-Transcriptor\skriptor\src\lib\utils.ts                                                      | TypeScript     |         24 |          0 |          4 |         28 |
+| c:\Programming\AI-Transcriptor\skriptor\src\middleware.ts                                                     | TypeScript     |         22 |          4 |          7 |         33 |
+| Total                                                                                                         |                |      7,079 |        127 |        703 |      7,909 |
++---------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
