@@ -25,3 +25,35 @@ export function formatDate(
   if (isNaN(d.getTime())) return "";
   return format(d, dateFormat, { locale });
 }
+
+export const formatSrtTime = (ms: number): string => {
+  const totalSeconds = Math.floor(ms / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  const milliseconds = ms % 1000
+
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")},${milliseconds.toString().padStart(3, "0")}`
+}
+
+// Format milliseconds to MM:SS.mmm
+export const formatTime = (ms: number): string => {
+  const totalSeconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  const milliseconds = ms % 1000
+
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}.${milliseconds.toString().padStart(3, "0")}`
+}
+
+// Format milliseconds to MM:SS for display
+export const formatTimeMMSS = (ms: number): string => {
+  const totalSeconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+}
+
+
+

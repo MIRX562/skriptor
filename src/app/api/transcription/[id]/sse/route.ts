@@ -43,7 +43,7 @@ export async function GET(
       }
 
       // Set up Redis subscription
-      const subscriber = redis.duplicate(s);
+      const subscriber = redis.duplicate();
       await subscriber.connect();
 
       await subscriber.subscribe(`transcription:progress:${transcriptionId}`);

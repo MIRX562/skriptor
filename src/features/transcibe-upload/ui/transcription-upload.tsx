@@ -1,8 +1,7 @@
 "use client";
 
 import type React from "react";
-
-import { useState, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -18,125 +17,270 @@ import { Label } from "@/components/ui/label";
 import { FileUp, Mic, Pause, Play, Upload } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
-import { uploadAudio } from "../server/upload-audio";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-
-const LANGUAGE_OPTIONS = [
-  { value: "auto", label: "Auto-detect" },
-  { value: "id", label: "Indonesian" },
-  { value: "en", label: "English" },
-  { value: "ar", label: "Arabic" },
-  { value: "zh", label: "Chinese" },
-  { value: "cs", label: "Czech" },
-  { value: "da", label: "Danish" },
-  { value: "nl", label: "Dutch" },
-  { value: "de", label: "German" },
-  { value: "es", label: "Spanish" },
-  { value: "fi", label: "Finnish" },
-  { value: "fr", label: "French" },
-  { value: "he", label: "Hebrew" },
-  { value: "hu", label: "Hungarian" },
-  { value: "it", label: "Italian" },
-  { value: "ja", label: "Japanese" },
-  { value: "ko", label: "Korean" },
-  { value: "pl", label: "Polish" },
-  { value: "pt", label: "Portuguese" },
-  { value: "ro", label: "Romanian" },
-  { value: "ru", label: "Russian" },
-  { value: "sv", label: "Swedish" },
-  { value: "tr", label: "Turkish" },
-  { value: "vi", label: "Vietnamese" },
-];
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useUploadStore } from "../store/upload-store";
+import { useToast } from "@/hooks/use-toast";
+import { useAudioRecorder } from "@/hooks/use-audio-recorder";
+import { useTranscriptionListStore } from "@/features/transcribe-manage/store/transcription-list-store";
+import { AudioPlayer } from "@/components/audio-player";
 
 export function TranscriptionUpload() {
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [title, setTitle] = useState("");
-  const [language, setLanguage] = useState("auto");
+  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const languageSelectRef = useRef<HTMLSelectElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
+  const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [activeTab, setActiveTab] = useState("upload");
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
+  const {
+    selectedFile,
+    isUploading,
+    uploadProgress,
+    recordingTime,
+    audioUrl,
+    speakerIdentification,
+    speakerCount,
+    transcriptionSpeed,
+    error,
+    setSelectedFile,
+    startUpload,
+    updateUploadProgress,
+    completeUpload,
+    setSpeakerIdentification,
+    setSpeakerCount,
+    setTranscriptionSpeed,
+    reset,
+  } = useUploadStore();
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const { startRecording, stopRecording, isRecording } = useAudioRecorder();
 
-  const handleRecordToggle = async () => {
-    if (isRecording) {
-      mediaRecorderRef.current?.stop();
-      mediaRecorderRef.current?.stream.getTracks().forEach((t) => t.stop());
-      setIsRecording(false);
-      if (timerRef.current) clearInterval(timerRef.current);
-    } else {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
+  const { createTranscription } = useTranscriptionListStore();
 
-      mediaRecorder.ondataavailable = (e) => chunksRef.current.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        setRecordedBlob(blob);
-        // Set the recorded audio as the selected file for upload
-        const file = new File([blob], "recording.webm", { type: "audio/webm" });
-        setSelectedFile(file);
-      };
+  // Clean up audio when switching tabs
+  useEffect(() => {
+    // Reset audio state when changing tabs
+    reset();
+  }, [activeTab, reset]);
 
-      mediaRecorder.start();
-      setIsRecording(true);
-      setRecordingTime(0);
-      timerRef.current = setInterval(
-        () => setRecordingTime((t) => t + 1),
-        1000
-      );
-    }
-  };
-
-  const handleUpload = async () => {
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    const formData = new FormData();
-
-    if (selectedFile) {
-      formData.append("audio", selectedFile);
-    } else if (recordedBlob) {
-      const file = new File([recordedBlob], "recording.webm", {
-        type: "audio/webm",
+  // Display error toast if there's an error
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
       });
-      formData.append("audio", file);
-    } else {
-      return;
     }
+  }, [error, toast]);
 
-    formData.append("title", title);
-    formData.append("language", language);
+  // Clean up any timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
+    };
+  }, []);
 
-    await uploadAudio(formData);
+  // Set up global drag and drop handlers
+  useEffect(() => {
+    if (activeTab !== "upload") return;
 
-    setUploadProgress(100);
-    setTimeout(() => setIsUploading(false), 500);
-  };
+    const handleWindowDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
+      setIsDragging(true);
+    };
 
-  const formatTime = (seconds: number) => {
+    const handleWindowDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      // Only consider it a leave if we're leaving the window
+      if (
+        e.clientX <= 0 ||
+        e.clientY <= 0 ||
+        e.clientX >= window.innerWidth ||
+        e.clientY >= window.innerHeight
+      ) {
+        if (dragTimeoutRef.current) {
+          clearTimeout(dragTimeoutRef.current);
+        }
+        dragTimeoutRef.current = setTimeout(() => {
+          setIsDragging(false);
+        }, 100);
+      }
+    };
+
+    const handleWindowDrop = (e: DragEvent) => {
+      e.preventDefault();
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
+      setIsDragging(false);
+    };
+
+    window.addEventListener("dragenter", handleWindowDragEnter);
+    window.addEventListener("dragleave", handleWindowDragLeave);
+    window.addEventListener("drop", handleWindowDrop);
+    window.addEventListener("dragover", (e) => e.preventDefault());
+
+    return () => {
+      window.removeEventListener("dragenter", handleWindowDragEnter);
+      window.removeEventListener("dragleave", handleWindowDragLeave);
+      window.removeEventListener("drop", handleWindowDrop);
+      window.removeEventListener("dragover", (e) => e.preventDefault());
+    };
+  }, [activeTab]);
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        setSelectedFile(e.target.files[0]);
+      }
+    },
+    [setSelectedFile]
+  );
+
+  const handleUpload = useCallback(async () => {
+    if (!selectedFile) return;
+
+    const title = titleInputRef.current?.value || selectedFile.name;
+    const language = languageSelectRef.current?.value || "auto";
+
+    startUpload();
+
+    // Simulate upload progress
+    const interval = setInterval(() => {
+      updateUploadProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 200);
+
+    try {
+      // Create a new transcription in the list
+      await createTranscription({
+        title,
+        date: new Date().toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
+        duration: "00:00", // This would be determined by the actual file
+        status: "queued",
+        mode: transcriptionSpeed,
+        progress: 0,
+      });
+
+      // Complete the upload
+      setTimeout(() => {
+        clearInterval(interval);
+        completeUpload();
+
+        toast({
+          title: "Success",
+          description:
+            "Your file has been uploaded and queued for transcription.",
+        });
+
+        // Reset the form after a delay
+        setTimeout(() => {
+          reset();
+        }, 1500);
+      }, 2000);
+    } catch (err) {
+      clearInterval(interval);
+      // Error handling is done in the store
+    }
+  }, [
+    selectedFile,
+    startUpload,
+    updateUploadProgress,
+    createTranscription,
+    transcriptionSpeed,
+    completeUpload,
+    toast,
+    reset,
+  ]);
+
+  const handleRecordToggle = useCallback(() => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }, [isRecording, startRecording, stopRecording]);
+
+  const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
+  }, []);
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      // Reset audio state before changing tabs
+      reset();
+      setActiveTab(value);
+    },
+    [reset]
+  );
+
+  // Optimized drop handler
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
+      setIsDragging(false);
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        const validTypes = [
+          ".mp3",
+          ".wav",
+          ".m4a",
+          ".flac",
+          "audio/mp3",
+          "audio/wav",
+          "audio/m4a",
+          "audio/flac",
+          "audio/mpeg",
+        ];
+        const fileType = file.type.toLowerCase();
+        const fileExtension = file.name
+          .substring(file.name.lastIndexOf("."))
+          .toLowerCase();
+
+        if (
+          validTypes.includes(fileType) ||
+          validTypes.includes(fileExtension)
+        ) {
+          setSelectedFile(file);
+          if (titleInputRef.current && !titleInputRef.current.value) {
+            titleInputRef.current.value = file.name;
+          }
+        } else {
+          toast({
+            title: "Invalid file type",
+            description: "Please upload an audio file (MP3, WAV, M4A, FLAC)",
+            variant: "destructive",
+          });
+        }
+      }
+    },
+    [setSelectedFile, toast]
+  );
 
   return (
     <motion.div
@@ -152,7 +296,11 @@ export function TranscriptionUpload() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="upload" className="space-y-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="space-y-6"
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger
                 value="upload"
@@ -171,22 +319,37 @@ export function TranscriptionUpload() {
             <TabsContent value="upload" className="space-y-6">
               <div className="space-y-4">
                 <div
-                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 hover:border-teal-400 transition-colors"
+                  ref={dropZoneRef}
+                  className={`border-2 ${
+                    isDragging
+                      ? "border-teal-500 bg-teal-50 dark:bg-teal-900/20"
+                      : "border-dashed hover:bg-slate-50 dark:hover:bg-slate-900"
+                  } rounded-lg p-8 text-center cursor-pointer transition-colors`}
                   onClick={() => fileInputRef.current?.click()}
+                  onDrop={handleDrop}
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <motion.div
                       whileHover={{ y: -5 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 10,
-                      }}
+                      animate={
+                        isDragging
+                          ? { scale: [1, 1.1, 1], opacity: [1, 0.8, 1] }
+                          : {}
+                      }
+                      transition={
+                        isDragging
+                          ? { repeat: Number.POSITIVE_INFINITY, duration: 1.5 }
+                          : { type: "spring", stiffness: 400, damping: 10 }
+                      }
                     >
-                      <FileUp className="h-10 w-10 text-teal-400" />
+                      <FileUp
+                        className={`h-10 w-10 ${isDragging ? "text-teal-500 dark:text-teal-400" : "text-slate-400"}`}
+                      />
                     </motion.div>
                     <h3 className="font-medium">
-                      Drag and drop your file here or click to browse
+                      {isDragging
+                        ? "Drop your file here"
+                        : "Drag and drop your file here or click to browse"}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       Supports MP3, WAV, M4A, FLAC (max 500MB)
@@ -223,13 +386,19 @@ export function TranscriptionUpload() {
                           </div>
                         </div>
                         <Button
-                          variant="destructive"
+                          variant="ghost"
                           size="sm"
                           onClick={() => setSelectedFile(null)}
                         >
                           Remove
                         </Button>
                       </div>
+
+                      {activeTab === "upload" && audioUrl && (
+                        <div key="upload-player-container">
+                          <AudioPlayer />
+                        </div>
+                      )}
 
                       {isUploading && (
                         <div className="space-y-2">
@@ -262,7 +431,7 @@ export function TranscriptionUpload() {
                     className={`rounded-full p-6 ${isRecording ? "bg-red-100 dark:bg-red-900/30" : "bg-slate-100 dark:bg-slate-800"}`}
                   >
                     <Mic
-                      className={`h-10 w-10 ${isRecording ? "text-red-500 dark:text-red-400" : "text-teal-500"}`}
+                      className={`h-10 w-10 ${isRecording ? "text-red-500 dark:text-red-400" : "text-slate-500"}`}
                     />
                   </motion.div>
 
@@ -289,6 +458,16 @@ export function TranscriptionUpload() {
                     )}
                   </Button>
                 </div>
+
+                {activeTab === "record" && audioUrl && !isRecording && (
+                  <div
+                    className="border rounded-lg p-4"
+                    key="record-player-container"
+                  >
+                    <h4 className="font-medium mb-2">Preview Recording</h4>
+                    <AudioPlayer />
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
@@ -298,37 +477,195 @@ export function TranscriptionUpload() {
               <Label htmlFor="title">Transcription Title</Label>
               <Input
                 id="title"
+                ref={titleInputRef}
                 placeholder="Enter a title for your transcription"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="language">Language (Optional)</Label>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LANGUAGE_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <select
+                id="language"
+                ref={languageSelectRef}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="auto">Auto-detect</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="ja">Japanese</option>
+                <option value="zh">Chinese</option>
+              </select>
+            </div>
+
+            <div className="space-y-4 border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
+              <h3 className="font-medium text-slate-900 dark:text-white">
+                Advanced Options
+              </h3>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Transcription Speed</Label>
+                  <RadioGroup
+                    value={transcriptionSpeed}
+                    onValueChange={(value) =>
+                      setTranscriptionSpeed(
+                        value as "fast" | "medium" | "super"
+                      )
+                    }
+                    className="grid grid-cols-3 gap-2"
+                  >
+                    <div>
+                      <RadioGroupItem
+                        value="fast"
+                        id="fast"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="fast"
+                        className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
+                      >
+                        <span className="text-2xl mb-1">🚀</span>
+                        <span className="font-medium">Fast</span>
+                        <span className="text-xs text-muted-foreground">
+                          Lower accuracy
+                        </span>
+                      </Label>
+                    </div>
+
+                    <div>
+                      <RadioGroupItem
+                        value="medium"
+                        id="medium"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="medium"
+                        className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
+                      >
+                        <span className="text-2xl mb-1">⚖️</span>
+                        <span className="font-medium">Medium</span>
+                        <span className="text-xs text-muted-foreground">
+                          Balanced
+                        </span>
+                      </Label>
+                    </div>
+
+                    <div>
+                      <RadioGroupItem
+                        value="super"
+                        id="super"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="super"
+                        className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
+                      >
+                        <span className="text-2xl mb-1">✨</span>
+                        <span className="font-medium">Super</span>
+                        <span className="text-xs text-muted-foreground">
+                          Highest accuracy
+                        </span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="speaker-identification"
+                    checked={speakerIdentification}
+                    onCheckedChange={(checked) =>
+                      setSpeakerIdentification(checked === true)
+                    }
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label
+                      htmlFor="speaker-identification"
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      Enable Speaker Identification
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Automatically identify and label different speakers in
+                      your audio
+                    </p>
+                  </div>
+                </div>
+
+                {speakerIdentification && (
+                  <div className="space-y-4 pl-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="speaker-count">Number of Speakers</Label>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() =>
+                            setSpeakerCount(Math.max(1, speakerCount - 1))
+                          }
+                          disabled={speakerCount <= 1}
+                        >
+                          <span className="sr-only">Decrease</span>
+                          <span className="text-lg">-</span>
+                        </Button>
+                        <Input
+                          id="speaker-count"
+                          type="number"
+                          min={1}
+                          max={10}
+                          value={speakerCount}
+                          onChange={(e) =>
+                            setSpeakerCount(
+                              Number.parseInt(e.target.value) || 1
+                            )
+                          }
+                          className="w-16 text-center"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() =>
+                            setSpeakerCount(Math.min(10, speakerCount + 1))
+                          }
+                          disabled={speakerCount >= 10}
+                        >
+                          <span className="sr-only">Increase</span>
+                          <span className="text-lg">+</span>
+                        </Button>
+                        <span className="text-sm text-muted-foreground ml-2">
+                          (Max 10)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between border-t p-6">
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline" onClick={reset}>
+            Cancel
+          </Button>
           <Button
             onClick={handleUpload}
-            disabled={!selectedFile && !isRecording}
+            disabled={(!selectedFile && !isRecording) || isUploading}
           >
-            <Upload className="mr-2 h-4 w-4" />
-            Start Transcription
+            {isUploading ? (
+              <>
+                <Upload className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Start Transcription
+              </>
+            )}
           </Button>
         </CardFooter>
       </Card>

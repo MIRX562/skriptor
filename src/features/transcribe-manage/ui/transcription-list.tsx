@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import type React from "react";
+
+import { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -27,75 +29,68 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
+import { useTranscriptionListStore } from "../store/transcription-list-store";
+import { useToast } from "@/hooks/use-toast";
 
 interface TranscriptionListProps {
   onSelect: (id: string) => void;
 }
 
 export function TranscriptionList({ onSelect }: TranscriptionListProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
+  const {
+    transcriptions,
+    searchQuery,
+    isLoading,
+    error,
+    fetchTranscriptions,
+    setSearchQuery,
+    deleteTranscription,
+  } = useTranscriptionListStore();
 
-  // Update the transcription interface to include mode and progress
-  const transcriptions = [
-    {
-      id: "1",
-      title: "Team Meeting - May 10",
-      date: "May 10, 2023",
-      duration: "45:12",
-      status: "completed",
-      mode: "medium",
-      progress: 100,
-    },
-    {
-      id: "2",
-      title: "Interview with John Smith",
-      date: "May 8, 2023",
-      duration: "32:08",
-      status: "completed",
-      mode: "super",
-      progress: 100,
-    },
-    {
-      id: "3",
-      title: "Product Feedback Session",
-      date: "May 5, 2023",
-      duration: "28:45",
-      status: "completed",
-      mode: "fast",
-      progress: 100,
-    },
-    {
-      id: "4",
-      title: "Marketing Strategy",
-      date: "May 3, 2023",
-      duration: "51:30",
-      status: "in_progress",
-      mode: "medium",
-      progress: 68,
-    },
-    {
-      id: "5",
-      title: "Quarterly Review",
-      date: "May 1, 2023",
-      duration: "62:15",
-      status: "in_progress",
-      mode: "super",
-      progress: 42,
-    },
-    {
-      id: "6",
-      title: "Customer Support Training",
-      date: "April 28, 2023",
-      duration: "47:22",
-      status: "queued",
-      mode: "fast",
-      progress: 0,
-    },
-  ];
+  useEffect(() => {
+    fetchTranscriptions().catch((err) => {
+      console.error("Error fetching transcriptions:", err);
+    });
+  }, [fetchTranscriptions]);
 
-  const filteredTranscriptions = transcriptions.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
+
+  // Add null checks to prevent the toLowerCase error
+  const filteredTranscriptions = transcriptions.filter((item) => {
+    // Check if item and item.title exist and are not null/undefined
+    if (!item || typeof item.title !== "string") {
+      return false;
+    }
+
+    // Safe toLowerCase calls with null checks
+    const title = item.title.toLowerCase();
+    const query = searchQuery ? searchQuery.toLowerCase() : "";
+
+    return title.includes(query);
+  });
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    try {
+      await deleteTranscription(id);
+      toast({
+        title: "Success",
+        description: "Transcription deleted successfully",
+      });
+    } catch (err) {
+      // Error is already handled in the store and displayed via the useEffect above
+    }
+  };
 
   return (
     <motion.div
@@ -119,7 +114,7 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
                   type="search"
                   placeholder="Search transcriptions..."
                   className="pl-8"
-                  value={searchQuery}
+                  value={searchQuery || ""}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
@@ -127,55 +122,65 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
             </div>
 
             <div className="space-y-2">
-              {filteredTranscriptions.length > 0 ? (
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    Loading transcriptions...
+                  </p>
+                </div>
+              ) : filteredTranscriptions.length > 0 ? (
                 filteredTranscriptions.map((item, index) => (
-                  // Update the item rendering to include mode and progress
                   <motion.div
-                    key={item.id}
+                    key={item.id || index}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: index * 0.05 }}
                     className="flex items-center justify-between p-4 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer"
-                    onClick={() => onSelect(item.id)}
+                    onClick={() => item.id && onSelect(item.id)}
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-10 h-10 rounded-md bg-slate-100 dark:bg-slate-800">
                         <FileAudio className="h-5 w-5 text-slate-500" />
                       </div>
                       <div>
-                        <h3 className="font-medium">{item.title}</h3>
+                        <h3 className="font-medium">
+                          {item.title || "Untitled"}
+                        </h3>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{item.date}</span>
+                          <span>{item.date || "No date"}</span>
                           <span className="flex items-center">
                             <Clock className="h-3 w-3 mr-1" />
-                            {item.duration}
+                            {item.duration || "00:00"}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {item.status === "in_progress" && (
-                        <div className="w-24 mr-2">
-                          <Progress value={item.progress} className="h-2" />
-                          <p className="text-xs text-right mt-1 text-muted-foreground">
-                            {item.progress}%
-                          </p>
-                        </div>
-                      )}
+                      {item.status === "in_progress" &&
+                        item.progress !== undefined && (
+                          <div className="w-24 mr-2">
+                            <Progress value={item.progress} className="h-2" />
+                            <p className="text-xs text-right mt-1 text-muted-foreground">
+                              {item.progress}%
+                            </p>
+                          </div>
+                        )}
 
-                      <Badge
-                        variant={
-                          item.mode === "fast"
-                            ? "outline"
-                            : item.mode === "medium"
-                              ? "secondary"
-                              : "default"
-                        }
-                        className="text-xs font-normal capitalize"
-                      >
-                        {item.mode}
-                      </Badge>
+                      {item.mode && (
+                        <Badge
+                          variant={
+                            item.mode === "fast"
+                              ? "outline"
+                              : item.mode === "medium"
+                                ? "secondary"
+                                : "default"
+                          }
+                          className="text-xs font-normal capitalize"
+                        >
+                          {item.mode}
+                        </Badge>
+                      )}
 
                       <Badge
                         variant={
@@ -187,7 +192,7 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
                         }
                         className="text-xs font-normal capitalize"
                       >
-                        {item.status.replace("_", " ")}
+                        {item.status?.replace("_", " ") || "Unknown"}
                       </Badge>
 
                       <DropdownMenu>
@@ -205,7 +210,7 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
-                              onSelect(item.id);
+                              item.id && onSelect(item.id);
                             }}
                           >
                             View
@@ -218,7 +223,7 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-600 dark:text-red-400"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => item.id && handleDelete(item.id, e)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
