@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatePresence, motion } from "framer-motion";
 import DashboardLoading from "@/app/dashboard/loading";
 import { TranscriptionUploadLoading } from "@/features/transcibe-upload/ui/transcription-upload-loading";
-import { TranscriptionUpload } from "@/features/transcibe-upload/ui/transcription-upload";
+import { TranscriptionUpload } from "@/features/transcibe-upload/ui/transcription-upload-view";
 import { TranscriptionListLoading } from "@/features/transcribe-manage/ui/transcription-list-loading";
 import { TranscriptionViewLoading } from "@/features/transcribe-manage/ui/transcription-view-loading";
 

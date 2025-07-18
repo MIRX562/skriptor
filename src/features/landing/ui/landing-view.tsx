@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { WorkInProgressBanner } from "@/components/work-in-progress";
 
 export function LandingPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -49,6 +50,7 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
       <LandingHeader />
+      <WorkInProgressBanner />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-20 md:pt-32 md:pb-36">

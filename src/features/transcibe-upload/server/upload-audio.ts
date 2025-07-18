@@ -6,6 +6,7 @@ import { transcriptions } from "@/db/schema";
 import { enqueueTranscriptionJob } from "../lib/queue";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { randomUUID } from "crypto";
 
 const s3 = new S3Client({
   endpoint: process.env.MINIO_URL!,
@@ -35,37 +36,51 @@ export async function uploadAudio(formData: FormData) {
     throw new Error("No language provided");
 
   const userId = session.user.id;
-  const filename = `${userId}.${audio.type.split("/")[1] || "webm"}`;
+  // Generate a unique filename to avoid overwriting
+  const ext = (audio.type && audio.type.split("/")[1]) || "webm";
+  const uniqueId = randomUUID();
+  const filename = `${userId}-${uniqueId}.${ext}`;
 
   const buffer = Buffer.from(await audio.arrayBuffer());
 
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: process.env.MINIO_BUCKET!,
-      Key: filename,
-      Body: buffer,
-      ContentType: audio.type,
-    })
-  );
+  try {
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: process.env.MINIO_BUCKET!,
+        Key: filename,
+        Body: buffer,
+        ContentType: audio.type,
+      })
+    );
+  } catch (err) {
+    throw new Error("Failed to upload audio to storage");
+  }
 
-  // Insert transcription row with userId, status queued, title, and language
-  const job = await db
-    .insert(transcriptions)
-    .values({
-      title,
-      filename,
-      language,
-      status: "queued",
-      userId,
-      createdAt: new Date(),
-    })
-    .returning();
+  let job;
+  try {
+    job = await db
+      .insert(transcriptions)
+      .values({
+        title,
+        language,
+        status: "queued",
+        userId,
+        createdAt: new Date(),
+        metadata: { filename },
+      })
+      .returning();
+  } catch (err) {
+    throw new Error("Failed to create transcription job");
+  }
 
   await enqueueTranscriptionJob({
     transcriptionId: job[0].id,
     filename,
     language,
+    model: "small",
+    isSpeakerDiarized: false,
+    numberOfSpeaker: 1,
   });
 
-  return { success: true };
+  return { success: true, transcription: job[0] };
 }

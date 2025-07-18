@@ -6,10 +6,10 @@ import { AlertCircle, Pause, Play, RotateCcw, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useUploadStore } from "@/features/transcibe-upload/store/upload-store";
+import { useTranscriptionUploadStore } from "@/features/transcibe-upload/store/transcription-upload-store";
 
 export function AudioPlayer() {
-  const { audioUrl } = useUploadStore();
+  const { audioUrl } = useTranscriptionUploadStore();
   const {
     isPlaying,
     duration,

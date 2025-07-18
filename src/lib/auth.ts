@@ -18,6 +18,7 @@ export const auth = betterAuth({
       verification,
     },
   }),
+  trustedOrigins: ["skriptor://"],
   secondaryStorage: {
     get: async (key) => {
       const value = await redis.get(key);
