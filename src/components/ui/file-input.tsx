@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { Trash2 as RemoveIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { max } from "date-fns";
 
 type DirectionOptions = "rtl" | "ltr" | undefined;
 
@@ -68,7 +69,7 @@ export const FileUploader = forwardRef<
       dropzoneOptions,
       value,
       onValueChange,
-      reSelect,
+      reSelect = false,
       orientation = "vertical",
       children,
       dir,
@@ -83,7 +84,7 @@ export const FileUploader = forwardRef<
       accept = {
         "image/*": [".jpg", ".jpeg", ".png", ".gif"],
       },
-      maxFiles = 1,
+      maxFiles = 0,
       maxSize = 4 * 1024 * 1024,
       multiple = true,
     } = dropzoneOptions;
@@ -172,7 +173,11 @@ export const FileUploader = forwardRef<
         }
 
         files.forEach((file) => {
-          if (newValues.length < maxFiles) {
+          if (maxFiles > 0) {
+            if (newValues.length < maxFiles) {
+              newValues.push(file);
+            }
+          } else {
             newValues.push(file);
           }
         });
@@ -200,7 +205,7 @@ export const FileUploader = forwardRef<
 
     useEffect(() => {
       if (!value) return;
-      if (value.length === maxFiles) {
+      if (value.length === maxFiles && maxFiles > 0 && multiple) {
         setIsLOF(true);
         return;
       }
@@ -234,12 +239,7 @@ export const FileUploader = forwardRef<
         <div
           ref={ref}
           tabIndex={0}
-          onKeyDownCapture={(e) => {
-            if (e.target === e.currentTarget) {
-              handleKeyDown(e);
-            }
-            // Otherwise, let the event bubble for child inputs
-          }}
+          onKeyDownCapture={handleKeyDown}
           className={cn(
             "grid w-full focus:outline-none overflow-hidden ",
             className,
@@ -277,7 +277,7 @@ export const FileUploaderContent = forwardRef<
         ref={ref}
         className={cn(
           "flex rounded-xl gap-1",
-          orientation === "horizontal" ? "flex-raw flex-wrap" : "flex-col",
+          orientation === "horizontal" ? "flex-row flex-wrap" : "flex-col",
           className
         )}
       >

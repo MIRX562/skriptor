@@ -3,7 +3,7 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { db } from "@/db";
 import { transcriptions } from "@/db/schema";
-import { enqueueTranscriptionJob } from "../lib/queue";
+import { enqueueTranscriptionJob } from "./queue";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { randomUUID } from "crypto";
