@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { CloudUpload, Paperclip, Upload, X } from "lucide-react";
+import { CloudUpload, Minus, Paperclip, Plus, Upload, X } from "lucide-react";
 import {
   FileInput,
   FileUploader,
@@ -41,31 +41,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { languages } from "../const/supported-languages";
-
-const transcriptionUploadSchema = z
-  .object({
-    file: z
-      .array(
-        z.instanceof(File).refine((file) => file.size < 50 * 1024 * 1024, {
-          message: "File size must be less than 50MB",
-        })
-      )
-      .max(1, {
-        message: "Maximum 1 file allowed",
-      }),
-    language: z.string(),
-    model: z.string(),
-    speaker: z.boolean(),
-    speaker_count: z.number().min(1).optional(),
-  })
-  .refine(
-    (data) =>
-      !data.speaker || (data.speaker && data.speaker_count !== undefined),
-    {
-      message: "Speaker count is required when speaker is true",
-      path: ["speaker_count"],
-    }
-  );
+import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
 
 export default function TranscriptionUploadForm() {
   const [files, setFiles] = useState<File[] | null>(null);
@@ -85,6 +61,7 @@ export default function TranscriptionUploadForm() {
       language: "default",
       model: "medium",
       speaker: false,
+      speaker_count: 1,
     },
   });
 
@@ -119,7 +96,10 @@ export default function TranscriptionUploadForm() {
               <FormControl>
                 <FileUploader
                   value={files}
-                  onValueChange={setFiles}
+                  onValueChange={(selectedFiles) => {
+                    setFiles(selectedFiles);
+                    field.onChange(selectedFiles ?? []);
+                  }}
                   dropzoneOptions={dropZoneConfig}
                   className="relative rounded-lg p-2"
                 >
@@ -327,14 +307,48 @@ export default function TranscriptionUploadForm() {
             name="speaker_count"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Number of Speakers</FormLabel>
+                <FormLabel>Number of Speakers (Max 10)</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="e.g. 2"
-                    type="number"
-                    className="w-[200px]"
-                    {...field}
-                  />
+                  <div className="flex items-center space-x-2 w-[200px]">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const value = Number(field.value) || 1;
+                        if (value > 1) field.onChange(value - 1);
+                      }}
+                      aria-label="Decrease"
+                      className="rounded-full text-teal-400"
+                    >
+                      <Minus />
+                    </Button>
+                    <Input
+                      placeholder="2"
+                      type=""
+                      min={1}
+                      className="text-center w-[80px]"
+                      {...field}
+                      value={field.value}
+                      onChange={(e) => {
+                        const val = Math.max(1, Number(e.target.value));
+                        field.onChange(val);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const value = Number(field.value) || 1;
+                        field.onChange(value + 1);
+                      }}
+                      aria-label="Increase"
+                      className="rounded-full text-teal-400"
+                    >
+                      <Plus />
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormDescription>Minimum value is 1.</FormDescription>
                 <FormMessage />
