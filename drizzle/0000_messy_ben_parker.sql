@@ -1,4 +1,4 @@
-CREATE TYPE "public"."transcription_mode" AS ENUM('fast', 'medium', 'super');--> statement-breakpoint
+CREATE TYPE "public"."transcription_mode" AS ENUM('small', 'medium', 'large');--> statement-breakpoint
 CREATE TYPE "public"."transcription_status" AS ENUM('queued', 'processing', 'completed', 'failed');--> statement-breakpoint
 CREATE TYPE "public"."themes" AS ENUM('light', 'dark', 'system');--> statement-breakpoint
 CREATE TABLE "account" (
@@ -53,35 +53,25 @@ CREATE TABLE "transcriptions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"title" varchar(255) NOT NULL,
-	"description" text,
-	"audio_url" text,
-	"duration" integer,
-	"language" varchar(50) DEFAULT 'en',
+	"summary" text,
+	"language" varchar(50) DEFAULT 'en' NOT NULL,
 	"status" "transcription_status" DEFAULT 'queued' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"audio_url" text NOT NULL,
 	"metadata" jsonb,
-	"is_public" boolean DEFAULT false,
-	"mode" "transcription_mode" DEFAULT 'medium' NOT NULL,
-	"speaker_identification_enabled" boolean DEFAULT true
+	"model" "transcription_mode" DEFAULT 'medium' NOT NULL,
+	"speaker_identification_enabled" boolean DEFAULT false NOT NULL,
+	"number_of_speaker" integer DEFAULT 1
 );
 --> statement-breakpoint
 CREATE TABLE "segments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"transcription_id" uuid NOT NULL,
-	"speaker_id" uuid,
+	"speaker" text,
 	"text" text NOT NULL,
 	"start_time" integer NOT NULL,
 	"end_time" integer NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "speakers" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"transcription_id" uuid NOT NULL,
-	"label" varchar(255) NOT NULL,
-	"is_primary" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -105,6 +95,4 @@ ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "transcriptions" ADD CONSTRAINT "transcriptions_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "segments" ADD CONSTRAINT "segments_transcription_id_transcriptions_id_fk" FOREIGN KEY ("transcription_id") REFERENCES "public"."transcriptions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "segments" ADD CONSTRAINT "segments_speaker_id_speakers_id_fk" FOREIGN KEY ("speaker_id") REFERENCES "public"."speakers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "speakers" ADD CONSTRAINT "speakers_transcription_id_transcriptions_id_fk" FOREIGN KEY ("transcription_id") REFERENCES "public"."transcriptions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_settings" ADD CONSTRAINT "user_settings_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;

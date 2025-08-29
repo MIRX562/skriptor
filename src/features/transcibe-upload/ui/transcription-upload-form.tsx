@@ -42,9 +42,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { languages } from "../const/supported-languages";
 import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
+import { initiateJob } from "../server/initiate-job";
+import { useRouter } from "next/navigation";
 
 export default function TranscriptionUploadForm() {
   const [files, setFiles] = useState<File[] | null>(null);
+  const router = useRouter();
 
   const dropZoneConfig = {
     maxFiles: 1,
@@ -60,26 +63,26 @@ export default function TranscriptionUploadForm() {
     defaultValues: {
       language: "default",
       model: "medium",
-      speaker: false,
-      speaker_count: 1,
+      isSpeakerDiarized: false,
+      numberOfSpeaker: 1,
     },
   });
 
   function onSubmit(values: z.infer<typeof transcriptionUploadSchema>) {
     try {
       console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      toast.promise(initiateJob(values), {
+        error: "Upload failed",
+        success: "Upload successful, starting transcription",
+      });
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
     }
+    router.push("/");
   }
 
-  const speakerEnabled = form.watch("speaker");
+  const speakerEnabled = form.watch("isSpeakerDiarized");
 
   return (
     <Form {...form}>
@@ -134,6 +137,18 @@ export default function TranscriptionUploadForm() {
                 Select an audio file to transcribe.
               </FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Transcription Title" {...field} />
+              </FormControl>
             </FormItem>
           )}
         />
@@ -279,7 +294,7 @@ export default function TranscriptionUploadForm() {
 
         <FormField
           control={form.control}
-          name="speaker"
+          name="isSpeakerDiarized"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md p-4">
               <FormControl>
@@ -304,7 +319,7 @@ export default function TranscriptionUploadForm() {
         {speakerEnabled && (
           <FormField
             control={form.control}
-            name="speaker_count"
+            name="numberOfSpeaker"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Number of Speakers (Max 10)</FormLabel>

@@ -21,9 +21,9 @@ export const transcriptionStatus = pgEnum("transcription_status", [
 ]);
 
 export const transcriptionMode = pgEnum("transcription_mode", [
-  "fast",
+  "small",
   "medium",
-  "super",
+  "large",
 ]);
 
 export const transcriptions = pgTable("transcriptions", {
@@ -32,20 +32,18 @@ export const transcriptions = pgTable("transcriptions", {
     .references(() => user.id, { onDelete: "cascade" })
     .notNull(),
   title: varchar("title", { length: 255 }).notNull(),
-  description: text("description"),
   summary: text("summary"),
-  audioUrl: text("audio_url"),
-  duration: integer("duration"),
-  language: varchar("language", { length: 50 }).default("en"),
+  language: varchar("language", { length: 50 }).default("en").notNull(),
   status: transcriptionStatus("status").notNull().default("queued"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  audioUrl: text("audio_url").notNull(),
   metadata: jsonb("metadata"),
-  isPublic: boolean("is_public").default(false),
-  mode: transcriptionMode("mode").notNull().default("medium"),
-  speakerIdentificationEnabled: boolean(
-    "speaker_identification_enabled"
-  ).default(true),
+  model: transcriptionMode("model").notNull().default("medium"),
+  isSpeakerDiarized: boolean("speaker_identification_enabled")
+    .default(false)
+    .notNull(),
+  numberOfSpeaker: integer("number_of_speaker").default(1).notNull(),
 });
 
 export const transcriptionsRelations = relations(

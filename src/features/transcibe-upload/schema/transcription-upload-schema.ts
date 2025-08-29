@@ -11,14 +11,16 @@ export const transcriptionUploadSchema = z
       .max(1, {
         message: "Maximum 1 file allowed",
       }),
+    title: z.string(),
     language: z.string(),
-    model: z.string(),
-    speaker: z.boolean(),
-    speaker_count: z.coerce.number().min(1).max(10).optional(),
+    model: z.enum(["small", "medium", "large"]),
+    isSpeakerDiarized: z.boolean(),
+    numberOfSpeaker: z.coerce.number().min(1).max(10),
   })
   .refine(
     (data) =>
-      !data.speaker || (data.speaker && data.speaker_count !== undefined),
+      !data.isSpeakerDiarized ||
+      (data.isSpeakerDiarized && data.numberOfSpeaker !== undefined),
     {
       message: "Speaker count is required when speaker is true",
       path: ["speaker_count"],

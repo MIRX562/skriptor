@@ -3,10 +3,12 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { db } from "@/db";
 import { transcriptions } from "@/db/schema";
-import { enqueueTranscriptionJob } from "./queue";
+import { redis } from "@/lib/redis";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { randomUUID } from "crypto";
+// import { z } from "zod";
+import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
 
 const s3 = new S3Client({
   endpoint: process.env.MINIO_URL!,
@@ -18,31 +20,61 @@ const s3 = new S3Client({
   forcePathStyle: true,
 });
 
-export async function uploadAudio(formData: FormData) {
+async function enqueueTranscriptionJob(data: {
+  transcriptionId: string;
+  filename: string;
+  language: string;
+  model: "small" | "medium" | "large";
+  isSpeakerDiarized: boolean;
+  numberOfSpeaker: number;
+}) {
+  await redis.lpush("transcription:queue", JSON.stringify(data));
+}
+
+export async function initiateJob(input: unknown) {
+  // Validate input using Zod
+  const parsed = transcriptionUploadSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new Error("Invalid input: " + JSON.stringify(parsed.error.flatten()));
+  }
+  const data = parsed.data;
+
+  // Auth
   const session = await auth.api.getSession({
     headers: await headers(),
   });
   if (!session?.user?.id) throw new Error("Not authenticated");
+  const userId = session.user.id;
 
-  const audio = formData.get("audio");
+  // File validation
+  const audio = data.file;
   if (!(audio instanceof File)) throw new Error("No file uploaded");
 
-  const title = formData.get("title");
-  if (typeof title !== "string" || !title.trim())
-    throw new Error("No title provided");
-
-  const language = formData.get("language");
-  if (typeof language !== "string" || !language.trim())
-    throw new Error("No language provided");
-
-  const userId = session.user.id;
-  // Generate a unique filename to avoid overwriting
+  // Generate unique filename
   const ext = (audio.type && audio.type.split("/")[1]) || "webm";
   const uniqueId = randomUUID();
-  const filename = `${userId}-${uniqueId}.${ext}`;
-
+  const filename = `${userId}-${uniqueId}-${data.title}.${ext}`;
   const buffer = Buffer.from(await audio.arrayBuffer());
 
+  // Extract audio metadata (basic: type, size, name, duration if possible)
+  let duration: number | undefined = undefined;
+  try {
+    // Try to extract duration using AudioContext if available (Node.js: use a library, but here just placeholder)
+    // In a real Node.js environment, use 'music-metadata' or similar
+    // For now, just leave as undefined or set to 0
+    duration = 0;
+  } catch {
+    duration = undefined;
+  }
+  const metadata = {
+    filename,
+    originalName: audio.name,
+    type: audio.type,
+    size: audio.size,
+    duration,
+  };
+
+  // Upload to S3/Minio
   try {
     await s3.send(
       new PutObjectCommand({
@@ -53,33 +85,40 @@ export async function uploadAudio(formData: FormData) {
       })
     );
   } catch (err) {
-    throw new Error("Failed to upload audio to storage");
+    throw new Error(`Failed to upload audio to storage: ${err}`);
   }
 
+  // Insert job in DB
   let job;
   try {
     job = await db
       .insert(transcriptions)
       .values({
-        title,
-        language,
+        title: data.title,
+        language: data.language,
         status: "queued",
         userId,
         createdAt: new Date(),
-        metadata: { filename },
+        updatedAt: new Date(),
+        audioUrl: filename,
+        metadata,
+        model: data.model,
+        isSpeakerDiarized: !!data.isSpeakerDiarized,
+        numberOfSpeaker: data.numberOfSpeaker,
       })
       .returning();
   } catch (err) {
-    throw new Error("Failed to create transcription job");
+    throw new Error(`Failed to create transcription job: ${err}`);
   }
 
+  // Enqueue job
   await enqueueTranscriptionJob({
     transcriptionId: job[0].id,
     filename,
-    language,
-    model: "small",
-    isSpeakerDiarized: false,
-    numberOfSpeaker: 1,
+    language: job[0].language,
+    model: job[0].model,
+    isSpeakerDiarized: job[0].isSpeakerDiarized,
+    numberOfSpeaker: job[0].numberOfSpeaker,
   });
 
   return { success: true, transcription: job[0] };

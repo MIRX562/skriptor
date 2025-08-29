@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Minus, Plus, Upload, X } from "lucide-react";
-import AudioInput from "@/components/audio-input";
+import AudioInput from "@/components/ui/audio-input";
 import {
   Command,
   CommandEmpty,
@@ -43,8 +43,8 @@ export default function TranscriptionRecordForm() {
     defaultValues: {
       language: "default",
       model: "medium",
-      speaker: false,
-      speaker_count: 1,
+      isSpeakerDiarized: false,
+      numberOfSpeaker: 1,
     },
   });
 
@@ -62,13 +62,13 @@ export default function TranscriptionRecordForm() {
     }
   }
 
-  const speakerEnabled = form.watch("speaker");
+  const speakerEnabled = form.watch("isSpeakerDiarized");
   // TODO fix the audio recorder input component
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 md:space-y-8 max-w-3xl mx-auto"
+        className="space-y-4 md:space-y-8 mx-auto"
       >
         <FormField
           control={form.control}
@@ -78,13 +78,30 @@ export default function TranscriptionRecordForm() {
               <FormLabel>Record Audio</FormLabel>
               <FormControl>
                 <AudioInput
-                  onFileChange={(file) => field.onChange(file ? [file] : [])}
+                  value={
+                    Array.isArray(field.value)
+                      ? (field.value[0] ?? null)
+                      : (field.value ?? null)
+                  }
+                  onValueChange={(file) => field.onChange(file ? [file] : [])}
                 />
               </FormControl>
               <FormDescription>
                 Record your audio for transcription.
               </FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Transcription Title" {...field} />
+              </FormControl>
             </FormItem>
           )}
         />
@@ -167,17 +184,17 @@ export default function TranscriptionRecordForm() {
                 >
                   <div>
                     <RadioGroupItem
-                      value="fast"
-                      id="fast"
+                      value="small"
+                      id="small"
                       className="peer sr-only"
                     />
                     <Label
-                      htmlFor="fast"
-                      className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
+                      htmlFor="small"
+                      className="flex flex-col items-center justify-center h-full rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">🚀</span>
                       <span className="font-medium">Fast</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground text-center">
                         Lower accuracy
                       </span>
                     </Label>
@@ -191,7 +208,7 @@ export default function TranscriptionRecordForm() {
                     />
                     <Label
                       htmlFor="medium"
-                      className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
+                      className="flex flex-col items-center justify-center h-full rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">⚖️</span>
                       <span className="font-medium">Medium</span>
@@ -203,17 +220,17 @@ export default function TranscriptionRecordForm() {
 
                   <div>
                     <RadioGroupItem
-                      value="super"
-                      id="super"
+                      value="large"
+                      id="large"
                       className="peer sr-only"
                     />
                     <Label
-                      htmlFor="super"
-                      className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
+                      htmlFor="large"
+                      className="flex flex-col items-center justify-center h-full rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">✨</span>
                       <span className="font-medium">Super</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground text-center">
                         Highest accuracy
                       </span>
                     </Label>
@@ -230,7 +247,7 @@ export default function TranscriptionRecordForm() {
 
         <FormField
           control={form.control}
-          name="speaker"
+          name="isSpeakerDiarized"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md p-4">
               <FormControl>
@@ -255,7 +272,7 @@ export default function TranscriptionRecordForm() {
         {speakerEnabled && (
           <FormField
             control={form.control}
-            name="speaker_count"
+            name="numberOfSpeaker"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Number of Speakers (Max 10)</FormLabel>
