@@ -46,7 +46,7 @@ import { initiateJob } from "../server/initiate-job";
 import { useRouter } from "next/navigation";
 
 export default function TranscriptionUploadForm() {
-  const [files, setFiles] = useState<File[] | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const router = useRouter();
 
   const dropZoneConfig = {
@@ -68,18 +68,35 @@ export default function TranscriptionUploadForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof transcriptionUploadSchema>) {
+  async function onSubmit(values: z.infer<typeof transcriptionUploadSchema>) {
+    if (!file) {
+      toast.error("Please select a file to upload.");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", values.title);
+    formData.append("language", values.language);
+    formData.append("model", values.model);
+    formData.append("isSpeakerDiarized", values.isSpeakerDiarized.toString());
+    formData.append("numberOfSpeaker", values.numberOfSpeaker.toString());
+
     try {
-      console.log(values);
-      toast.promise(initiateJob(values), {
-        error: "Upload failed",
-        success: "Upload successful, starting transcription",
+      const response = await fetch("/api/transcribe-upload", {
+        method: "POST",
+        body: formData,
       });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        toast.error(data.error ? JSON.stringify(data.error) : "Upload failed.");
+        return;
+      }
+      toast.success("Transcription started successfully.");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
     }
-    router.push("/");
   }
 
   const speakerEnabled = form.watch("isSpeakerDiarized");
@@ -98,10 +115,18 @@ export default function TranscriptionUploadForm() {
               <FormLabel>Select Audio File</FormLabel>
               <FormControl>
                 <FileUploader
-                  value={files}
+                  value={file ? [file] : []}
                   onValueChange={(selectedFiles) => {
-                    setFiles(selectedFiles);
-                    field.onChange(selectedFiles ?? []);
+                    setFile(
+                      selectedFiles && selectedFiles.length > 0
+                        ? selectedFiles[0]
+                        : null
+                    );
+                    field.onChange(
+                      selectedFiles && selectedFiles.length > 0
+                        ? selectedFiles[0]
+                        : null
+                    );
                   }}
                   dropzoneOptions={dropZoneConfig}
                   className="relative rounded-lg p-2"
@@ -122,14 +147,12 @@ export default function TranscriptionUploadForm() {
                     </div>
                   </FileInput>
                   <FileUploaderContent>
-                    {files &&
-                      files.length > 0 &&
-                      files.map((file, i) => (
-                        <FileUploaderItem key={i} index={i}>
-                          <Paperclip className="h-4 w-4 stroke-current" />
-                          <span>{file.name}</span>
-                        </FileUploaderItem>
-                      ))}
+                    {file && (
+                      <FileUploaderItem index={0}>
+                        <Paperclip className="h-4 w-4 stroke-current" />
+                        <span>{file.name}</span>
+                      </FileUploaderItem>
+                    )}
                   </FileUploaderContent>
                 </FileUploader>
               </FormControl>
@@ -231,12 +254,12 @@ export default function TranscriptionUploadForm() {
                 >
                   <div>
                     <RadioGroupItem
-                      value="fast"
-                      id="fast"
+                      value="small"
+                      id="small"
                       className="peer sr-only"
                     />
                     <Label
-                      htmlFor="fast"
+                      htmlFor="small"
                       className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">🚀</span>
@@ -267,12 +290,12 @@ export default function TranscriptionUploadForm() {
 
                   <div>
                     <RadioGroupItem
-                      value="super"
-                      id="super"
+                      value="large"
+                      id="large"
                       className="peer sr-only"
                     />
                     <Label
-                      htmlFor="super"
+                      htmlFor="large"
                       className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">✨</span>

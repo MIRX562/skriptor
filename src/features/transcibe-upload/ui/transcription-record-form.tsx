@@ -1,5 +1,6 @@
 "use client";
 import { toast } from "sonner";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,6 +39,7 @@ import { languages } from "../const/supported-languages";
 import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
 
 export default function TranscriptionRecordForm() {
+  const [file, setFile] = useState<File | null>(null);
   const form = useForm<z.infer<typeof transcriptionUploadSchema>>({
     resolver: zodResolver(transcriptionUploadSchema),
     defaultValues: {
@@ -48,14 +50,31 @@ export default function TranscriptionRecordForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof transcriptionUploadSchema>) {
+  async function onSubmit(values: z.infer<typeof transcriptionUploadSchema>) {
+    if (!file) {
+      toast.error("Please record audio to upload.");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", values.title);
+    formData.append("language", values.language);
+    formData.append("model", values.model);
+    formData.append("isSpeakerDiarized", values.isSpeakerDiarized.toString());
+    formData.append("numberOfSpeaker", values.numberOfSpeaker.toString());
+
     try {
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      const response = await fetch("/api/transcribe-upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        toast.error(data.error ? JSON.stringify(data.error) : "Upload failed.");
+        return;
+      }
+      toast.success("Transcription started successfully.");
+      // Optionally redirect or reset form here
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -78,12 +97,11 @@ export default function TranscriptionRecordForm() {
               <FormLabel>Record Audio</FormLabel>
               <FormControl>
                 <AudioInput
-                  value={
-                    Array.isArray(field.value)
-                      ? (field.value[0] ?? null)
-                      : (field.value ?? null)
-                  }
-                  onValueChange={(file) => field.onChange(file ? [file] : [])}
+                  value={file}
+                  onValueChange={(newFile) => {
+                    setFile(newFile ?? null);
+                    field.onChange(newFile ?? null);
+                  }}
                 />
               </FormControl>
               <FormDescription>

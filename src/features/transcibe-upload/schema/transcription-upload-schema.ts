@@ -2,15 +2,9 @@ import { z } from "zod";
 
 export const transcriptionUploadSchema = z
   .object({
-    file: z
-      .array(
-        z.instanceof(File).refine((file) => file.size < 50 * 1024 * 1024, {
-          message: "File size must be less than 50MB",
-        })
-      )
-      .max(1, {
-        message: "Maximum 1 file allowed",
-      }),
+    file: z.instanceof(File).refine((file) => file.size < 50 * 1024 * 1024, {
+      message: "File size must be less than 50MB",
+    }),
     title: z.string(),
     language: z.string(),
     model: z.enum(["small", "medium", "large"]),
@@ -23,6 +17,6 @@ export const transcriptionUploadSchema = z
       (data.isSpeakerDiarized && data.numberOfSpeaker !== undefined),
     {
       message: "Speaker count is required when speaker is true",
-      path: ["speaker_count"],
+      path: ["numberOfSpeaker"],
     }
   );
