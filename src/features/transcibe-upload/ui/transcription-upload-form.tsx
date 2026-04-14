@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -42,7 +43,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { languages } from "../const/supported-languages";
 import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
-import { initiateJob } from "../server/initiate-job";
 import { useRouter } from "next/navigation";
 
 export default function TranscriptionUploadForm() {
@@ -69,9 +69,18 @@ export default function TranscriptionUploadForm() {
   });
 
   async function onSubmit(values: z.infer<typeof transcriptionUploadSchema>) {
+    // Trigger the mutation which will handle validation and notifications
+    mutation.mutate(values);
+  }
+
+  // keep toast id to update the loading toast
+  const loadingToastId = useRef<number | string | null>(null);
+
+  const uploadFn = async (
+    values: z.infer<typeof transcriptionUploadSchema>
+  ) => {
     if (!file) {
-      toast.error("Please select a file to upload.");
-      return;
+      throw new Error("Please select a file to upload.");
     }
     const formData = new FormData();
     formData.append("file", file);
@@ -81,23 +90,46 @@ export default function TranscriptionUploadForm() {
     formData.append("isSpeakerDiarized", values.isSpeakerDiarized.toString());
     formData.append("numberOfSpeaker", values.numberOfSpeaker.toString());
 
-    try {
-      const response = await fetch("/api/transcribe-upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        toast.error(data.error ? JSON.stringify(data.error) : "Upload failed.");
-        return;
-      }
+    const response = await fetch("/api/transcribe-upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      const msg = data?.error ? JSON.stringify(data.error) : "Upload failed.";
+      throw new Error(msg);
+    }
+    return data;
+  };
+
+  const mutation = useMutation({
+    mutationFn: uploadFn,
+    onMutate: () => {
+      // show loading toast and keep its id
+      loadingToastId.current = toast.loading(
+        "Uploading audio and starting transcription..."
+      );
+    },
+    onError: (err: unknown) => {
+      // clear loading toast then show error
+      if (loadingToastId.current)
+        toast.dismiss(loadingToastId.current as number | string);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : "Failed to submit the form. Please try again.";
+      toast.error(message);
+    },
+    onSuccess: () => {
+      if (loadingToastId.current)
+        toast.dismiss(loadingToastId.current as number | string);
       toast.success("Transcription started successfully.");
       router.push("/dashboard");
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
-    }
-  }
+    },
+  });
 
   const speakerEnabled = form.watch("isSpeakerDiarized");
 

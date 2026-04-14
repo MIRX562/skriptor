@@ -25,7 +25,8 @@ async function enqueueTranscriptionJob(data: {
   filename: string;
   language: string;
   model: "small" | "medium" | "large";
-  isSpeakerDiarized: boolean;
+  // NOTE: sent as string "true" | "false" for compatibility with worker consumer
+  isSpeakerDiarized: string;
   numberOfSpeaker: number;
 }) {
   await redis.lpush("transcription:queue", JSON.stringify(data));
@@ -111,13 +112,13 @@ export async function initiateJob(input: unknown) {
     throw new Error(`Failed to create transcription job: ${err}`);
   }
 
-  // Enqueue job
+  // Enqueue job (send isSpeakerDiarized as string "true" or "false")
   await enqueueTranscriptionJob({
     transcriptionId: job[0].id,
     filename,
     language: job[0].language,
     model: job[0].model,
-    isSpeakerDiarized: job[0].isSpeakerDiarized,
+    isSpeakerDiarized: job[0].isSpeakerDiarized ? "true" : "false",
     numberOfSpeaker: job[0].numberOfSpeaker,
   });
 
