@@ -91,7 +91,28 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
     replaceCurrentOccurrence,
     replaceAllOccurrences,
     navigateSearchResults,
+    loadTranscription,
   } = useTranscriptionStore();
+
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (id) {
+      loadTranscription(id);
+      
+      // Fetch audio URL
+      fetch(`/api/transcription/${id}/audio`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.url) {
+            setAudioUrl(data.url);
+          } else {
+            console.error("Failed to load audio URL:", data.error);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [id, loadTranscription]);
 
   // Find the active segment based on current playback time
   const findActiveSegment = useCallback(
@@ -362,6 +383,75 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
 
   if (!metadata) return null;
 
+  const handleSaveChanges = async () => {
+    try {
+      const response = await fetch(`/api/transcription/${id}/segments`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          segments: segments.map((s: any) => ({
+            id: s.id,
+            text: s.text,
+            speaker: s.speaker,
+          })),
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Changes saved",
+          description: "Your transcript has been successfully updated.",
+        });
+        setIsEditing(false);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save changes");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error saving changes",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this transcription?")) return;
+    try {
+      const response = await fetch(`/api/transcription/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Transcription deleted",
+          description: "The transcription has been successfully removed.",
+        });
+        onBack();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete transcription");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error deleting transcription",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (!metadata) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -513,12 +603,18 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
         <CardContent>
           {/* Audio Player */}
           <div className="mb-4 p-3 border rounded-md bg-slate-50 dark:bg-slate-900">
-            <TranscriptionAudioPlayer
-              audioUrl="/sample1.mp3"
-              onTimeUpdate={handleTimeUpdate}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-            />
+            {audioUrl ? (
+              <TranscriptionAudioPlayer
+                audioUrl={audioUrl}
+                onTimeUpdate={handleTimeUpdate}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+            ) : (
+              <div className="h-10 flex items-center justify-center text-sm text-muted-foreground">
+                Loading audio...
+              </div>
+            )}
           </div>
 
           {/* Search and replace UI */}
@@ -768,6 +864,7 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
           <Button
             variant="outline"
             className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
+            onClick={handleDelete}
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete Transcription
@@ -779,12 +876,12 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
                 variant="outline"
                 onClick={() => {
                   setIsEditing(false);
-                  // Reset any unsaved changes if needed
+                  loadTranscription(id);
                 }}
               >
                 Cancel
               </Button>
-              <Button onClick={() => setIsEditing(false)}>
+              <Button onClick={handleSaveChanges}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Changes
               </Button>

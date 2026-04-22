@@ -1,6 +1,6 @@
 "use server";
 
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+
 import { db } from "@/db";
 import { transcriptions } from "@/db/schema";
 import { redis } from "@/lib/redis";
@@ -9,27 +9,15 @@ import { headers } from "next/headers";
 import { randomUUID } from "crypto";
 // import { z } from "zod";
 import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
+import { uploadAudio, getPresignedUrl } from "@/lib/storage";
+import { transcriptionQueue, TranscriptionJobPayload } from "@/lib/queue";
 
-const s3 = new S3Client({
-  endpoint: process.env.MINIO_URL!,
-  region: "us-east-1",
-  credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY!,
-    secretAccessKey: process.env.MINIO_SECRET_KEY!,
-  },
-  forcePathStyle: true,
-});
 
-async function enqueueTranscriptionJob(data: {
-  transcriptionId: string;
-  filename: string;
-  language: string;
-  model: "small" | "medium" | "large";
-  // NOTE: sent as string "true" | "false" for compatibility with worker consumer
-  isSpeakerDiarized: string;
-  numberOfSpeaker: number;
-}) {
-  await redis.lpush("transcription:queue", JSON.stringify(data));
+
+async function enqueueTranscriptionJob(data: TranscriptionJobPayload) {
+  await transcriptionQueue.add("transcribe", data, {
+    jobId: data.transcriptionId,
+  });
 }
 
 export async function initiateJob(input: unknown) {
@@ -77,14 +65,7 @@ export async function initiateJob(input: unknown) {
 
   // Upload to S3/Minio
   try {
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: process.env.MINIO_BUCKET!,
-        Key: filename,
-        Body: buffer,
-        ContentType: audio.type,
-      })
-    );
+    await uploadAudio(buffer, filename, audio.type);
   } catch (err) {
     throw new Error(`Failed to upload audio to storage: ${err}`);
   }
@@ -112,13 +93,16 @@ export async function initiateJob(input: unknown) {
     throw new Error(`Failed to create transcription job: ${err}`);
   }
 
-  // Enqueue job (send isSpeakerDiarized as string "true" or "false")
+  // Enqueue job with a 2-hour presigned URL
+  const presignedUrl = await getPresignedUrl(filename, 7200);
+
   await enqueueTranscriptionJob({
     transcriptionId: job[0].id,
     filename,
+    audioUrl: presignedUrl,
     language: job[0].language,
     model: job[0].model,
-    isSpeakerDiarized: job[0].isSpeakerDiarized ? "true" : "false",
+    isSpeakerDiarized: !!job[0].isSpeakerDiarized,
     numberOfSpeaker: job[0].numberOfSpeaker,
   });
 

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { getTranscripstionList } from "../model/query";
 
 export interface Transcription {
   id?: string;
@@ -75,48 +76,24 @@ export const useTranscriptionListStore = create<TranscriptionListState>()(
       set({ isLoading: true, error: null });
 
       try {
-        // In a real app, this would be an API call
-        // For now, we'll simulate a delay and return mock data
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const data = await getTranscripstionList();
+        
+        if (!data) {
+          set({ transcriptions: [], isLoading: false });
+          return;
+        }
 
-        const mockData = [
-          {
-            id: "1",
-            title: "Team Meeting",
-            date: "May 15, 2023",
-            duration: "45:22",
-            status: "completed",
-            mode: "medium",
-          },
-          {
-            id: "2",
-            title: "Product Interview",
-            date: "May 12, 2023",
-            duration: "32:14",
-            status: "completed",
-            mode: "super",
-          },
-          {
-            id: "3",
-            title: "Customer Feedback",
-            date: "May 10, 2023",
-            duration: "18:45",
-            status: "completed",
-            mode: "fast",
-          },
-          {
-            id: "4",
-            title: "Quarterly Review",
-            date: "May 5, 2023",
-            duration: "58:30",
-            status: "in_progress",
-            mode: "medium",
-            progress: 75,
-          },
-        ];
+        const mappedData = data.map((t: any) => ({
+          id: t.id,
+          title: t.metadata?.originalFilename || "Untitled",
+          date: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+          duration: t.metadata?.durationSeconds ? `${Math.floor(t.metadata.durationSeconds / 60)}:${Math.floor(t.metadata.durationSeconds % 60).toString().padStart(2, "0")}` : "00:00",
+          status: t.status as any,
+          mode: t.model === "whisper-small" ? "fast" : t.model === "whisper-large-v3" ? "super" : "medium",
+          progress: 0,
+        }));
 
-        // Validate all transcriptions before setting state
-        const validatedTranscriptions = mockData.map(validateTranscription);
+        const validatedTranscriptions = mappedData.map(validateTranscription);
 
         set({
           transcriptions: validatedTranscriptions,

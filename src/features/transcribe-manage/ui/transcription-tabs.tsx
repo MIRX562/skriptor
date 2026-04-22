@@ -25,7 +25,7 @@ export function TranscriptionTabs() {
 
       <TabsContent value="summary">
         <div className="border rounded-md p-4 h-[400px] overflow-y-auto">
-          <p>{metadata.summary}</p>
+          <p>{metadata?.summary}</p>
         </div>
       </TabsContent>
     </Tabs>

@@ -4,26 +4,26 @@ import { db } from "@/db";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { transcriptions } from "@/db/schema";
 
 export async function getTranscriptionById(id: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+  if (!session?.user?.id) {
+    return { error: "Not authenticated" };
+  }
   try {
     const result = await db.query.transcriptions.findFirst({
       where: (transcriptions, { and, eq }) =>
         and(
-          eq(transcriptions.uuid, id),
+          eq(transcriptions.id, id),
           eq(transcriptions.userId, session.user.id)
         ),
       with: {
         segments: {
           orderBy: (segments, { asc }) => [asc(segments.startTime)],
-          with: {
-            speaker: true,
-          },
         },
-        speakers: true,
       },
     });
 

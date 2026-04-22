@@ -27,7 +27,7 @@ export function LandingHeader() {
       createdAt: Date;
       expiresAt: Date;
       ipAddress?: string | null;
-      userAgent?: string;
+      userAgent?: string | null;
     };
   } | null>(null);
 

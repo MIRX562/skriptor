@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { getTranscriptionById } from "../model/query";
+import { formatTime } from "@/lib/utils";
 
 // Define the interface for a transcription segment
 export interface TranscriptionSegment {
@@ -60,99 +62,20 @@ interface TranscriptionState {
   setCurrentResultIndex: (index: number) => void;
 
   getFullTranscript: () => string;
-  performSearch: () => void;
+  performSearch: () => number[];
   replaceCurrentOccurrence: () => void;
   replaceAllOccurrences: () => void;
   navigateSearchResults: (direction: "next" | "prev") => void;
+  loadTranscription: (id: string) => Promise<void>;
 }
-
-// Sample data
-const initialSegments: TranscriptionSegment[] = [
-  {
-    speaker: "Speaker 1",
-    text: "Good morning everyone. Thanks for joining today's team meeting. We have a lot to cover, so let's get started.",
-    start: 0,
-    end: 12000,
-  },
-  {
-    speaker: "Speaker 2",
-    text: "Before we begin, can I quickly ask about the status of the Johnson project?",
-    start: 12000,
-    end: 18000,
-  },
-  {
-    speaker: "Speaker 1",
-    text: "Sure. We're currently on track with the Johnson project. The development team completed the first phase last week, and we're moving into testing now.",
-    start: 18000,
-    end: 32000,
-  },
-  {
-    speaker: "Speaker 3",
-    text: "I have some concerns about the timeline for the testing phase. I think we might need an additional week.",
-    start: 32000,
-    end: 40000,
-  },
-  {
-    speaker: "Speaker 1",
-    text: "Let's discuss that in detail when we get to the project updates section. For now, let's go through the agenda.",
-    start: 40000,
-    end: 48000,
-  },
-  {
-    speaker: "Speaker 2",
-    text: "Sounds good to me.",
-    start: 48000,
-    end: 50000,
-  },
-  {
-    speaker: "Speaker 1",
-    text: "First item is the quarterly results. I'm happy to report that we've exceeded our targets by 12%.",
-    start: 50000,
-    end: 60000,
-  },
-];
-
-const sampleMetadata: TranscriptionMetadata = {
-  id: "sample-id",
-  title: "Team Meeting - May 10",
-  date: "May 10, 2023",
-  duration: "45:12",
-  status: "in_progress",
-  progress: 68,
-  mode: "medium",
-  speakers: 3,
-  summary: `
-Meeting Summary
-The team meeting covered several key topics including project updates, quarterly results, and upcoming deadlines.
-Key Points:
-The Johnson project is on track with the first phase completed
-There are concerns about the testing phase timeline
-Quarterly results exceeded targets by 12%
-New marketing strategy to be implemented next month
-Team restructuring planned for Q3
-Action Items:
-Review testing phase timeline (Owner: Speaker 3)
-Prepare detailed quarterly report (Owner: Speaker 1)
-Schedule follow-up meeting for marketing strategy (Owner: Speaker 2)
-  `,
-};
-
-// Format milliseconds to MM:SS.mmm
-const formatTime = (ms: number): string => {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  const milliseconds = ms % 1000;
-
-  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}.${milliseconds.toString().padStart(3, "0")}`;
-};
 
 export const useTranscriptionStore = create<TranscriptionState>()(
   devtools(
     (set, get) => ({
       // Initial state
-      segments: initialSegments,
-      metadata: sampleMetadata,
+      segments: [],
+      metadata: null,
+
 
       isEditing: false,
       isCopied: false,
@@ -204,7 +127,7 @@ export const useTranscriptionStore = create<TranscriptionState>()(
 
         if (!searchTerm.trim()) {
           set({ searchResults: [], currentResultIndex: -1 });
-          return;
+          return [];
         }
 
         const results: number[] = [];
@@ -266,7 +189,7 @@ export const useTranscriptionStore = create<TranscriptionState>()(
 
         if (searchResults.length === 0) return;
 
-        let newIndex = currentResultIndex;
+        let newIndex;
         if (direction === "next") {
           newIndex = (currentResultIndex + 1) % searchResults.length;
         } else {
@@ -277,7 +200,44 @@ export const useTranscriptionStore = create<TranscriptionState>()(
 
         set({ currentResultIndex: newIndex });
       },
+
+      loadTranscription: async (id: string) => {
+        const response = await getTranscriptionById(id);
+        
+        if (response.error || !response.data) {
+          console.error("Failed to load transcription:", response.error);
+          return;
+        }
+        
+        const data = response.data;
+        const md = data.metadata as any || {};
+        
+        const newMetadata: TranscriptionMetadata = {
+          id: data.id,
+          title: md.originalFilename || "Untitled",
+          date: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+          duration: md.durationSeconds ? `${Math.floor(md.durationSeconds / 60)}:${Math.floor(md.durationSeconds % 60).toString().padStart(2, "0")}` : "00:00",
+          summary: data.summary || "",
+          status: data.status as any,
+          progress: 100, // Or derive from Redis status
+          mode: data.model === "whisper-small" ? "fast" : data.model === "whisper-large-v3" ? "super" : "medium",
+          speakers: data.numberOfSpeaker || 1,
+        };
+
+        const newSegments = (data.segments || []).map((s: any) => ({
+          speaker: s.speaker || "Unknown",
+          text: s.text || "",
+          start: s.startTime || 0,
+          end: s.endTime || 0,
+          id: s.id, // Keep the segment ID for saving
+        }));
+
+        set({
+          metadata: newMetadata,
+          segments: newSegments,
+        });
+      },
     }),
-    { name: "transcription-store" }
+    { name: "transcription-view-store" }
   )
 );

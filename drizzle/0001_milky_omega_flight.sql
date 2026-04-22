@@ -1,0 +1,1 @@
+ALTER TABLE "transcriptions" ALTER COLUMN "number_of_speaker" SET NOT NULL;

@@ -1,0 +1,24 @@
+[project]
+name = "skriptor-worker"
+version = "0.1.0"
+description = "WhisperX transcription worker for Skriptor"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "bullmq>=0.7.0",
+    "redis>=5.0.1",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.1",
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+    "numpy<2.0.0",
+]
+
+[tool.uv]
+index-url = "https://pypi.org/simple"
+extra-index-url = ["https://download.pytorch.org/whl/cu118"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
