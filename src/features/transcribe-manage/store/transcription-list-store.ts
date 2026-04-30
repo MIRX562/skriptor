@@ -33,7 +33,7 @@ interface TranscriptionListState {
 }
 
 // Helper function to validate transcription data
-const validateTranscription = (transcription: any): Transcription => {
+const validateTranscription = (transcription: Partial<Transcription> & { model?: string; createdAt?: Date | string; metadata?: Record<string, unknown> }): Transcription => {
   return {
     id: transcription.id || `tr_${Math.random().toString(36).substring(2, 9)}`,
     title:
@@ -48,17 +48,17 @@ const validateTranscription = (transcription: any): Transcription => {
       typeof transcription.duration === "string"
         ? transcription.duration
         : "00:00",
-    status: [
+    status: (transcription.status && [
       "queued",
       "processing",
       "completed",
       "failed",
       "in_progress",
-    ].includes(transcription.status)
-      ? transcription.status
+    ].includes(transcription.status))
+      ? (transcription.status as Transcription["status"])
       : "queued",
-    mode: ["fast", "medium", "super"].includes(transcription.mode)
-      ? transcription.mode
+    mode: (transcription.mode && ["fast", "medium", "super"].includes(transcription.mode))
+      ? (transcription.mode as Transcription["mode"])
       : "medium",
     progress:
       typeof transcription.progress === "number" ? transcription.progress : 0,
@@ -66,7 +66,7 @@ const validateTranscription = (transcription: any): Transcription => {
 };
 
 export const useTranscriptionListStore = create<TranscriptionListState>()(
-  devtools((set, get) => ({
+  devtools((set) => ({
     transcriptions: [],
     searchQuery: null,
     isLoading: false,
@@ -83,13 +83,13 @@ export const useTranscriptionListStore = create<TranscriptionListState>()(
           return;
         }
 
-        const mappedData = data.map((t: any) => ({
+        const mappedData = data.map((t: { id: string; metadata: unknown; createdAt: Date | string; status: string; model: string }) => ({
           id: t.id,
-          title: t.metadata?.originalFilename || "Untitled",
+          title: (t.metadata as { originalFilename?: string })?.originalFilename || "Untitled",
           date: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
-          duration: t.metadata?.durationSeconds ? `${Math.floor(t.metadata.durationSeconds / 60)}:${Math.floor(t.metadata.durationSeconds % 60).toString().padStart(2, "0")}` : "00:00",
-          status: t.status as any,
-          mode: t.model === "whisper-small" ? "fast" : t.model === "whisper-large-v3" ? "super" : "medium",
+          duration: (t.metadata as { durationSeconds?: number })?.durationSeconds ? `${Math.floor((t.metadata as { durationSeconds: number }).durationSeconds / 60)}:${Math.floor((t.metadata as { durationSeconds: number }).durationSeconds % 60).toString().padStart(2, "0")}` : "00:00",
+          status: ((t.status === "processing" || t.status === "queued") ? "in_progress" : t.status) as Transcription["status"],
+          mode: (t.model === "small" ? "fast" : t.model === "large" ? "super" : "medium") as Transcription["mode"],
           progress: 0,
         }));
 

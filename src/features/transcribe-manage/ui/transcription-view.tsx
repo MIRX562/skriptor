@@ -47,7 +47,7 @@ import { useToast } from "@/hooks/use-toast";
 
 import { useTranscriptionStore } from "../store/transcription-view-store";
 import { formatSrtTime, formatTime } from "@/lib/utils";
-import { TranscriptionAudioPlayer } from "./transcription-audio-player";
+import { WaveformPlayer, type WaveformPlayerRef } from "./waveform-player";
 
 interface TranscriptionViewProps {
   id: string;
@@ -56,7 +56,6 @@ interface TranscriptionViewProps {
 
 export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
   const { toast } = useToast();
-  const [currentPlaybackTime, setCurrentPlaybackTime] = useState(0);
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(
     null
   );
@@ -146,7 +145,6 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
   // Handle playback time update
   const handleTimeUpdate = useCallback(
     (currentTime: number) => {
-      setCurrentPlaybackTime(currentTime);
       const newActiveSegment = findActiveSegment(currentTime);
 
       if (
@@ -169,7 +167,6 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
       transcriptContainerRef.current &&
       segmentRefs.current[activeSegmentIndex]
     ) {
-      const container = transcriptContainerRef.current;
       const activeSegment = segmentRefs.current[activeSegmentIndex];
 
       if (activeSegment) {
@@ -220,7 +217,6 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
       setActiveSegmentIndex(index);
       // Convert milliseconds to seconds for the audio player
       const startTimeInSeconds = segment.start / 1000;
-      setCurrentPlaybackTime(startTimeInSeconds);
 
       // The actual seeking happens in the TranscriptionAudioPlayer
       // We'll pass this time to the player via a ref
@@ -231,9 +227,7 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
   };
 
   // Ref for the audio player component
-  const audioPlayerRef = useRef<{
-    jumpToTime: (time: number) => void;
-  } | null>(null);
+  const audioPlayerRef = useRef<WaveformPlayerRef | null>(null);
 
   // Effect to handle search when searchTerm changes
   useEffect(() => {
@@ -256,7 +250,7 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
         });
         setTimeout(() => setIsCopied(false), 2000);
       })
-      .catch((err) => {
+      .catch(() => {
         toast({
           title: "Copy failed",
           description: "Failed to copy transcript to clipboard",
@@ -391,7 +385,7 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          segments: segments.map((s: any) => ({
+          segments: segments.map((s) => ({
             id: s.id,
             text: s.text,
             speaker: s.speaker,
@@ -409,10 +403,10 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to save changes");
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error saving changes",
-        description: error.message || "An unexpected error occurred",
+        description: (error as Error).message || "An unexpected error occurred",
         variant: "destructive",
       });
     }
@@ -435,10 +429,10 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to delete transcription");
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error deleting transcription",
-        description: error.message || "An unexpected error occurred",
+        description: (error as Error).message || "An unexpected error occurred",
         variant: "destructive",
       });
     }
@@ -604,7 +598,8 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
           {/* Audio Player */}
           <div className="mb-4 p-3 border rounded-md bg-slate-50 dark:bg-slate-900">
             {audioUrl ? (
-              <TranscriptionAudioPlayer
+              <WaveformPlayer
+                ref={audioPlayerRef}
                 audioUrl={audioUrl}
                 onTimeUpdate={handleTimeUpdate}
                 onPlay={() => setIsPlaying(true)}

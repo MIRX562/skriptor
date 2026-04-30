@@ -92,7 +92,7 @@ export default function ResetPasswordPage() {
 
       // Redirect to login
       router.push("/auth/login");
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description:

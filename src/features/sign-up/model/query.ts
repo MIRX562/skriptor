@@ -12,10 +12,10 @@ export async function signUpEmail(value: SignUpEmail) {
         callbackURL: "/dashboard", // A URL to redirect to after the user verifies their email (optional)
       },
       {
-        onRequest: (ctx) => {
+        onRequest: () => {
           //show loading
         },
-        onSuccess: (ctx) => {
+        onSuccess: () => {
           //redirect to the dashboard or sign in page
         },
         onError: (ctx) => {

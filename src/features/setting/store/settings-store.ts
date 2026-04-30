@@ -49,7 +49,7 @@ const defaultNotifications: NotificationSettings = {
 export const useSettingsStore = create<SettingsState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         notifications: defaultNotifications,
         isLoading: false,
         error: null,

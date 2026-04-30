@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Replace, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useTranscriptionStore } from "../store/transcription-view-store";
 
 export function TranscriptionSearch() {

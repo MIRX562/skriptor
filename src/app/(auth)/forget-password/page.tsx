@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
       toast.success("Reset link sent", {
         description: "Check your email for a link to reset your password.",
       });
-    } catch (error) {
+    } catch {
       toast.error("Error", {
         description:
           "There was a problem sending the reset link. Please try again.",
@@ -76,14 +76,14 @@ export default function ForgotPasswordPage() {
 
           <div className="space-y-2">
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              We've sent a password reset link to:
+              We&apos;ve sent a password reset link to:
             </p>
             <p className="font-medium">{email}</p>
           </div>
 
           <div className="space-y-4 pt-4">
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Didn't receive the email? Check your spam folder or try again.
+              Didn&apos;t receive the email? Check your spam folder or try again.
             </p>
 
             <Button

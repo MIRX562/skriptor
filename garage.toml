@@ -1,0 +1,17 @@
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+replication_factor = 1
+
+# RPC configuration (internal cluster communication)
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+rpc_secret = "7ed9876543210fedcba9876543210fedcba9876543210fedcba9876543210fed" # CHANGE THIS (64 hex chars)
+
+[s3_api]
+s3_region = "us-east-1"
+api_bind_addr = "[::]:3900"
+root_domain = ".s3.localhost" # Allows bucket-name.s3.localhost
+
+[admin]
+api_bind_addr = "[::]:3903"
+admin_token = "skriptor_admin_token_123" # CHANGE THIS

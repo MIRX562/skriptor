@@ -28,17 +28,11 @@ export default function VerifyEmailPage() {
   const token = searchParams.get("token");
   const email = searchParams.get("email") || "";
 
-  // Check verification status when component mounts
-  useEffect(() => {
-    checkVerificationStatus();
-  }, [email]);
-
-  // Handle token verification if present
   useEffect(() => {
     if (token) {
-      verifyEmail(token);
+      verifyEmail();
     }
-  }, [token]);
+  }, [token, verifyEmail]);
 
   // Countdown for resend button
   useEffect(() => {
@@ -53,7 +47,7 @@ export default function VerifyEmailPage() {
   }, [countdown, canResend]);
 
   // Check if the user is already verified
-  const checkVerificationStatus = async () => {
+  const checkVerificationStatus = useCallback(async () => {
     if (!email) return;
 
     try {
@@ -79,8 +73,7 @@ export default function VerifyEmailPage() {
       } else {
         setVerificationStatus("unverified");
       }
-    } catch (error) {
-      console.error("Error checking verification status:", error);
+    } catch {
       setVerificationStatus("error");
       toast({
         title: "Error",
@@ -88,9 +81,9 @@ export default function VerifyEmailPage() {
         variant: "destructive",
       });
     }
-  };
+  }, [email, toast]);
 
-  const verifyEmail = async (token: string) => {
+  const verifyEmail = useCallback(async () => {
     try {
       setVerificationStatus("checking");
 
@@ -103,7 +96,7 @@ export default function VerifyEmailPage() {
         title: "Email verified",
         description: "Your email has been successfully verified.",
       });
-    } catch (error) {
+    } catch {
       setVerificationStatus("error");
       toast({
         title: "Verification failed",
@@ -112,7 +105,12 @@ export default function VerifyEmailPage() {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
+
+  // Check verification status when component mounts
+  useEffect(() => {
+    checkVerificationStatus();
+  }, [checkVerificationStatus]);
 
   const handleResendVerification = async () => {
     if (!email) return;
@@ -138,13 +136,13 @@ export default function VerifyEmailPage() {
 
       toast({
         title: "Verification email sent",
-        description: `We've sent a new verification email to ${email}.`,
+        description: `We&apos;ve sent a new verification email to ${email}.`,
       });
 
       // Reset countdown
       setCountdown(60);
       setCanResend(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to resend verification email. Please try again.",
@@ -229,11 +227,11 @@ export default function VerifyEmailPage() {
             <>
               <div className="space-y-2">
                 <p className="text-slate-700 dark:text-slate-300">
-                  We've sent a verification link to your email address. Please
+                  We&apos;ve sent a verification link to your email address. Please
                   check your inbox and click the link to verify your account.
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  If you don't see the email, check your spam folder.
+                  If you don&apos;t see the email, check your spam folder.
                 </p>
               </div>
 

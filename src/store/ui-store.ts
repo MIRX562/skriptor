@@ -12,7 +12,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>()(
-  devtools((set, get) => ({
+  devtools((set) => ({
     isMobileMenuOpen: false,
     isScrolled: false,
 

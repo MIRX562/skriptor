@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Zap, BarChart2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
 
 interface TranscriptionHeaderProps {
   metadata: {

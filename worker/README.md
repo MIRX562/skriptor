@@ -5,7 +5,7 @@ Python-based transcription worker using WhisperX.
 ## Setup
 
 1. Install `uv`: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-2. Sync dependencies: `uv sync`
+2. Sync dependencies: `uv sync --index-strategy unsafe-best-match`
 3. Install WhisperX: `uv pip install git+https://github.com/m-bain/whisperX.git`
 
 ## Environment Variables

@@ -1,6 +1,5 @@
 import {
   pgTable,
-  serial,
   boolean,
   jsonb,
   timestamp,

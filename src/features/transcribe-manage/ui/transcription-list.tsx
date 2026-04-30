@@ -87,7 +87,7 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
         title: "Success",
         description: "Transcription deleted successfully",
       });
-    } catch (err) {
+    } catch {
       // Error is already handled in the store and displayed via the useEffect above
     }
   };
@@ -210,7 +210,7 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
-                              item.id && onSelect(item.id);
+                              if (item.id) onSelect(item.id);
                             }}
                           >
                             View

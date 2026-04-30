@@ -40,7 +40,7 @@ export function useAudioPlayer() {
       setCurrentTime(0);
       audio.currentTime = 0;
     });
-    audio.addEventListener("error", (e) => {
+    audio.addEventListener("error", () => {
       if (hasValidUrl.current) {
         setIsLoading(false);
         setIsReady(false);

@@ -1,0 +1,41 @@
+name: Deploy Web Stack
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment File
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Deploy Stack
+        run: |
+          # Build and start the containers
+          docker compose up -d --build
+          
+          # Prune old images to save space on the runner
+          docker image prune -f
+
+      - name: Database Migrations
+        run: |
+          # Run migrations using the build stage or a temporary container
+          # Since the app image is standalone, we use a temporary container for migrations
+          # We use the same image that was just built
+          IMAGE_NAME=$(docker compose images -q app)
+          docker run --rm --env-file .env $IMAGE_NAME bunx drizzle-kit migrate
+        continue-on-error: true # Migrations might fail if DB is not ready yet, but compose healthchecks should prevent this
+
+      - name: Verify Deployment
+        run: |
+          docker compose ps

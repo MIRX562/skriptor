@@ -42,7 +42,7 @@ export function LandingHeader() {
       try {
         const { data } = await authClient.getSession();
         setSession(data || null);
-      } catch (e) {
+      } catch {
         setSession(null);
       }
     })();

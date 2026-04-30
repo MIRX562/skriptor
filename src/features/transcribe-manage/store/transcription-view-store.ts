@@ -5,6 +5,7 @@ import { formatTime } from "@/lib/utils";
 
 // Define the interface for a transcription segment
 export interface TranscriptionSegment {
+  id: string;
   speaker: string;
   text: string;
   start: number; // in milliseconds
@@ -91,7 +92,7 @@ export const useTranscriptionStore = create<TranscriptionState>()(
       setSegments: (segments) => set({ segments }),
       updateSegment: (index, field, value) => {
         const segments = [...get().segments];
-        if (field === "text" || field === "speaker") {
+        if (field === "text" || field === "speaker" || field === "id") {
           segments[index][field] = value as string;
         } else {
           segments[index][field] = value as number;
@@ -210,7 +211,7 @@ export const useTranscriptionStore = create<TranscriptionState>()(
         }
         
         const data = response.data;
-        const md = data.metadata as any || {};
+        const md = (data.metadata as { originalFilename?: string; durationSeconds?: number }) || {};
         
         const newMetadata: TranscriptionMetadata = {
           id: data.id,
@@ -218,13 +219,13 @@ export const useTranscriptionStore = create<TranscriptionState>()(
           date: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
           duration: md.durationSeconds ? `${Math.floor(md.durationSeconds / 60)}:${Math.floor(md.durationSeconds % 60).toString().padStart(2, "0")}` : "00:00",
           summary: data.summary || "",
-          status: data.status as any,
+          status: (data.status === "processing" || data.status === "queued") ? "in_progress" : data.status as "completed" | "failed",
           progress: 100, // Or derive from Redis status
-          mode: data.model === "whisper-small" ? "fast" : data.model === "whisper-large-v3" ? "super" : "medium",
+          mode: data.model === "small" ? "fast" : data.model === "large" ? "super" : "medium",
           speakers: data.numberOfSpeaker || 1,
         };
 
-        const newSegments = (data.segments || []).map((s: any) => ({
+        const newSegments = (data.segments || []).map((s: { speaker: string | null; text: string; startTime: number; endTime: number; id: string }) => ({
           speaker: s.speaker || "Unknown",
           text: s.text || "",
           start: s.startTime || 0,

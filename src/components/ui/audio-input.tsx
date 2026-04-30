@@ -1,18 +1,26 @@
 "use client";
+
 import React, { useRef, useState, useEffect, useCallback } from "react";
+import WaveSurfer from "wavesurfer.js";
+import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
 import { Button } from "@/components/ui/button";
-import { Mic, StopCircle, Trash2, Download } from "lucide-react";
+import { 
+  Mic, 
+  StopCircle, 
+  Trash2, 
+  Play, 
+  Pause, 
+  RotateCcw,
+  AlertCircle
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type AudioInputProps = {
   value: File | null;
   onValueChange: (file: File | null) => void;
   className?: string;
 };
-
-function padWithLeadingZeros(num: number, length: number): string {
-  return String(num).padStart(length, "0");
-}
 
 function blobToFile(blob: Blob, name: string): File {
   return new File([blob], name, { type: blob.type });
@@ -23,349 +31,261 @@ export const AudioInput: React.FC<AudioInputProps> = ({
   className,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [timer, setTimer] = useState(0);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
   const [isRecorded, setIsRecorded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Use refs for recording data to avoid state timing issues
-  const recordingChunksRef = useRef<BlobPart[]>([]);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const animationRef = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const recordRef = useRef<ReturnType<typeof RecordPlugin.create> | null>(null);
+  const [timer, setTimer] = useState(0);
 
-  // Timer logic
+  // Initialize WaveSurfer and Record Plugin
+  const initWaveSurfer = useCallback(() => {
+    if (!containerRef.current) return;
+    if (wavesurferRef.current) wavesurferRef.current.destroy();
+
+    const ws = WaveSurfer.create({
+      container: containerRef.current,
+      waveColor: "#94a3b8", // slate-400
+      progressColor: "#0d9488", // teal-600
+      cursorColor: "#0d9488",
+      cursorWidth: 2,
+      barWidth: 2,
+      barGap: 1,
+      barRadius: 30,
+      height: 80,
+      normalize: true,
+    });
+
+    const record = ws.registerPlugin(RecordPlugin.create({
+      scrollingWaveform: true,
+      renderRecordedAudio: true,
+    }));
+
+    record.on("record-end", (blob: Blob) => {
+      const mimeType = blob.type || "audio/wav";
+      const file = blobToFile(
+        blob,
+        `recording_${Date.now()}.${mimeType.includes("webm") ? "webm" : "wav"}`
+      );
+      onValueChange(file);
+      setIsRecorded(true);
+      setDuration(ws.getDuration());
+    });
+
+    record.on("record-progress", (time: number) => {
+      setTimer(Math.floor(time / 1000));
+    });
+
+    ws.on("play", () => setIsPlaying(true));
+    ws.on("pause", () => setIsPlaying(false));
+    ws.on("timeupdate", (time) => setCurrentTime(time));
+    ws.on("finish", () => setIsPlaying(false));
+
+    wavesurferRef.current = ws;
+    recordRef.current = record;
+  }, [onValueChange]);
+
   useEffect(() => {
-    if (isRecording) {
-      timerRef.current = setTimeout(() => setTimer((t) => t + 1), 1000);
-    } else if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
+    initWaveSurfer();
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      wavesurferRef.current?.destroy();
     };
-  }, [isRecording, timer]);
+  }, [initWaveSurfer]);
 
-  // Visualizer logic
-  useEffect(() => {
-    if (!isRecording) {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-      if (canvasRef.current) {
-        const ctx = canvasRef.current.getContext("2d");
-        if (ctx)
-          ctx.clearRect(
-            0,
-            0,
-            canvasRef.current.width,
-            canvasRef.current.height
-          );
-      }
-      return;
-    }
-    const canvas = canvasRef.current;
-    const analyser = analyserRef.current;
-    if (!canvas || !analyser) return;
-    const ctx = canvas.getContext("2d");
-    const WIDTH = canvas.width;
-    const HEIGHT = canvas.height;
-    const centerY = HEIGHT / 2;
-
-    // Increase FFT size for more frequency resolution and sensitivity
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.6; // Reduce smoothing for more sensitivity
-
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    function draw() {
-      if (!analyser) return;
-      analyser.getByteFrequencyData(dataArray);
-      if (ctx) {
-        ctx.clearRect(0, 0, WIDTH, HEIGHT);
-
-        // Draw the center line first (behind the bars)
-        ctx.strokeStyle = "#64748b"; // Tailwind slate-500 for subtle line
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(0, centerY);
-        ctx.lineTo(WIDTH, centerY);
-        ctx.stroke();
-
-        ctx.fillStyle = "#14b8a6"; // Tailwind teal-500 for bars
-
-        // Use more bars for denser visualization
-        const numBars = Math.min(bufferLength, 80); // Limit to 80 bars for performance
-        const barWidth = WIDTH / numBars;
-
-        for (let i = 0; i < numBars; i++) {
-          // Apply amplification and bias for more sensitivity
-          const amplitude = (dataArray[i] / 255) * 1.7; // Amplify by 3x
-          const barHeight = Math.min(amplitude * (HEIGHT / 2), HEIGHT / 2); // Limit to half height
-
-          // Draw bars both upward and downward from center
-          // Upward bar
-          ctx.fillRect(
-            i * barWidth,
-            centerY - barHeight,
-            barWidth - 1, // Thinner bars
-            barHeight
-          );
-
-          // Downward bar (mirror)
-          ctx.fillRect(
-            i * barWidth,
-            centerY,
-            barWidth - 1, // Thinner bars
-            barHeight
-          );
-        }
-      }
-      animationRef.current = requestAnimationFrame(draw);
-    }
-    draw();
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, [isRecording]);
-
-  // Clean up blob URLs to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
-    };
-  }, [audioUrl]);
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, []);
-
-  const startRecording = useCallback(async () => {
-    setError(null);
-    setIsRecorded(false);
-    recordingChunksRef.current = []; // Reset chunks
-    setTimer(0);
-
+  const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-
-      const audioContext = new window.AudioContext();
-      audioContextRef.current = audioContext;
-      const analyser = audioContext.createAnalyser();
-      analyserRef.current = analyser;
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-
-      const mimeType = MediaRecorder.isTypeSupported("audio/wav")
-        ? "audio/wav"
-        : "audio/webm";
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          recordingChunksRef.current.push(e.data); // Use ref instead of state
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        // Clean up old audio URL
-        if (audioUrl) {
-          URL.revokeObjectURL(audioUrl);
-        }
-
-        const blob = new Blob(recordingChunksRef.current, { type: mimeType });
-        const url = URL.createObjectURL(blob);
-
-        // Create a temporary audio element to load metadata
-        const tempAudio = new Audio(url);
-
-        try {
-          await new Promise((resolve, reject) => {
-            tempAudio.addEventListener("loadedmetadata", resolve);
-            tempAudio.addEventListener("error", reject);
-            tempAudio.load();
-          });
-
-          setAudioUrl(url);
-          setIsRecorded(true);
-
-          const file = blobToFile(
-            blob,
-            `recording_${Date.now()}.${mimeType === "audio/webm" ? "webm" : "wav"}`
-          );
-          onValueChange(file);
-        } catch (error) {
-          console.error("Failed to load audio metadata:", error);
-          // Fallback - still set the URL even if metadata loading fails
-          setAudioUrl(url);
-          setIsRecorded(true);
-
-          const file = blobToFile(
-            blob,
-            `recording_${Date.now()}.${mimeType === "audio/webm" ? "webm" : "wav"}`
-          );
-          onValueChange(file);
-        }
-      };
-
-      mediaRecorder.start();
+      setError(null);
+      await recordRef.current?.startRecording();
       setIsRecording(true);
+      setIsPaused(false);
+      setIsRecorded(false);
+      setTimer(0);
     } catch (err) {
-      console.error("Recording error:", err);
-
-      // More specific error messages
-      if (err instanceof Error) {
-        if (err.name === "NotAllowedError") {
-          setError(
-            "Microphone access denied. Please allow microphone access and try again."
-          );
-        } else if (err.name === "NotFoundError") {
-          setError("No microphone found on this device.");
-        } else if (err.name === "NotSupportedError") {
-          setError("Your browser doesn't support audio recording.");
-        } else if (err.name === "SecurityError") {
-          setError(
-            "Security error: Please use HTTPS or localhost to access the microphone."
-          );
-        } else {
-          setError(`Error accessing microphone: ${err.message}`);
-        }
-      } else {
-        setError("Microphone access denied or unavailable.");
-      }
+      const error = err as Error;
+      console.error("Recording error:", error);
+      let msg = "Could not start recording.";
+      if (error.name === "NotAllowedError") msg = "Microphone access denied.";
+      else if (error.name === "NotFoundError") msg = "No microphone found.";
+      setError(msg);
+      toast.error(msg);
     }
-  }, [onValueChange, audioUrl]);
+  };
 
-  const stopRecording = useCallback(() => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
-      mediaRecorderRef.current.stop();
-    }
+  const stopRecording = () => {
+    recordRef.current?.stopRecording();
     setIsRecording(false);
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-    }
-    if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-      audioContextRef.current.close();
-    }
-  }, []);
+    setIsPaused(false);
+  };
 
-  const resetRecording = useCallback(() => {
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
+  const togglePause = () => {
+    if (isPaused) {
+      recordRef.current?.resumeRecording();
+      setIsPaused(false);
+    } else {
+      recordRef.current?.pauseRecording();
+      setIsPaused(true);
     }
-    setAudioUrl(null);
+  };
+
+  const resetRecording = () => {
     setIsRecorded(false);
-    recordingChunksRef.current = [];
+    setIsRecording(false);
+    setIsPlaying(false);
     setTimer(0);
+    setCurrentTime(0);
     onValueChange(null);
-  }, [onValueChange, audioUrl]);
+    initWaveSurfer();
+  };
 
-  const downloadRecording = useCallback(() => {
-    if (!audioUrl) return;
-    const a = document.createElement("a");
-    a.href = audioUrl;
-    a.download = `recording_${Date.now()}.webm`;
-    a.click();
-  }, [audioUrl]);
+  const togglePlayPause = () => {
+    wavesurferRef.current?.playPause();
+  };
 
-  // Timer display
-  const minutes = Math.floor(timer / 60);
-  const seconds = timer % 60;
-  const timerDisplay = `${padWithLeadingZeros(minutes, 2)}:${padWithLeadingZeros(seconds, 2)}`;
+  const formatTime = (s: number) => {
+    const mins = Math.floor(s / 60);
+    const secs = Math.floor(s % 60);
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
 
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center w-full",
-        className
-      )}
-    >
-      <div className="bg-card rounded-xl p-4 w-full flex flex-col items-center gap-6 border-2 border-dashed hover:border-teal-400">
-        <div className="flex flex-col items-center gap-2 w-full">
-          <div className="text-4xl font-bold text-card-foreground">
-            {timerDisplay}
-          </div>
-          <div className="text-sm text-muted-foreground">Recording Time</div>
+    <div className={cn("flex flex-col w-full gap-4", className)}>
+      <div className="relative bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 transition-all duration-300 hover:border-teal-500/50 group">
+        
+        {/* Waveform View */}
+        <div className={cn(
+          "w-full transition-opacity duration-300",
+          (isRecording || isRecorded) ? "opacity-100" : "opacity-0 h-0 overflow-hidden"
+        )}>
+          <div ref={containerRef} className="w-full" />
         </div>
-        <canvas
-          ref={canvasRef}
-          width={240}
-          height={50}
-          className={cn("w-md h-fit rounded", isRecording ? "block" : "hidden")}
-          style={{ background: "none" }}
-        />
-        {error && <div className="text-red-500 text-sm">{error}</div>}
-        <div className="flex items-center gap-4">
-          {!isRecording && !isRecorded && (
-            <Button
-              size="lg"
-              variant="ghost"
-              className="bg-primary text-primary-foreground rounded-full w-20 h-20 flex items-center justify-center hover:bg-primary/80"
-              onClick={startRecording}
-              aria-label="Start recording"
-            >
-              <Mic className="w-12 h-12" />
-            </Button>
-          )}
-          {isRecording && (
-            <Button
-              size="lg"
-              variant="destructive"
-              className="rounded-full w-20 h-20 flex items-center justify-center"
-              onClick={stopRecording}
-              aria-label="Stop recording"
-            >
-              <StopCircle className="w-12 h-12" />
-            </Button>
-          )}
-          {isRecorded && audioUrl && (
-            <div className="flex flex-col items-center gap-2 w-full">
-              <audio
-                controls
-                src={audioUrl}
-                className="w-md"
-                key={audioUrl}
-                preload="metadata"
-              />
-              <div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={downloadRecording}
-                  aria-label="Download recording"
-                >
-                  <Download className="w-6 h-6" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={resetRecording}
-                  aria-label="Delete recording"
-                >
-                  <Trash2 className="w-6 h-6 text-rose-500" />
-                </Button>
-              </div>
+
+        {/* Empty State */}
+        {!isRecording && !isRecorded && (
+          <div className="flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500">
+            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+              <Mic className="w-8 h-8" />
             </div>
+            <p className="text-sm font-medium">Click the button below to start recording</p>
+            <p className="text-xs">Your audio will be visualized in real-time</p>
+          </div>
+        )}
+
+        {/* Status Overlay (Recording) */}
+        {isRecording && (
+          <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 bg-red-500/10 text-red-500 rounded-full animate-pulse">
+            <div className="w-2 h-2 rounded-full bg-red-500" />
+            <span className="text-xs font-bold uppercase tracking-wider">
+              {isPaused ? "Paused" : "Recording"}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Info & Timer */}
+      {(isRecording || isRecorded) && (
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+             <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="text-sm font-mono font-bold text-teal-600 dark:text-teal-400">
+                  {formatTime(isRecording ? timer : currentTime)}
+                </span>
+                {isRecorded && (
+                  <>
+                    <span className="text-slate-400">/</span>
+                    <span className="text-sm font-mono text-slate-500">
+                      {formatTime(duration)}
+                    </span>
+                  </>
+                )}
+             </div>
+             {isRecording && (
+               <span className="text-xs text-slate-500 dark:text-slate-400 animate-pulse">
+                 Speaking now...
+               </span>
+             )}
+          </div>
+          
+          {isRecorded && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
+              onClick={resetRecording}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Discard
+            </Button>
           )}
         </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-xl text-red-600 dark:text-red-400 text-sm">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </div>
+      )}
+
+      {/* Main Controls */}
+      <div className="flex items-center justify-center gap-4">
+        {!isRecording && !isRecorded ? (
+          <Button
+            size="lg"
+            className="h-16 w-16 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-xl shadow-teal-500/20 transition-all hover:scale-105 active:scale-95"
+            onClick={startRecording}
+          >
+            <Mic className="w-8 h-8 fill-current" />
+          </Button>
+        ) : isRecording ? (
+          <>
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-14 w-14 rounded-full border-2 border-slate-200 dark:border-slate-800"
+              onClick={togglePause}
+            >
+              {isPaused ? <Play className="w-6 h-6 fill-current" /> : <Pause className="w-6 h-6 fill-current" />}
+            </Button>
+            <Button
+              variant="destructive"
+              size="lg"
+              className="h-16 w-16 rounded-full shadow-xl shadow-red-500/20 animate-in zoom-in duration-300"
+              onClick={stopRecording}
+            >
+              <StopCircle className="w-8 h-8 fill-current" />
+            </Button>
+          </>
+        ) : (
+          <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-800 p-2 rounded-full border border-slate-200 dark:border-slate-700">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-12 w-12 rounded-full hover:bg-background"
+              onClick={() => {
+                wavesurferRef.current?.setTime(0);
+                wavesurferRef.current?.play();
+              }}
+            >
+              <RotateCcw className="w-5 h-5" />
+            </Button>
+            <Button
+              size="lg"
+              className="h-14 w-14 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-lg"
+              onClick={togglePlayPause}
+            >
+              {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
+            </Button>
+            <div className="w-12 h-12 flex items-center justify-center">
+               <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

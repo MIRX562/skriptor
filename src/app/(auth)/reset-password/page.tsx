@@ -88,7 +88,7 @@ export default function ResetPasswordPage() {
 
       // Redirect to login
       router.push("/auth/login");
-    } catch (error) {
+    } catch {
       toast.error("Error", {
         description:
           "There was a problem resetting your password. Please try again.",

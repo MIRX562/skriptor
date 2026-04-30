@@ -3,7 +3,6 @@
 
 import { db } from "@/db";
 import { transcriptions } from "@/db/schema";
-import { redis } from "@/lib/redis";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { randomUUID } from "crypto";

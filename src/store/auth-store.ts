@@ -44,7 +44,7 @@ export const useAuthStore = create<AuthState>()(
         isLoading: false,
         error: null,
 
-        login: async (email, password, remember = false) => {
+        login: async (email) => {
           set({ isLoading: true, error: null });
 
           try {
@@ -61,16 +61,16 @@ export const useAuthStore = create<AuthState>()(
             };
 
             set({ user, isAuthenticated: true, isLoading: false });
-          } catch (error) {
+          } catch (err) {
             set({
               error: "Invalid email or password. Please try again.",
               isLoading: false,
             });
-            throw error;
+            throw err;
           }
         },
 
-        signup: async (name, email, password) => {
+        signup: async () => {
           set({ isLoading: true, error: null });
 
           try {
@@ -115,7 +115,7 @@ export const useAuthStore = create<AuthState>()(
           }
         },
 
-        updatePassword: async (currentPassword, newPassword) => {
+        updatePassword: async () => {
           set({ isLoading: true, error: null });
 
           try {
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthState>()(
           }
         },
 
-        resetPassword: async (token, password) => {
+        resetPassword: async () => {
           set({ isLoading: true, error: null });
 
           try {
@@ -150,7 +150,7 @@ export const useAuthStore = create<AuthState>()(
           }
         },
 
-        sendPasswordResetEmail: async (email) => {
+        sendPasswordResetEmail: async () => {
           set({ isLoading: true, error: null });
 
           try {
@@ -167,7 +167,7 @@ export const useAuthStore = create<AuthState>()(
           }
         },
 
-        verifyEmail: async (token) => {
+        verifyEmail: async () => {
           set({ isLoading: true, error: null });
 
           try {
@@ -184,7 +184,7 @@ export const useAuthStore = create<AuthState>()(
           }
         },
 
-        checkVerificationStatus: async (email) => {
+        checkVerificationStatus: async () => {
           set({ isLoading: true, error: null });
 
           try {
@@ -205,7 +205,7 @@ export const useAuthStore = create<AuthState>()(
           }
         },
 
-        resendVerificationEmail: async (email) => {
+        resendVerificationEmail: async () => {
           set({ isLoading: true, error: null });
 
           try {
