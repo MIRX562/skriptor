@@ -1,0 +1,69 @@
+{
+  "landing": {
+    "header": {
+      "features": "Fitur",
+      "pricing": "Harga",
+      "testimonials": "Testimoni",
+      "faq": "FAQ",
+      "dashboard": "Dasbor",
+      "login": "Masuk",
+      "signup": "Daftar"
+    },
+    "hero": {
+      "badge": "Didukung oleh AI",
+      "titlePart1": "Ubah Suara menjadi Teks dengan ",
+      "titleHighlight": "Presisi",
+      "description": "Skriptor mengubah audio Anda menjadi transkripsi akurat dalam hitungan detik. Sempurna untuk rapat, wawancara, perkuliahan, dan lainnya.",
+      "getStarted": "Mulai Gratis",
+      "viewDemo": "Lihat Demo"
+    },
+    "features": {
+      "badge": "Fitur",
+      "title": "Semua yang Anda Butuhkan untuk Transkripsi Sempurna",
+      "description": "Fitur canggih kami membuat transkripsi audio menjadi mudah, akurat, dan efisien."
+    },
+    "howItWorks": {
+      "badge": "Cara Kerja",
+      "title": "Proses Sederhana, Hasil Luar Biasa",
+      "description": "Dapatkan transkripsi akurat dalam tiga langkah mudah",
+      "steps": {
+        "upload": {
+          "title": "Unggah Audio Anda",
+          "description": "Unggah file audio atau rekam langsung di browser Anda. Kami mendukung MP3, WAV, M4A, dan lainnya."
+        },
+        "process": {
+          "title": "Pemrosesan AI",
+          "description": "AI canggih kami menganalisis audio Anda, mengidentifikasi pembicara, dan mentranskripsikannya dengan akurasi tinggi."
+        },
+        "review": {
+          "title": "Tinjau & Ekspor",
+          "description": "Edit transkrip Anda jika perlu, lalu ekspor dalam berbagai format termasuk TXT, DOCX, dan SRT."
+        }
+      }
+    },
+    "testimonials": {
+      "badge": "Testimoni",
+      "title": "Apa Kata Pengguna Kami",
+      "description": "Bergabunglah dengan ribuan pengguna puas yang mempercayakan kebutuhan transkripsi mereka pada Skriptor"
+    },
+    "pricing": {
+      "badge": "Harga",
+      "title": "Harga Sederhana dan Transparan",
+      "description": "Pilih paket yang paling cocok untuk Anda dan tim Anda"
+    },
+    "faq": {
+      "badge": "FAQ",
+      "title": "Pertanyaan yang Sering Diajukan",
+      "description": "Semua yang perlu Anda ketahui tentang Skriptor"
+    },
+    "cta": {
+      "title": "Siap Mengubah Audio Anda menjadi Teks?",
+      "description": "Bergabunglah dengan ribuan pengguna puas yang menghemat waktu dan meningkatkan produktivitas dengan Skriptor.",
+      "getStarted": "Mulai Gratis",
+      "contactSales": "Hubungi Penjualan"
+    },
+    "footer": {
+      "description": "Ubah suara menjadi teks dengan presisi dan mudah."
+    }
+  }
+}

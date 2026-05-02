@@ -30,9 +30,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { WorkInProgressBanner } from "@/components/work-in-progress";
+import { LiteTranscriptionForm } from "./lite-transcription-form";
 
-export function LandingPage() {
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -49,7 +49,7 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
-      <LandingHeader />
+      <LandingHeader locale={locale} dict={dict.header} />
       <WorkInProgressBanner />
 
       {/* Hero Section */}
@@ -66,28 +66,27 @@ export function LandingPage() {
             >
               <Badge className="w-fit bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30 transition-colors">
                 <Sparkles className="mr-1 h-3 w-3" />
-                Powered by AI
+                {dict.hero.badge}
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
-                Transform Speech to Text with{" "}
+                {dict.hero.titlePart1}
                 <span className="text-teal-600 dark:text-teal-400">
-                  Precision
+                  {dict.hero.titleHighlight}
                 </span>
               </h1>
               <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-[600px]">
-                Skriptor converts your audio into accurate transcriptions in
-                seconds. Perfect for meetings, interviews, lectures, and more.
+                {dict.hero.description}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mt-2">
                 <Button
                   size="lg"
                   className="bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700"
                 >
-                  Get Started Free
+                  {dict.hero.getStarted}
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="outline">
-                  View Demo
+                  {dict.hero.viewDemo}
                   <Play className="ml-1 h-4 w-4" />
                 </Button>
               </div>
@@ -131,40 +130,9 @@ export function LandingPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="relative mx-auto lg:mr-0 w-full max-w-[600px] aspect-video rounded-xl overflow-hidden shadow-2xl"
+              className="relative mx-auto lg:mr-0 w-full max-w-[600px] z-10 mt-8 lg:mt-0"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 to-slate-900/40 z-10" />
-              <div
-                className="absolute inset-0 flex items-center justify-center z-20 cursor-pointer"
-                onClick={() => setIsVideoPlaying(true)}
-              >
-                {!isVideoPlaying && (
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center justify-center h-16 w-16 rounded-full bg-white/90 dark:bg-slate-900/90 shadow-lg"
-                  >
-                    <Play className="h-6 w-6 text-teal-600 dark:text-teal-400 ml-1" />
-                  </motion.div>
-                )}
-              </div>
-              {isVideoPlaying ? (
-                <iframe
-                  className="absolute inset-0 w-full h-full"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                  title="Demo Video"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              ) : (
-                <Image
-                  src="/main-text.png?height=400&width=600&text=Skriptor+Demo"
-                  alt="Demo Video Thumbnail"
-                  width={600}
-                  height={400}
-                  className="w-full h-full object-cover"
-                />
-              )}
+              <LiteTranscriptionForm />
             </motion.div>
           </div>
         </div>
@@ -207,14 +175,13 @@ export function LandingPage() {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                Features
+                {dict.features.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                Everything You Need for Perfect Transcriptions
+                {dict.features.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                Our powerful features make transcribing audio effortless,
-                accurate, and efficient.
+                {dict.features.description}
               </p>
             </motion.div>
           </div>
@@ -309,13 +276,13 @@ export function LandingPage() {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                How It Works
+                {dict.howItWorks.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                Simple Process, Powerful Results
+                {dict.howItWorks.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                Get accurate transcriptions in three easy steps
+                {dict.howItWorks.description}
               </p>
             </motion.div>
           </div>
@@ -394,14 +361,13 @@ export function LandingPage() {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                Testimonials
+                {dict.testimonials.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                What Our Users Say
+                {dict.testimonials.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                Join thousands of satisfied users who trust Skriptor for their
-                transcription needs
+                {dict.testimonials.description}
               </p>
             </motion.div>
           </div>
@@ -489,13 +455,13 @@ export function LandingPage() {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                Pricing
+                {dict.pricing.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                Simple, Transparent Pricing
+                {dict.pricing.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                Choose the plan that works best for you and your team
+                {dict.pricing.description}
               </p>
             </motion.div>
           </div>
@@ -631,13 +597,13 @@ export function LandingPage() {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                FAQ
+                {dict.faq.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                Frequently Asked Questions
+                {dict.faq.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                Everything you need to know about Skriptor
+                {dict.faq.description}
               </p>
             </motion.div>
           </div>
@@ -715,18 +681,17 @@ export function LandingPage() {
               className="max-w-[800px]"
             >
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-white">
-                Ready to Transform Your Audio into Text?
+                {dict.cta.title}
               </h2>
               <p className="text-lg text-teal-100 mb-8">
-                Join thousands of satisfied users who save time and improve
-                productivity with Skriptor.
+                {dict.cta.description}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   size="lg"
                   className="bg-white text-teal-700 hover:bg-teal-50"
                 >
-                  Get Started Free
+                  {dict.cta.getStarted}
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
                 <Button
@@ -734,7 +699,7 @@ export function LandingPage() {
                   variant="outline"
                   className="text-white border-white hover:bg-teal-600/20"
                 >
-                  Contact Sales
+                  {dict.cta.contactSales}
                 </Button>
               </div>
             </motion.div>
@@ -752,7 +717,7 @@ export function LandingPage() {
                 <span className="font-medium text-lg text-white">Skriptor</span>
               </div>
               <p className="text-slate-400 mb-4">
-                Transform speech to text with precision and ease.
+                {dict.footer.description}
               </p>
               <div className="flex space-x-4">
                 <Link

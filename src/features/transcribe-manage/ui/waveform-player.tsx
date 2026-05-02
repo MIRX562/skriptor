@@ -94,12 +94,11 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
           // Timeline plugin
           TimelinePlugin.create({
             container: timelineRef.current!,
-            primaryColor: "#64748b", // slate-500
-            secondaryColor: "#94a3b8", // slate-400
-            primaryFontColor: "#64748b",
-            secondaryFontColor: "#94a3b8",
-            fontFamily: "Geist Mono, monospace",
-            fontSize: 10,
+            style: {
+              color: "#64748b",
+              fontFamily: "Geist Mono, monospace",
+              fontSize: "10px",
+            },
           }),
           // Hover plugin for a nice preview effect
           HoverPlugin.create({
@@ -115,7 +114,10 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
       wavesurferRef.current = ws;
 
       // Load audio
-      ws.load(audioUrl);
+      ws.load(audioUrl).catch((err) => {
+        if (err && err.name === "AbortError") return;
+        console.error("WaveSurfer load error:", err);
+      });
 
       // Event listeners
       ws.on("ready", () => {
@@ -138,7 +140,8 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
         onPauseRef.current?.();
       });
 
-      ws.on("error", (e) => {
+      ws.on("error", (e: Error | any) => {
+        if (e && e.name === "AbortError") return;
         console.error("WaveSurfer error:", e);
         setError("Failed to load audio");
         setIsLoading(false);
@@ -150,7 +153,11 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
       });
 
       return () => {
-        ws.destroy();
+        try {
+          ws.destroy();
+        } catch (err) {
+          // Ignore AbortError when destroying during fetch
+        }
       };
     }, [audioUrl]); // Only re-initialize if audioUrl changes
 

@@ -1,77 +1,109 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useDashboardStore } from "../store/dashboard-store";
+import { useMemo } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { useTranscriptionList } from "@/features/transcribe-manage/model/use-transcription-list";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const SHORT_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
 export function TranscriptionStats() {
-  const { stats, isLoading } = useDashboardStore();
-  const chartRef = useRef<HTMLDivElement>(null);
+  const { data: transcriptions, isLoading } = useTranscriptionList();
 
-  useEffect(() => {
-    if (isLoading || !chartRef.current) return;
+  const chartData = useMemo(() => {
+    if (!transcriptions || transcriptions.length === 0) return [];
 
-    // In a real app, this would use a charting library like Chart.js or Recharts
-    // For now, we'll create a simple bar chart with CSS
-    const renderChart = () => {
-      const container = chartRef.current;
-      if (!container) return;
+    // Count transcriptions per month, last 7 calendar months
+    const now = new Date();
+    const months: { month: string; count: number; year: number; monthIndex: number }[] = [];
 
-      // Clear previous content
-      container.innerHTML = "";
-
-      // Create chart container
-      const chartContainer = document.createElement("div");
-      chartContainer.className = "flex items-end h-40 gap-2 mt-4";
-
-      // Get max value for scaling
-      const maxCount = Math.max(
-        ...stats.transcriptionsByMonth.map((item) => item.count)
-      );
-
-      // Create bars
-      stats.transcriptionsByMonth.forEach((item) => {
-        const barContainer = document.createElement("div");
-        barContainer.className = "flex flex-col items-center flex-1";
-
-        const bar = document.createElement("div");
-        const height = (item.count / maxCount) * 100;
-        bar.className =
-          "w-full bg-teal-500 dark:bg-teal-600 rounded-t transition-all duration-500";
-        bar.style.height = `${height}%`;
-
-        const label = document.createElement("div");
-        label.className = "text-xs mt-2 text-muted-foreground";
-        label.textContent = item.month;
-
-        const value = document.createElement("div");
-        value.className = "text-xs font-medium";
-        value.textContent = item.count.toString();
-
-        barContainer.appendChild(value);
-        barContainer.appendChild(bar);
-        barContainer.appendChild(label);
-        chartContainer.appendChild(barContainer);
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        month: SHORT_MONTHS[d.getMonth()],
+        count: 0,
+        year: d.getFullYear(),
+        monthIndex: d.getMonth(),
       });
+    }
 
-      container.appendChild(chartContainer);
-    };
+    transcriptions.forEach((t) => {
+      if (!t.createdAt) return;
+      const d = new Date(t.createdAt);
+      const entry = months.find(
+        (m) => m.monthIndex === d.getMonth() && m.year === d.getFullYear()
+      );
+      if (entry) entry.count++;
+    });
 
-    renderChart();
-  }, [stats.transcriptionsByMonth, isLoading]);
+    return months.map(({ month, count }) => ({ month, count }));
+  }, [transcriptions]);
 
   if (isLoading) {
     return (
-      <div className="h-40 flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">
-          Loading stats...
-        </div>
+      <div className="h-48 flex items-center justify-center px-4">
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
+
+  if (chartData.length === 0 || chartData.every((d) => d.count === 0)) {
+    return (
+      <div className="h-48 flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">No data yet</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <div ref={chartRef} className="w-full"></div>
+    <div className="h-48 w-full px-2 pt-4">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+          <XAxis
+            dataKey="month"
+            tick={{ fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            allowDecimals={false}
+            tick={{ fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
+          />
+          <Tooltip
+            content={({ active, payload, label }) => {
+              if (!active || !payload?.length) return null;
+              return (
+                <div className="rounded-md border bg-popover px-3 py-2 text-sm shadow-md">
+                  <p className="font-medium">{label}</p>
+                  <p className="text-muted-foreground">
+                    {payload[0].value} transcription{payload[0].value !== 1 ? "s" : ""}
+                  </p>
+                </div>
+              );
+            }}
+          />
+          <Bar
+            dataKey="count"
+            fill="currentColor"
+            radius={[4, 4, 0, 0]}
+            className="fill-teal-500 dark:fill-teal-600"
+          />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }

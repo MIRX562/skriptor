@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -27,24 +27,6 @@ export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const email = searchParams.get("email") || "";
-
-  useEffect(() => {
-    if (token) {
-      verifyEmail();
-    }
-  }, [token, verifyEmail]);
-
-  // Countdown for resend button
-  useEffect(() => {
-    if (countdown > 0 && !canResend) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (countdown === 0 && !canResend) {
-      setCanResend(true);
-    }
-  }, [countdown, canResend]);
 
   // Check if the user is already verified
   const checkVerificationStatus = useCallback(async () => {
@@ -106,6 +88,24 @@ export default function VerifyEmailPage() {
       });
     }
   }, [toast]);
+
+  useEffect(() => {
+    if (token) {
+      verifyEmail();
+    }
+  }, [token, verifyEmail]);
+
+  // Countdown for resend button
+  useEffect(() => {
+    if (countdown > 0 && !canResend) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0 && !canResend) {
+      setCanResend(true);
+    }
+  }, [countdown, canResend]);
 
   // Check verification status when component mounts
   useEffect(() => {

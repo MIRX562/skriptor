@@ -6,10 +6,11 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Menu, SquareArrowOutUpRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import Logo from "@/components/logo";
 import { authClient } from "@/lib/auth-client";
 
-export function LandingHeader() {
+export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [session, setSession] = useState<{
@@ -76,25 +77,25 @@ export function LandingHeader() {
             href="#"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            Features
+            {dict.features}
           </Link>
           <Link
             href="#"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            Pricing
+            {dict.pricing}
           </Link>
           <Link
             href="#"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            Testimonials
+            {dict.testimonials}
           </Link>
           <Link
             href="#"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            FAQ
+            {dict.faq}
           </Link>
         </nav>
 
@@ -103,7 +104,7 @@ export function LandingHeader() {
             {session ? (
               <Link href="/dashboard">
                 <Button variant="outline" className="w-full justify-center">
-                  Dashboard
+                  {dict.dashboard}
                   <SquareArrowOutUpRight />
                 </Button>
               </Link>
@@ -111,18 +112,19 @@ export function LandingHeader() {
               <>
                 <Link href="/sign-in">
                   <Button variant="outline" className="w-full justify-center">
-                    Log in
+                    {dict.login}
                   </Button>
                 </Link>
                 <Link href="/sign-up">
                   <Button className="w-full justify-center bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700">
-                    Sign up
+                    {dict.signup}
                   </Button>
                 </Link>
               </>
             )}
           </div>
 
+          <LanguageSwitcher currentLocale={locale} />
           <ModeToggle />
 
           <Button

@@ -15,7 +15,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Minus, Plus, Upload, X } from "lucide-react";
+import { Minus, Plus, Upload, X, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AudioInput from "@/components/ui/audio-input";
 import {
   Command,
@@ -38,11 +39,15 @@ import { Label } from "@/components/ui/label";
 import { languages } from "../const/supported-languages";
 import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
 
+type TranscriptionUploadValues = z.infer<typeof transcriptionUploadSchema>;
+
 export default function TranscriptionRecordForm() {
   const [file, setFile] = useState<File | null>(null);
-  const form = useForm<z.infer<typeof transcriptionUploadSchema>>({
+  const router = useRouter();
+  const form = useForm<TranscriptionUploadValues>({
     resolver: zodResolver(transcriptionUploadSchema),
     defaultValues: {
+      title: "",
       language: "default",
       model: "medium",
       isSpeakerDiarized: false,
@@ -50,7 +55,7 @@ export default function TranscriptionRecordForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof transcriptionUploadSchema>) {
+  async function onSubmit(values: TranscriptionUploadValues) {
     if (!file) {
       toast.error("Please record audio to upload.");
       return;
@@ -74,21 +79,29 @@ export default function TranscriptionRecordForm() {
         return;
       }
       toast.success("Transcription started successfully.");
-      // Optionally redirect or reset form here
+      router.push("/dashboard");
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
     }
   }
 
+  const { isSubmitting } = form.formState;
   const speakerEnabled = form.watch("isSpeakerDiarized");
-  // TODO fix the audio recorder input component
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 md:space-y-8 mx-auto"
-      >
+    <>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
+          <Loader2 className="h-12 w-12 text-teal-600 animate-spin mb-4" />
+          <h2 className="text-xl font-semibold">Creating transcription job...</h2>
+          <p className="text-muted-foreground mt-2">Uploading audio and preparing models</p>
+        </div>
+      )}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4 md:space-y-8 mx-auto"
+        >
         <FormField
           control={form.control}
           name="file"
@@ -101,6 +114,9 @@ export default function TranscriptionRecordForm() {
                   onValueChange={(newFile) => {
                     setFile(newFile ?? null);
                     field.onChange(newFile ?? null);
+                    if (newFile && !form.getValues("title")) {
+                      form.setValue("title", `Recording ${new Date().toLocaleString()}`, { shouldValidate: true });
+                    }
                   }}
                 />
               </FormControl>
@@ -133,6 +149,7 @@ export default function TranscriptionRecordForm() {
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
+                      type="button"
                       variant="outline"
                       role="combobox"
                       className={cn(
@@ -353,13 +370,15 @@ export default function TranscriptionRecordForm() {
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             className="flex justify-center gap-2 bg-teal-600 hover:bg-teal-500 dark:bg-teal-400 dark:hover:bg-teal-300"
           >
             <Upload className="h-4 w-4" />
-            Start Transcription
+            {isSubmitting ? "Starting..." : "Start Transcription"}
           </Button>
         </div>
       </form>
     </Form>
+    </>
   );
 }

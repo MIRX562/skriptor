@@ -156,7 +156,7 @@ interface TranscriptionJobPayload {
 }
 ```
 
-### Enqueueing (in `initiateJob`)
+### Enqueueing (in the upload route handler)
 ```ts
 await transcriptionQueue.add("transcribe", payload, {
   jobId: transcriptionId, // idempotent — prevents duplicate jobs
@@ -309,16 +309,47 @@ Auth-guarded. Verify transcription ownership before updating. Use Drizzle batch 
 
 ---
 
+## Transcription List API
+
+`GET /api/transcriptions`
+
+Returns all transcriptions for the authenticated user ordered by `createdAt desc`.
+
+```ts
+// Response
+{ success: true, data: TranscriptionListItem[] }
+```
+
+Auth-guarded. No body. Used by `useTranscriptionList()` TanStack Query hook.
+
+---
+
+## Transcription Detail API
+
+`GET /api/transcription/[id]`
+
+Returns a single transcription with its segments for the authenticated user.
+
+```ts
+// Response
+{ success: true, data: { ...transcription, segments: TranscriptionSegment[] } }
+```
+
+Auth-guarded + ownership check. Segments ordered by `startTime asc`. Used by `useTranscription(id)` TanStack Query hook.
+
+---
+
 ## Known Tech Debt (Priority Order)
 
 1. **`redis.ts` imports `Queue` from `bullmq` but never uses it** — remove the import; the Queue should live in `lib/queue.ts`
-2. **Both Zustand stores use hardcoded mock data** — `transcription-list-store.ts` and `transcription-view-store.ts` must be wired to real server actions
-3. **`query.ts` uses stale schema references** — `transcriptions.uuid` → `transcriptions.id`; `speaker` and `speakers` relations don't exist
-4. **Audio player hardcodes `/sample1.mp3`** — must use presigned URL from `GET /api/transcription/[id]/audio`
+2. ~~**Both Zustand stores use hardcoded mock data**~~ — ✅ RESOLVED: stores wired to real API via TanStack Query hooks
+3. ~~**`query.ts` uses stale schema references**~~ — ✅ RESOLVED: `query.ts` deleted; hooks use correct schema
+4. ~~**Audio player hardcodes `/sample1.mp3`**~~ — ✅ RESOLVED: uses presigned URL from `GET /api/transcription/[id]/audio`
 5. **`next.config.ts` suppresses all TS and lint errors** — resolve actual errors, then remove the flags
 6. **`lib/minio.ts`** — legacy client, must not be used in new code; delete after storage migration
-7. **"Save Changes" and "Delete Transcription" buttons are unimplemented** — need `PATCH /segments` and `DELETE /api/transcription/[id]` API routes
+7. ~~**"Save Changes" and "Delete Transcription" buttons are unimplemented**~~ — ✅ RESOLVED: wired to `useSaveSegments` and `useDeleteTranscription` mutations
 8. **`numberOfSpeaker` schema inconsistency** — Drizzle schema has `.notNull()` but SQL migration omitted `NOT NULL` — run a new migration to align
+9. **`features/transcibe-upload/server/initiate-job.ts`** — dead code file; may be deleted (upload handled entirely by the API route)
 
 ---
 

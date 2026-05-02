@@ -1,4 +1,7 @@
-"use server";
+// NOTE: This file is legacy dead code. The upload flow is handled entirely by
+// POST /api/transcribe-upload (src/app/api/transcribe-upload/route.ts).
+// The upload forms call that API route directly via fetch().
+// This file is kept for reference and may be deleted in a future cleanup pass.
 
 
 import { db } from "@/db";

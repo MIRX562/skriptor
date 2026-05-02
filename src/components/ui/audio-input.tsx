@@ -41,7 +41,14 @@ export const AudioInput: React.FC<AudioInputProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const recordRef = useRef<ReturnType<typeof RecordPlugin.create> | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const onValueChangeRef = useRef(onValueChange);
   const [timer, setTimer] = useState(0);
+
+  // Update ref when onValueChange changes
+  useEffect(() => {
+    onValueChangeRef.current = onValueChange;
+  }, [onValueChange]);
 
   // Initialize WaveSurfer and Record Plugin
   const initWaveSurfer = useCallback(() => {
@@ -72,8 +79,25 @@ export const AudioInput: React.FC<AudioInputProps> = ({
         blob,
         `recording_${Date.now()}.${mimeType.includes("webm") ? "webm" : "wav"}`
       );
-      onValueChange(file);
+      onValueChangeRef.current?.(file);
       setIsRecorded(true);
+
+      // Clean up previous URL if it exists
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+      }
+      
+      // Create new URL and load it into WaveSurfer for playback
+      const objectUrl = URL.createObjectURL(blob);
+      objectUrlRef.current = objectUrl;
+      ws.load(objectUrl).catch((err) => {
+        if (err && err.name === "AbortError") return;
+        console.error("WaveSurfer load error:", err);
+      });
+    });
+
+    // We only want to set duration after the audio has been fully loaded into WaveSurfer
+    ws.on("ready", () => {
       setDuration(ws.getDuration());
     });
 
@@ -88,12 +112,19 @@ export const AudioInput: React.FC<AudioInputProps> = ({
 
     wavesurferRef.current = ws;
     recordRef.current = record;
-  }, [onValueChange]);
+  }, []); // Remove onValueChange from dependencies
 
   useEffect(() => {
     initWaveSurfer();
     return () => {
-      wavesurferRef.current?.destroy();
+      try {
+        wavesurferRef.current?.destroy();
+      } catch (err) {
+        // Ignore AbortError when destroying during fetch
+      }
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+      }
     };
   }, [initWaveSurfer]);
 
@@ -138,7 +169,12 @@ export const AudioInput: React.FC<AudioInputProps> = ({
     setIsPlaying(false);
     setTimer(0);
     setCurrentTime(0);
-    onValueChange(null);
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    setDuration(0);
+    onValueChangeRef.current?.(null);
     initWaveSurfer();
   };
 
@@ -212,6 +248,7 @@ export const AudioInput: React.FC<AudioInputProps> = ({
           
           {isRecorded && (
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               className="text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
@@ -236,6 +273,7 @@ export const AudioInput: React.FC<AudioInputProps> = ({
       <div className="flex items-center justify-center gap-4">
         {!isRecording && !isRecorded ? (
           <Button
+            type="button"
             size="lg"
             className="h-16 w-16 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-xl shadow-teal-500/20 transition-all hover:scale-105 active:scale-95"
             onClick={startRecording}
@@ -245,6 +283,7 @@ export const AudioInput: React.FC<AudioInputProps> = ({
         ) : isRecording ? (
           <>
             <Button
+              type="button"
               variant="outline"
               size="lg"
               className="h-14 w-14 rounded-full border-2 border-slate-200 dark:border-slate-800"
@@ -253,6 +292,7 @@ export const AudioInput: React.FC<AudioInputProps> = ({
               {isPaused ? <Play className="w-6 h-6 fill-current" /> : <Pause className="w-6 h-6 fill-current" />}
             </Button>
             <Button
+              type="button"
               variant="destructive"
               size="lg"
               className="h-16 w-16 rounded-full shadow-xl shadow-red-500/20 animate-in zoom-in duration-300"
@@ -264,6 +304,7 @@ export const AudioInput: React.FC<AudioInputProps> = ({
         ) : (
           <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-800 p-2 rounded-full border border-slate-200 dark:border-slate-700">
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               className="h-12 w-12 rounded-full hover:bg-background"
@@ -275,6 +316,7 @@ export const AudioInput: React.FC<AudioInputProps> = ({
               <RotateCcw className="w-5 h-5" />
             </Button>
             <Button
+              type="button"
               size="lg"
               className="h-14 w-14 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-lg"
               onClick={togglePlayPause}

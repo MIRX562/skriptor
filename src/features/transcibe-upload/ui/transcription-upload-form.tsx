@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { CloudUpload, Minus, Paperclip, Plus, Upload, X } from "lucide-react";
+import { Upload, X, AudioLines, FileAudio, CheckCircle2, Loader2, CloudUpload, Minus, Paperclip, Plus } from "lucide-react";
 import {
   FileInput,
   FileUploader,
@@ -44,10 +44,27 @@ import { Label } from "@/components/ui/label";
 import { languages } from "../const/supported-languages";
 import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
 import { useRouter } from "next/navigation";
+import { WaveformPlayer } from "../../transcribe-manage/ui/waveform-player";
+
+type TranscriptionUploadValues = z.infer<typeof transcriptionUploadSchema>;
 
 export default function TranscriptionUploadForm() {
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const router = useRouter();
+
+  // Manage object URL lifecycle
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [file]);
 
   const dropZoneConfig = {
     maxFiles: 1,
@@ -58,9 +75,10 @@ export default function TranscriptionUploadForm() {
     },
   };
 
-  const form = useForm<z.infer<typeof transcriptionUploadSchema>>({
+  const form = useForm<TranscriptionUploadValues>({
     resolver: zodResolver(transcriptionUploadSchema),
     defaultValues: {
+      title: "",
       language: "default",
       model: "medium",
       isSpeakerDiarized: false,
@@ -68,7 +86,7 @@ export default function TranscriptionUploadForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof transcriptionUploadSchema>) {
+  async function onSubmit(values: TranscriptionUploadValues) {
     // Trigger the mutation which will handle validation and notifications
     mutation.mutate(values);
   }
@@ -77,7 +95,7 @@ export default function TranscriptionUploadForm() {
   const loadingToastId = useRef<number | string | null>(null);
 
   const uploadFn = async (
-    values: z.infer<typeof transcriptionUploadSchema>
+    values: TranscriptionUploadValues
   ) => {
     if (!file) {
       throw new Error("Please select a file to upload.");
@@ -106,10 +124,7 @@ export default function TranscriptionUploadForm() {
   const mutation = useMutation({
     mutationFn: uploadFn,
     onMutate: () => {
-      // show loading toast and keep its id
-      loadingToastId.current = toast.loading(
-        "Uploading audio and starting transcription..."
-      );
+      // Overlay will be shown via isPending state
     },
     onError: (err: unknown) => {
       // clear loading toast then show error
@@ -124,8 +139,6 @@ export default function TranscriptionUploadForm() {
       toast.error(message);
     },
     onSuccess: () => {
-      if (loadingToastId.current)
-        toast.dismiss(loadingToastId.current as number | string);
       toast.success("Transcription started successfully.");
       router.push("/dashboard");
     },
@@ -134,8 +147,16 @@ export default function TranscriptionUploadForm() {
   const speakerEnabled = form.watch("isSpeakerDiarized");
 
   return (
-    <Form {...form}>
-      <form
+    <>
+      {mutation.isPending && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
+          <Loader2 className="h-12 w-12 text-teal-600 animate-spin mb-4" />
+          <h2 className="text-xl font-semibold">Creating transcription job...</h2>
+          <p className="text-muted-foreground mt-2">Uploading audio and preparing models</p>
+        </div>
+      )}
+      <Form {...form}>
+        <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 md:space-y-8 max-w-3xl mx-auto"
       >
@@ -149,16 +170,13 @@ export default function TranscriptionUploadForm() {
                 <FileUploader
                   value={file ? [file] : []}
                   onValueChange={(selectedFiles) => {
-                    setFile(
-                      selectedFiles && selectedFiles.length > 0
-                        ? selectedFiles[0]
-                        : null
-                    );
-                    field.onChange(
-                      selectedFiles && selectedFiles.length > 0
-                        ? selectedFiles[0]
-                        : null
-                    );
+                    const newFile = selectedFiles && selectedFiles.length > 0 ? selectedFiles[0] : null;
+                    setFile(newFile);
+                    field.onChange(newFile);
+                    if (newFile && !form.getValues("title")) {
+                      const titleName = newFile.name.replace(/\.[^/.]+$/, "");
+                      form.setValue("title", titleName, { shouldValidate: true });
+                    }
                   }}
                   dropzoneOptions={dropZoneConfig}
                   className="relative rounded-lg p-2"
@@ -195,6 +213,12 @@ export default function TranscriptionUploadForm() {
             </FormItem>
           )}
         />
+        {previewUrl && (
+          <div className="w-full mt-4">
+            <Label className="mb-2 block">Audio Preview</Label>
+            <WaveformPlayer audioUrl={previewUrl} />
+          </div>
+        )}
         <FormField
           control={form.control}
           name="title"
@@ -217,6 +241,7 @@ export default function TranscriptionUploadForm() {
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
+                      type="button"
                       variant="outline"
                       role="combobox"
                       className={cn(
@@ -443,7 +468,8 @@ export default function TranscriptionUploadForm() {
             Start Transcription
           </Button>
         </div>
-      </form>
-    </Form>
+        </form>
+      </Form>
+    </>
   );
 }

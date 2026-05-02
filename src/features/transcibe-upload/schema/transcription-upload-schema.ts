@@ -9,7 +9,7 @@ export const transcriptionUploadSchema = z
     language: z.string(),
     model: z.enum(["small", "medium", "large"]),
     isSpeakerDiarized: z.boolean(),
-    numberOfSpeaker: z.coerce.number().min(1).max(10),
+    numberOfSpeaker: z.number().min(1).max(10),
   })
   .refine(
     (data) =>

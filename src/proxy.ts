@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
@@ -6,7 +7,7 @@ const publicRoutes = ["/", "/sign-in", "/sign-up"];
 const authRoutes = ["/sign-in", "/sign-up"];
 const protectedRoutes = ["/dashboard", "/profile", "/settings"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = getSessionCookie(request);
 
@@ -28,5 +29,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [...publicRoutes, ...authRoutes, ...protectedRoutes],
+  matcher: ["/", "/sign-in", "/sign-up", "/dashboard", "/profile", "/settings"],
 };

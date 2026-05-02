@@ -1,0 +1,69 @@
+{
+  "landing": {
+    "header": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "testimonials": "Testimonials",
+      "faq": "FAQ",
+      "dashboard": "Dashboard",
+      "login": "Log in",
+      "signup": "Sign up"
+    },
+    "hero": {
+      "badge": "Powered by AI",
+      "titlePart1": "Transform Speech to Text with ",
+      "titleHighlight": "Precision",
+      "description": "Skriptor converts your audio into accurate transcriptions in seconds. Perfect for meetings, interviews, lectures, and more.",
+      "getStarted": "Get Started Free",
+      "viewDemo": "View Demo"
+    },
+    "features": {
+      "badge": "Features",
+      "title": "Everything You Need for Perfect Transcriptions",
+      "description": "Our powerful features make transcribing audio effortless, accurate, and efficient."
+    },
+    "howItWorks": {
+      "badge": "How It Works",
+      "title": "Simple Process, Powerful Results",
+      "description": "Get accurate transcriptions in three easy steps",
+      "steps": {
+        "upload": {
+          "title": "Upload Your Audio",
+          "description": "Upload audio files or record directly in your browser. We support MP3, WAV, M4A, and more."
+        },
+        "process": {
+          "title": "AI Processing",
+          "description": "Our advanced AI analyzes your audio, identifies speakers, and transcribes with high accuracy."
+        },
+        "review": {
+          "title": "Review & Export",
+          "description": "Edit your transcript if needed, then export in various formats including TXT, DOCX, and SRT."
+        }
+      }
+    },
+    "testimonials": {
+      "badge": "Testimonials",
+      "title": "What Our Users Say",
+      "description": "Join thousands of satisfied users who trust Skriptor for their transcription needs"
+    },
+    "pricing": {
+      "badge": "Pricing",
+      "title": "Simple, Transparent Pricing",
+      "description": "Choose the plan that works best for you and your team"
+    },
+    "faq": {
+      "badge": "FAQ",
+      "title": "Frequently Asked Questions",
+      "description": "Everything you need to know about Skriptor"
+    },
+    "cta": {
+      "title": "Ready to Transform Your Audio into Text?",
+      "description": "Join thousands of satisfied users who save time and improve productivity with Skriptor.",
+      "getStarted": "Get Started Free",
+      "contactSales": "Contact Sales"
+    },
+    "footer": {
+      "description": "Transform speech to text with precision and ease."
+    }
+  }
+}

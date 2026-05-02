@@ -1,6 +1,10 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
 
 export const s3 = new S3Client({
   endpoint: process.env.S3_ENDPOINT!,
@@ -31,4 +35,20 @@ export async function getPresignedUrl(key: string, expiresIn: number = 3600): Pr
     Key: key,
   });
   return await getSignedUrl(s3, command, { expiresIn });
+}
+
+/** Delete an audio object from S3. Silently ignores NoSuchKey errors. */
+export async function deleteAudio(key: string): Promise<void> {
+  try {
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: S3_BUCKET,
+        Key: key,
+      })
+    );
+  } catch (err) {
+    // S3 DeleteObject never throws for missing keys, but guard anyway
+    const code = (err as { Code?: string; name?: string }).Code ?? (err as { name?: string }).name;
+    if (code !== "NoSuchKey") throw err;
+  }
 }

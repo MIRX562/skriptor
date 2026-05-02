@@ -1,18 +1,19 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { getTranscriptionById } from "../model/query";
 import { formatTime } from "@/lib/utils";
+import type { TranscriptionData } from "../model/use-transcription";
 
-// Define the interface for a transcription segment
+// Defines the shape of a segment as used in the editor UI.
+// Sourced from API data via `initializeFromData`, then mutated locally during editing.
 export interface TranscriptionSegment {
   id: string;
   speaker: string;
   text: string;
-  start: number; // in milliseconds
-  end: number; // in milliseconds
+  start: number; // milliseconds
+  end: number;   // milliseconds
 }
 
-// Define the interface for transcription metadata
+// Derived UI metadata for display purposes.
 export interface TranscriptionMetadata {
   id: string;
   title: string;
@@ -25,8 +26,8 @@ export interface TranscriptionMetadata {
   speakers?: number;
 }
 
-interface TranscriptionState {
-  // Transcription data
+interface TranscriptionViewState {
+  // Data (local editable copy hydrated from TanStack Query)
   segments: TranscriptionSegment[];
   metadata: TranscriptionMetadata | null;
 
@@ -42,7 +43,10 @@ interface TranscriptionState {
   searchResults: number[];
   currentResultIndex: number;
 
-  // Actions
+  // Hydration — called by TranscriptionView once TanStack Query resolves
+  initializeFromData: (data: TranscriptionData) => void;
+
+  // Segment editing
   setSegments: (segments: TranscriptionSegment[]) => void;
   updateSegment: (
     index: number,
@@ -52,31 +56,31 @@ interface TranscriptionState {
 
   setMetadata: (metadata: TranscriptionMetadata) => void;
 
+  // UI toggles
   setIsEditing: (isEditing: boolean) => void;
   setIsCopied: (isCopied: boolean) => void;
   setEditingSpeakerId: (id: string | null) => void;
 
+  // Search controls
   setShowSearch: (showSearch: boolean) => void;
   setSearchTerm: (term: string) => void;
   setReplaceTerm: (term: string) => void;
   setSearchResults: (results: number[]) => void;
   setCurrentResultIndex: (index: number) => void;
 
+  // Derived computations
   getFullTranscript: () => string;
   performSearch: () => number[];
   replaceCurrentOccurrence: () => void;
   replaceAllOccurrences: () => void;
   navigateSearchResults: (direction: "next" | "prev") => void;
-  loadTranscription: (id: string) => Promise<void>;
 }
 
-export const useTranscriptionStore = create<TranscriptionState>()(
+export const useTranscriptionStore = create<TranscriptionViewState>()(
   devtools(
     (set, get) => ({
-      // Initial state
       segments: [],
       metadata: null,
-
 
       isEditing: false,
       isCopied: false,
@@ -88,8 +92,49 @@ export const useTranscriptionStore = create<TranscriptionState>()(
       searchResults: [],
       currentResultIndex: -1,
 
-      // Actions for updating state
+      // Hydrate local state from the API response (called by the component)
+      initializeFromData: (data: TranscriptionData) => {
+        const md = (data.metadata as { originalFilename?: string; durationSeconds?: number }) ?? {};
+
+        const metadata: TranscriptionMetadata = {
+          id: data.id,
+          title: md.originalFilename ?? data.title ?? "Untitled",
+          date: data.createdAt
+            ? new Date(data.createdAt).toLocaleDateString()
+            : new Date().toLocaleDateString(),
+          duration: md.durationSeconds
+            ? `${Math.floor(md.durationSeconds / 60)}:${Math.floor(md.durationSeconds % 60).toString().padStart(2, "0")}`
+            : "00:00",
+          summary: data.summary ?? "",
+          status:
+            data.status === "processing" || data.status === "queued"
+              ? "in_progress"
+              : (data.status as "completed" | "failed"),
+          progress: 100,
+          mode:
+            data.model === "small"
+              ? "fast"
+              : data.model === "large"
+                ? "super"
+                : "medium",
+          speakers: data.numberOfSpeaker ?? 1,
+        };
+
+        const segments: TranscriptionSegment[] = (data.segments ?? []).map(
+          (s) => ({
+            id: s.id,
+            speaker: s.speaker ?? "Unknown",
+            text: s.text ?? "",
+            start: s.startTime ?? 0,
+            end: s.endTime ?? 0,
+          })
+        );
+
+        set({ metadata, segments });
+      },
+
       setSegments: (segments) => set({ segments }),
+
       updateSegment: (index, field, value) => {
         const segments = [...get().segments];
         if (field === "text" || field === "speaker" || field === "id") {
@@ -190,7 +235,7 @@ export const useTranscriptionStore = create<TranscriptionState>()(
 
         if (searchResults.length === 0) return;
 
-        let newIndex;
+        let newIndex: number;
         if (direction === "next") {
           newIndex = (currentResultIndex + 1) % searchResults.length;
         } else {
@@ -200,43 +245,6 @@ export const useTranscriptionStore = create<TranscriptionState>()(
         }
 
         set({ currentResultIndex: newIndex });
-      },
-
-      loadTranscription: async (id: string) => {
-        const response = await getTranscriptionById(id);
-        
-        if (response.error || !response.data) {
-          console.error("Failed to load transcription:", response.error);
-          return;
-        }
-        
-        const data = response.data;
-        const md = (data.metadata as { originalFilename?: string; durationSeconds?: number }) || {};
-        
-        const newMetadata: TranscriptionMetadata = {
-          id: data.id,
-          title: md.originalFilename || "Untitled",
-          date: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
-          duration: md.durationSeconds ? `${Math.floor(md.durationSeconds / 60)}:${Math.floor(md.durationSeconds % 60).toString().padStart(2, "0")}` : "00:00",
-          summary: data.summary || "",
-          status: (data.status === "processing" || data.status === "queued") ? "in_progress" : data.status as "completed" | "failed",
-          progress: 100, // Or derive from Redis status
-          mode: data.model === "small" ? "fast" : data.model === "large" ? "super" : "medium",
-          speakers: data.numberOfSpeaker || 1,
-        };
-
-        const newSegments = (data.segments || []).map((s: { speaker: string | null; text: string; startTime: number; endTime: number; id: string }) => ({
-          speaker: s.speaker || "Unknown",
-          text: s.text || "",
-          start: s.startTime || 0,
-          end: s.endTime || 0,
-          id: s.id, // Keep the segment ID for saving
-        }));
-
-        set({
-          metadata: newMetadata,
-          segments: newSegments,
-        });
       },
     }),
     { name: "transcription-view-store" }

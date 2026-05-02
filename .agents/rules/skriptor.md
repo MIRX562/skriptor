@@ -42,11 +42,14 @@ src/
 │   ├── (landing)/                  # public pages (ToS, etc.)
 │   ├── api/
 │   │   ├── auth/                   # better-auth catch-all handler
+│   │   ├── transcriptions/
+│   │   │   └── route.ts            # GET: list authenticated user's transcriptions
 │   │   ├── transcribe-upload/
-│   │   │   ├── route.ts            # POST: validate → initiateJob()
+│   │   │   ├── route.ts            # POST: validate → upload → enqueue
 │   │   │   └── worker-callback/
 │   │   │       └── route.ts        # POST: HMAC-verified result ingestion
 │   │   └── transcription/[id]/
+│   │       ├── route.ts            # GET: single transcription with segments; DELETE
 │   │       ├── sse/route.ts        # GET: SSE progress stream
 │   │       ├── audio/route.ts      # GET: return presigned audio URL
 │   │       └── segments/route.ts   # PATCH: persist edited segments
@@ -75,12 +78,15 @@ src/
 │   ├── transcibe-upload/           # ⚠ intentional typo — do NOT rename
 │   │   ├── const/                  # supported-languages.ts
 │   │   ├── schema/                 # Zod upload schema
-│   │   ├── server/                 # initiateJob() server action
+│   │   ├── server/                 # legacy dead code — upload handled by API route
 │   │   ├── store/                  # upload UI Zustand store
 │   │   └── ui/                     # upload form, record form, speed selector
 │   └── transcribe-manage/
-│       ├── model/                  # getTranscriptionById(), getTranscriptionList()
-│       ├── store/                  # transcription-list-store, transcription-view-store
+│       ├── model/                  # TanStack Query hooks: use-transcription-list,
+│       │                           # use-transcription, use-delete-transcription,
+│       │                           # use-save-segments
+│       ├── store/                  # transcription-list-store (search UI only),
+│       │                           # transcription-view-store (editor UI state)
 │       └── ui/                     # TranscriptionView, list, audio player
 ├── hooks/                          # shared custom hooks
 ├── lib/
@@ -161,10 +167,12 @@ Documented in `.example.env`. Never commit `.env`.
 ### Feature-Sliced Architecture
 Each feature in `src/features/<name>/` follows this internal structure:
 - `ui/` — React components (client or server)
-- `model/` — server actions (`"use server"`) or data-fetching utilities
-- `store/` — Zustand slice for this feature
+- `model/` — TanStack Query hooks (`useQuery`, `useMutation`) that call API routes — **no `"use server"`**
+- `store/` — Zustand slice for UI/ephemeral state only (never server-derived data)
 - `schema/` — Zod validation schemas
 - `const/` — static constants
+
+> **No server actions** — all data fetching and mutations go through API routes called from TanStack Query hooks.
 
 Shared cross-feature components live in `src/components/` (not `ui/`).
 
@@ -200,7 +208,7 @@ Shared cross-feature components live in `src/components/` (not `ui/`).
 ### Upload Constraints
 - Max file size: **50 MB**
 - Accepted: `audio/*` → `.mp3`, `.m4a`, `.wav`, `.flac`
-- Server action body limit: **500 MB** (`next.config.ts`)
+- Route handler body limit: **500 MB** (`next.config.ts`)
 
 ---
 

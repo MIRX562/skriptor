@@ -12,12 +12,22 @@ import { TranscriptionUploadLoading } from "@/features/transcibe-upload/ui/trans
 import { TranscriptionUpload } from "@/features/transcibe-upload/ui/transcription-upload-view";
 import { TranscriptionListLoading } from "@/features/transcribe-manage/ui/transcription-list-loading";
 import { TranscriptionViewLoading } from "@/features/transcribe-manage/ui/transcription-view-loading";
+import { useProcessPendingJob } from "@/features/transcribe-dashboard/model/use-process-pending-job";
+import { Loader2 } from "lucide-react";
 
 export function DashboardPage() {
   const [selectedView, setSelectedView] = useState<string | null>(null);
+  const { isProcessingPendingJob } = useProcessPendingJob();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+      {isProcessingPendingJob && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
+          <Loader2 className="h-12 w-12 text-teal-600 animate-spin mb-4" />
+          <h2 className="text-xl font-semibold">Processing pending transcription...</h2>
+          <p className="text-muted-foreground mt-2">Uploading audio and preparing models</p>
+        </div>
+      )}
       <SiteHeader />
       <main className="container mx-auto p-4 md:p-6 lg:p-8">
         <AnimatePresence mode="wait">

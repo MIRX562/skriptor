@@ -6,9 +6,9 @@ export const runtime = "nodejs";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const transcriptionId = params.id;
+  const { id: transcriptionId } = await params;
 
   // Validate transcription ID
   if (!transcriptionId || typeof transcriptionId !== "string") {
