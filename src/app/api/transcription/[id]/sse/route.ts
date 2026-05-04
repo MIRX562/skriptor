@@ -18,24 +18,40 @@ export async function GET(
   const encoder = new TextEncoder();
   const customReadable = new ReadableStream({
     async start(controller) {
+      let isClosed = false;
+
+      const cleanup = () => {
+        if (isClosed) return;
+        isClosed = true;
+        try {
+          subscriber.unsubscribe();
+          subscriber.quit();
+          controller.close();
+        } catch (e) {
+          // Ignore errors during close/cleanup
+        }
+      };
+
       // Send initial status if available
       try {
-        const initialStatus = await redis.get(
-          `transcription:progress:${transcriptionId}:last`
-        );
-        if (initialStatus) {
-          controller.enqueue(encoder.encode(`data: ${initialStatus}\n\n`));
-        } else {
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({
-                id: transcriptionId,
-                status: "pending",
-                message: "Waiting for worker to process",
-                timestamp: Date.now(),
-              })}\n\n`
-            )
+        if (!request.signal.aborted) {
+          const initialStatus = await redis.get(
+            `transcription:progress:${transcriptionId}:last`
           );
+          if (initialStatus && !isClosed && !request.signal.aborted) {
+            controller.enqueue(encoder.encode(`data: ${initialStatus}\n\n`));
+          } else if (!isClosed && !request.signal.aborted) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  id: transcriptionId,
+                  status: "pending",
+                  message: "Waiting for worker to process",
+                  timestamp: Date.now(),
+                })}\n\n`
+              )
+            );
+          }
         }
       } catch (err) {
         console.error("Error getting initial status:", err);
@@ -44,34 +60,35 @@ export async function GET(
       // Set up Redis subscription
       const subscriber = redis.duplicate();
 
-      await subscriber.subscribe(`transcription:progress:${transcriptionId}`);
+      try {
+        await subscriber.subscribe(`transcription:progress:${transcriptionId}`);
 
-      subscriber.on("message", (_channel, message) => {
-        try {
-          // Send SSE message
-          controller.enqueue(encoder.encode(`data: ${message}\n\n`));
+        subscriber.on("message", (_channel, message) => {
+          if (isClosed || request.signal.aborted) return;
 
-          // Check if this is a completion message
-          const data = JSON.parse(message);
-          if (data.status === "completed" || data.status === "error") {
-            // Close the stream on completion or error
-            setTimeout(() => {
-              subscriber.unsubscribe();
-              subscriber.quit();
-              controller.close();
-            }, 1000); // Small delay to ensure message is sent
+          try {
+            // Send SSE message
+            controller.enqueue(encoder.encode(`data: ${message}\n\n`));
+
+            // Check if this is a completion message
+            const data = JSON.parse(message);
+            if (data.status === "completed" || data.status === "error") {
+              cleanup();
+            }
+          } catch (err) {
+            console.error("Error processing SSE message:", err);
           }
-        } catch (err) {
-          console.error("Error processing message:", err);
-        }
-      });
+        });
+      } catch (err) {
+        console.error("Error setting up Redis subscriber:", err);
+        cleanup();
+      }
 
-      // Handle client disconnect
-      request.signal.addEventListener("abort", () => {
-        subscriber.unsubscribe();
-        subscriber.quit();
-        controller.close();
-      });
+      // Handle client disconnect or stream closure
+      request.signal.addEventListener("abort", cleanup);
+    },
+    cancel() {
+      // Called if the stream is cancelled by the client
     },
   });
 

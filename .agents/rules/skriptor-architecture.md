@@ -8,13 +8,29 @@ trigger: always_on
 
 ---
 
+## Rendering & Caching Strategy
+
+Skriptor leverages **Next.js 16 Partial Prerendering (PPR)** and the **Cache Components** model.
+
+### Partial Prerendering (PPR)
+- **Static Shell**: Navigation, footers, and static marketing content are prerendered at build time.
+- **Dynamic Holes**: User-specific data (transcription lists, active job progress) are streamed into `<Suspense>` boundaries.
+- **Benefits**: Immediate TTFB (Time to First Byte) and improved SEO with a fast-loading static shell.
+
+### Caching Model
+- **`use cache` Directive**: Used in Server Components/Functions to cache expensive computations or data fetching results with granular control.
+- **`<Cache>` Component**: Used for declarative caching of JSX chunks.
+- **Asynchronous Context**: `params` and `searchParams` must always be `await`-ed in Page and Layout components.
+
+---
+
 ## System Data Flow
 
 ```
 Browser
   │  POST /api/transcribe-upload (multipart)
   ▼
-Next.js Route Handler
+Next.js Route Handler (Dynamic)
   ├─ Zod validate
   ├─ Auth check (better-auth session)
   ├─ Upload audio → S3 (AWS SDK v3, PutObjectCommand)
@@ -35,8 +51,10 @@ Next.js Route Handler
            ├─ UPDATE transcriptions (status=completed)
            └─ DEL Redis progress keys
 
-Browser (SSE client)
-  ├─ GET /api/transcription/[id]/sse
+Browser (PPR - Static Shell + Dynamic Holes)
+  ├─ Static Shell (Navigation, Layout)
+  ├─ Dynamic Holes (Streaming Transcription Data, Progress)
+  │    └─ GET /api/transcription/[id]/sse
   └─ Receives Redis Pub/Sub events until status=completed|error
 ```
 
@@ -61,20 +79,27 @@ Status codes:
 - `404` — resource not found
 - `500` — unexpected server error (log to console, never expose internals)
 
-### Auth Guard Pattern (Route Handlers)
+### Page / Layout Auth Pattern
+In Next.js 16, `params` and `searchParams` are asynchronous.
+
 ```ts
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
-const session = await auth.api.getSession({ headers: await headers() });
-if (!session?.user?.id) {
-  return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+export default async function Page(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const session = await auth.api.getSession({ headers: await headers() });
+  
+  if (!session?.user?.id) redirect("/sign-in");
+  // ...
 }
 ```
 
 ### Ownership Check
-Always verify the requested resource belongs to the authenticated user:
+Always verify the requested resource belongs to the authenticated user. Use `await params` before accessing properties.
+
 ```ts
+const { id } = await params;
 const record = await db.query.transcriptions.findFirst({
   where: and(eq(transcriptions.id, id), eq(transcriptions.userId, session.user.id)),
 });

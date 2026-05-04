@@ -1,7 +1,5 @@
-import React from "react";
+import HelpView from "@/features/setting/ui/help-view";
 
-function Help() {
-  return <div>Help</div>;
+export default function page() {
+  return <HelpView />;
 }
-
-export default Help;

@@ -40,6 +40,12 @@ The following MCP servers are available and should be used by AI agents:
 
 - **Always verify runtime state**: If a build fails or behavior is unexpected, use `next-devtools` to inspect logs and errors before making changes.
 - **Reference bundled docs**: Use `next-docs` to ensure compliance with Next.js 16 standards.
+- **React 19 & Next.js 16 Patterns**:
+  - **Asynchronous Context**: Always `await params` and `await searchParams` in Page and Layout components.
+  - **Handling Promises**: Use the `use()` hook to handle promises and context in Client Components.
+  - **Cache Components**: Use the `use cache` directive for granular function caching and the `<Cache>` component for declarative JSX caching.
+  - **PPR (Partial Prerendering)**: Design components to support "Static Shell + Dynamic Holes" architecture.
 - **Database Changes**: Use `drizzle-mcp` to verify the schema before generating migrations.
 - **Middleware**: Use `src/proxy.ts` (Proxy convention) instead of `middleware.ts`.
 - **Dynamic Routes**: Always await `params` in dynamic route handlers.
+- **Tools Usage**: never ever run dev server since its always already running, never use browser_eval since almost everything needs auth logins

@@ -60,6 +60,7 @@ interface TranscriptionViewState {
 
   // Speaker label editing
   updateSpeakerLabel: (speakerIndex: number, label: string) => void;
+  addSpeaker: () => number;
 
   setMetadata: (metadata: TranscriptionMetadata) => void;
   setViewMode: (mode: "segments" | "fulltext") => void;
@@ -160,6 +161,21 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
           s.index === speakerIndex ? { ...s, label } : s
         );
         set({ speakers });
+      },
+
+      addSpeaker: () => {
+        const { speakers } = get();
+        const nextIndex = speakers.length > 0 
+          ? Math.max(...speakers.map((s) => s.index)) + 1 
+          : 1;
+        
+        const newSpeaker: Speaker = {
+          index: nextIndex,
+          label: `Speaker ${nextIndex}`,
+        };
+        
+        set({ speakers: [...speakers, newSpeaker] });
+        return nextIndex;
       },
 
       setMetadata: (metadata) => set({ metadata }),

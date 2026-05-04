@@ -8,9 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Plus, UserPlus } from "lucide-react";
 import { cn, formatTimeMMSS } from "@/lib/utils";
 import type { Speaker } from "../model/use-transcription";
 import type { TranscriptionSegment } from "../store/transcription-view-store";
+import { useTranscriptionStore } from "../store/transcription-view-store";
 
 interface SegmentRowProps {
   segment: TranscriptionSegment;
@@ -67,6 +70,8 @@ export const SegmentRow = memo(function SegmentRow({
   onTextChange,
   onSpeakerChange,
 }: SegmentRowProps) {
+  const addSpeaker = useTranscriptionStore((state) => state.addSpeaker);
+
   const speakerLabel =
     segment.speakerIndex !== null
       ? (speakers.find((s) => s.index === segment.speakerIndex)?.label ?? `Speaker ${segment.speakerIndex}`)
@@ -116,32 +121,46 @@ export const SegmentRow = memo(function SegmentRow({
             {formatTimeMMSS(segment.start)}
           </span>
 
-          {speakers.length > 0 && (
-            isEditing ? (
-              <Select
-                value={segment.speakerIndex?.toString() ?? "none"}
-                onValueChange={(val) =>
-                  onSpeakerChange(index, val === "none" ? null : Number(val))
+          {isEditing ? (
+            <Select
+              value={segment.speakerIndex?.toString() ?? "none"}
+              onValueChange={(val) => {
+                if (val === "add-new") {
+                  const newIndex = addSpeaker();
+                  onSpeakerChange(index, newIndex);
+                } else {
+                  onSpeakerChange(index, val === "none" ? null : Number(val));
                 }
-              >
-                <SelectTrigger className="h-5 text-[10px] border-0 bg-transparent shadow-none px-0 py-0 focus:ring-0 w-auto gap-1 font-semibold text-muted-foreground hover:text-foreground uppercase tracking-wider">
+              }}
+            >
+              <SelectTrigger className="h-6 sm:h-5 text-[10px] border-0 bg-slate-100/50 dark:bg-slate-800/50 sm:bg-transparent hover:bg-slate-200/50 dark:hover:bg-slate-700/50 shadow-none px-2 sm:px-0 py-0 focus:ring-0 w-full sm:w-auto gap-1.5 font-bold text-muted-foreground hover:text-foreground uppercase tracking-wider transition-colors rounded-md sm:rounded-none">
+                <div className="flex items-center gap-1.5 truncate">
+                  <UserPlus className="h-3 w-3 sm:hidden" />
                   <SelectValue placeholder="No speaker" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No speaker</SelectItem>
-                  {speakers.map((s) => (
-                    <SelectItem key={s.index} value={s.index.toString()}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              speakerLabel && (
-                <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider truncate w-full">
-                  {speakerLabel}
-                </span>
-              )
+                </div>
+              </SelectTrigger>
+              <SelectContent align="start" className="min-w-[140px]">
+                <SelectItem value="none" className="text-[11px]">No speaker</SelectItem>
+                {speakers.map((s) => (
+                  <SelectItem key={s.index} value={s.index.toString()} className="text-[11px]">
+                    {s.label}
+                  </SelectItem>
+                ))}
+                <Separator className="my-1" />
+                <SelectItem value="add-new" className="text-[11px] text-teal-600 dark:text-teal-400 font-bold focus:text-teal-600 focus:bg-teal-50 dark:focus:bg-teal-900/30">
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-3 w-3" />
+                    <span>Add Speaker</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            speakerLabel && (
+              <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider truncate w-full flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500/50 shrink-0" />
+                {speakerLabel}
+              </span>
             )
           )}
         </div>

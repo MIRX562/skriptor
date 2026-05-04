@@ -15,7 +15,7 @@ trigger: always_on
 | Layer | Technology |
 |---|---|
 | Runtime / Package Manager | **Bun** — never use `npm`, `yarn`, or `pnpm` |
-| Frontend / Backend | **Next.js 15** (App Router, Turbopack) |
+| Frontend / Backend | **Next.js 16** (App Router, Turbopack, PPR) |
 | Language | **TypeScript** (strict) |
 | UI Components | **shadcn/ui** + **Radix UI** primitives |
 | Styling | **Tailwind CSS v4** (`@tailwindcss/postcss`) |
@@ -29,6 +29,7 @@ trigger: always_on
 | Python Worker | **WhisperX** — communicates via BullMQ + HTTP callback |
 | Real-time | **SSE** via Redis Pub/Sub (`ioredis`) |
 | State Management | **Zustand** v5 (client/UI) + **TanStack Query** v5 (server state) |
+| Core Library | **React 19** — using `use()` and async `params` |
 | Form Handling | **React Hook Form** + **Zod** |
 
 ---
@@ -162,11 +163,30 @@ Documented in `.example.env`. Never commit `.env`.
 
 ---
 
+## Rendering & Caching Strategy
+
+### Partial Prerendering (PPR)
+The application is designed as a **Static Shell** with **Dynamic Holes**.
+- Use `<Suspense>` to wrap components that perform dynamic data fetching.
+- Ensure layouts are as static as possible to enable build-time prerendering.
+
+### Cache Components
+- **`use cache`**: Annotate functions or components with `"use cache"` to leverage the Next.js 16 caching layer.
+- **`<Cache>`**: Wrap JSX in `<Cache>` components for declarative caching with specific tags or TTLs.
+
+### Asynchronous Parameters
+- Page `params` and `searchParams` are promises.
+- Always `await` them before use: `const { id } = await params;`
+
+---
+
 ## Frontend Conventions
 
 ### Feature-Sliced Architecture
 Each feature in `src/features/<name>/` follows this internal structure:
-- `ui/` — React components (client or server)
+- `ui/` — React components (Server or Client)
+  - **React 19**: Use the `use()` hook for consuming promises/context in Client Components.
+  - **Server Components**: Prefer Server Components for data fetching to benefit from PPR.
 - `model/` — TanStack Query hooks (`useQuery`, `useMutation`) that call API routes — **no `"use server"`**
 - `store/` — Zustand slice for UI/ephemeral state only (never server-derived data)
 - `schema/` — Zod validation schemas

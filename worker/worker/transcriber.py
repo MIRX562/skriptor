@@ -4,6 +4,8 @@ import torch
 import requests
 import tempfile
 from .config import config
+from whisperx.diarize import DiarizationPipeline
+
 
 class Transcriber:
     _model_cache = {}
@@ -58,26 +60,29 @@ class Transcriber:
             if progress_cb: progress_cb("processing", 60, "Aligning transcript...")
             
             align_key = f"{detected_language}_{self.device}"
-            if align_key not in Transcriber._align_model_cache:
-                print(f"Loading alignment model for {detected_language}...")
-                # Optional: limit cache size for alignment models
-                if len(Transcriber._align_model_cache) > 2:
-                    Transcriber._align_model_cache.clear()
+            try:
+                if align_key not in Transcriber._align_model_cache:
+                    print(f"Loading alignment model for {detected_language}...")
+                    # Optional: limit cache size for alignment models
+                    if len(Transcriber._align_model_cache) > 2:
+                        Transcriber._align_model_cache.clear()
+                    
+                    Transcriber._align_model_cache[align_key] = whisperx.load_align_model(language_code=detected_language, device=self.device)
+                    print("Alignment model loaded.")
                 
-                Transcriber._align_model_cache[align_key] = whisperx.load_align_model(language_code=detected_language, device=self.device)
-                print("Alignment model loaded.")
-            
-            model_a, metadata = Transcriber._align_model_cache[align_key]
-            result = whisperx.align(result["segments"], model_a, metadata, audio, self.device, return_char_alignments=False)
-            print("Alignment finished.")
-            
+                model_a, metadata = Transcriber._align_model_cache[align_key]
+                result = whisperx.align(result["segments"], model_a, metadata, audio, self.device, return_char_alignments=False)
+                print("Alignment finished.")
+            except Exception as e:
+                print(f"Warning: Alignment failed for language {detected_language}: {e}. Proceeding with unaligned segments.")
+
             # 3. Diarize
             if is_diarized:
                 print("Starting diarization...")
                 if progress_cb: progress_cb("processing", 80, "Identifying speakers...")
                 if Transcriber._diarize_model is None:
                     print("Loading Diarization pipeline...")
-                    Transcriber._diarize_model = whisperx.DiarizationPipeline(use_auth_token=self.hf_token, device=self.device)
+                    Transcriber._diarize_model = DiarizationPipeline(token=self.hf_token, device=self.device)
                     print("Diarization pipeline loaded.")
                 
                 diarize_segments = Transcriber._diarize_model(audio, min_speakers=num_speakers, max_speakers=num_speakers)

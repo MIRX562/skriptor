@@ -37,47 +37,57 @@ const formSchema = z.object({
 });
 
 export function ProfileForm() {
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    values: {
+      name: user?.name || "",
+      email: user?.email || "",
+    },
   });
 
-  const { data } = authClient.useSession();
-  if (!data) return null;
-  const user = data.user;
+  if (!user) return null;
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      toast.promise(authClient.updateUser(values), {
-        loading: "Updating user profile...",
-        error: (err) => err.message,
-        success: "User Profile updated",
+      await toast.promise(authClient.updateUser(values), {
+        loading: "Updating profile...",
+        success: "Profile updated successfully",
+        error: (err) => err.message || "Failed to update profile",
       });
     } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+      console.error("Profile update error:", error);
     }
   }
+
   return (
     <div className="flex flex-col gap-8">
-      <div className="w-full flex gap-8">
-        <Card className="w-1/2">
-          <CardContent>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <CardContent className="pt-6">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4 "
+                className="space-y-6"
               >
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel className="text-slate-900 dark:text-slate-200">Full Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Placeholder" {...field} />
+                        <Input 
+                          placeholder="Your name" 
+                          {...field} 
+                          className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-teal-500"
+                        />
                       </FormControl>
-                      <FormDescription>Change your username.</FormDescription>
+                      <FormDescription className="text-slate-500 dark:text-slate-400">
+                        This is the name that will be displayed on your profile.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -88,11 +98,18 @@ export function ProfileForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className="text-slate-900 dark:text-slate-200">Email Address</FormLabel>
                       <FormControl>
-                        <Input placeholder="shadcn" type="email" {...field} />
+                        <Input 
+                          placeholder="your@email.com" 
+                          type="email" 
+                          {...field} 
+                          className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-teal-500"
+                        />
                       </FormControl>
-                      <FormDescription>Change your email.</FormDescription>
+                      <FormDescription className="text-slate-500 dark:text-slate-400">
+                        Your primary email address for notifications and sign-in.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -100,43 +117,61 @@ export function ProfileForm() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700"
+                  disabled={form.formState.isSubmitting || !form.formState.isDirty}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition-colors"
                 >
-                  Change
+                  {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
                 </Button>
               </form>
             </Form>
           </CardContent>
         </Card>
 
-        <Card className="w-1/2">
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="p-6">
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-                  Account Information
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  Account Details
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Additional information about your account
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Technical information about your user account.
                 </p>
               </div>
 
-              <Separator />
+              <Separator className="bg-slate-200 dark:bg-slate-800" />
 
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <p className="text-sm text-clip font-medium text-slate-500 dark:text-slate-400">
-                    Account ID
-                  </p>
-                  <p className="text-slate-900 dark:text-white">{user.id}</p>
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+                    User ID
+                  </span>
+                  <code className="text-sm font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-800 dark:text-slate-200 w-fit">
+                    {user.id}
+                  </code>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Member Since
-                  </p>
-                  <p className="text-slate-900 dark:text-white">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+                    Created On
+                  </span>
+                  <p className="text-slate-900 dark:text-white font-medium">
                     {formatDate(user.createdAt)}
                   </p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+                    Email Status
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={user.emailVerified ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-amber-600 dark:text-amber-400 font-medium"}>
+                      {user.emailVerified ? "Verified" : "Unverified"}
+                    </span>
+                    {user.emailVerified && (
+                      <div className="h-4 w-4 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-[10px] text-emerald-600 dark:text-emerald-400">
+                        ✓
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -144,8 +179,8 @@ export function ProfileForm() {
         </Card>
       </div>
 
-      <Card>
-        <CardContent>
+      <Card className="bg-white dark:bg-slate-900 border-red-100 dark:border-red-900/30">
+        <CardContent className="p-6">
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-medium text-slate-900 dark:text-white">

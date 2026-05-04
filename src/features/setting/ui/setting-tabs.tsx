@@ -4,16 +4,11 @@ import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Bell,
-  CreditCard,
   HelpCircle,
-  LifeBuoy,
   Lock,
   LogOut,
-  Settings,
   SquareArrowUpLeft,
   User,
-  Wallet,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { SignOut } from "@/features/sign-out/model/query";
@@ -47,34 +42,9 @@ export function SettingsTabs({ children }: SettingsTabsProps) {
       icon: <Lock className="h-4 w-4 mr-2" />,
     },
     {
-      value: "notifications",
-      label: "Notifications",
-      icon: <Bell className="h-4 w-4 mr-2" />,
-    },
-    {
-      value: "subscription",
-      label: "Subscription",
-      icon: <CreditCard className="h-4 w-4 mr-2" />,
-    },
-    {
-      value: "payment-methods",
-      label: "Payment Methods",
-      icon: <Wallet className="h-4 w-4 mr-2" />,
-    },
-    {
-      value: "billing-history",
-      label: "Billing History",
-      icon: <Settings className="h-4 w-4 mr-2" />,
-    },
-    {
       value: "help",
-      label: "Help Center",
+      label: "Help",
       icon: <HelpCircle className="h-4 w-4 mr-2" />,
-    },
-    {
-      value: "support",
-      label: "Contact Support",
-      icon: <LifeBuoy className="h-4 w-4 mr-2" />,
     },
   ];
 

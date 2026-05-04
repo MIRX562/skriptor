@@ -2,30 +2,26 @@
 
 import { cookies, headers } from "next/headers";
 
+import { connection } from "next/server";
+
 const LOCALE_COOKIE = "NEXT_LOCALE";
 const DEFAULT_LOCALE = "en";
 
 export async function getLocale() {
-  try {
-    const cookieStore = await cookies();
-    const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
-    if (cookieLocale) return cookieLocale;
-  } catch (error) {
-    // In case cookies() is called in a context where it's not available
-  }
+  await connection();
+  
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
+  if (cookieLocale) return cookieLocale;
 
-  try {
-    const headersList = await headers();
-    const acceptLanguage = headersList.get("accept-language");
-    
-    if (acceptLanguage) {
-      const preferredLanguage = acceptLanguage.split(",")[0].split("-")[0].toLowerCase();
-      if (preferredLanguage === "in" || preferredLanguage === "id") {
-        return "id";
-      }
+  const headersList = await headers();
+  const acceptLanguage = headersList.get("accept-language");
+  
+  if (acceptLanguage) {
+    const preferredLanguage = acceptLanguage.split(",")[0].split("-")[0].toLowerCase();
+    if (preferredLanguage === "in" || preferredLanguage === "id") {
+      return "id";
     }
-  } catch (error) {
-    // In case headers() is called in a context where it's not available
   }
 
   return DEFAULT_LOCALE;

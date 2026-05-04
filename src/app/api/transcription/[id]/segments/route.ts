@@ -7,7 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 const speakerSchema = z.object({
-  index: z.number().int().positive(),
+  index: z.number().int().nonnegative(),
   label: z.string().min(1).max(100),
 });
 
