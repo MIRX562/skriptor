@@ -31,6 +31,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { WorkInProgressBanner } from "@/components/work-in-progress";
 import { LiteTranscriptionForm } from "./lite-transcription-form";
+import SoftAurora from "@/components/SoftAurora";
+import GradientText from "@/components/GradientText";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
 
@@ -49,13 +52,23 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
-      <LandingHeader locale={locale} dict={dict.header} />
+      <LandingHeader locale={locale} dict={dict} />
       <WorkInProgressBanner />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-20 md:pt-32 md:pb-36">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_30%,rgba(20,184,166,0.1),transparent)]" />
-        <div className="container mx-auto px-4 md:px-6">
+      <section className="relative overflow-hidden py-6 md:py-12 min-h-[700px] flex items-center bg-white dark:bg-slate-950 transition-colors duration-500">
+        <div className="absolute inset-0 z-0">
+          <SoftAurora
+            lightColor1="#5eead4" // teal-300
+            lightColor2="#0d9488" // teal-600
+            darkColor1="#2dd4bf"  // teal-400
+            darkColor2="#115e59"  // teal-800
+            brightness={1.2}
+            speed={0.5}
+            enableMouseInteraction={false}
+          />
+        </div>
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-8 items-center">
             <motion.div
               initial="hidden"
@@ -66,27 +79,29 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
             >
               <Badge className="w-fit bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30 transition-colors">
                 <Sparkles className="mr-1 h-3 w-3" />
-                {dict.hero.badge}
+                {dict.landing.hero.badge}
               </Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {dict.hero.titlePart1}
-                <span className="text-teal-600 dark:text-teal-400">
-                  {dict.hero.titleHighlight}
-                </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+                {dict.landing.hero.titlePart1}{" "}
+                <GradientText
+                  className="inline-flex"
+                  colors={["#0d9488", "#2dd4bf", "#5eead4"]}
+                  animationSpeed={5}
+                >
+                {dict.landing.hero.titleHighlight}
+                </GradientText>
               </h1>
-              <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-[600px]">
-                {dict.hero.description}
-              </p>
+                {dict.landing.hero.description}
               <div className="flex flex-col sm:flex-row gap-3 mt-2">
                 <Button
                   size="lg"
                   className="bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700"
                 >
-                  {dict.hero.getStarted}
+                  {dict.landing.hero.getStarted}
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="outline">
-                  {dict.hero.viewDemo}
+                  {dict.landing.hero.viewDemo}
                   <Play className="ml-1 h-4 w-4" />
                 </Button>
               </div>
@@ -132,7 +147,11 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="relative mx-auto lg:mr-0 w-full max-w-[600px] z-10 mt-8 lg:mt-0"
             >
-              <LiteTranscriptionForm />
+              <LiteTranscriptionForm 
+                dict={dict.landing.liteForm} 
+                common={dict.common} 
+                fullDict={dict}
+              />
             </motion.div>
           </div>
         </div>
@@ -175,13 +194,13 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                {dict.features.badge}
+                {dict.landing.features.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                {dict.features.title}
+                {dict.landing.features.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                {dict.features.description}
+                {dict.landing.features.description}
               </p>
             </motion.div>
           </div>
@@ -192,51 +211,45 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                 icon: (
                   <Mic className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "High Accuracy Transcription",
-                description:
-                  "Industry-leading speech recognition with 98.7% accuracy across accents and languages.",
+                title: dict.landing.features.items.accuracy.title,
+                description: dict.landing.features.items.accuracy.description,
               },
               {
                 icon: (
                   <Timer className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "Real-time Processing",
-                description:
-                  "Get your transcriptions in seconds, not hours. Perfect for time-sensitive content.",
+                title: dict.landing.features.items.realtime.title,
+                description: dict.landing.features.items.realtime.description,
               },
               {
                 icon: (
                   <Languages className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "Multi-language Support",
-                description:
-                  "Support for 30+ languages and automatic language detection for multilingual content.",
+                title: dict.landing.features.items.languages.title,
+                description: dict.landing.features.items.languages.description,
               },
               {
                 icon: (
                   <Users className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "Speaker Identification",
-                description:
-                  "Automatically identify and label different speakers in your recordings.",
+                title: dict.landing.features.items.speakers.title,
+                description: dict.landing.features.items.speakers.description,
               },
               {
                 icon: (
                   <MessageSquareText className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "Smart Summaries",
-                description:
-                  "AI-powered summaries of your transcriptions to quickly extract key information.",
+                title: dict.landing.features.items.summaries.title,
+                description: dict.landing.features.items.summaries.description,
               },
               {
                 icon: (
                   <Wand2 className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "Custom Vocabulary",
-                description:
-                  "Add industry-specific terms and names to improve transcription accuracy.",
+                title: dict.landing.features.items.vocabulary.title,
+                description: dict.landing.features.items.vocabulary.description,
               },
-            ].map((feature, i) => (
+            ].map((feature: any, i: number) => (
               <motion.div
                 key={feature.title}
                 initial="hidden"
@@ -276,13 +289,13 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                {dict.howItWorks.badge}
+                {dict.landing.howItWorks.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                {dict.howItWorks.title}
+                {dict.landing.howItWorks.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                {dict.howItWorks.description}
+                {dict.landing.howItWorks.description}
               </p>
             </motion.div>
           </div>
@@ -294,29 +307,26 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                 icon: (
                   <FileAudio className="h-8 w-8 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "Upload Your Audio",
-                description:
-                  "Upload audio files or record directly in your browser. We support MP3, WAV, M4A, and more.",
+                title: dict.landing.howItWorks.steps.upload.title,
+                description: dict.landing.howItWorks.steps.upload.description,
               },
               {
                 step: "02",
                 icon: (
                   <Layers className="h-8 w-8 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "AI Processing",
-                description:
-                  "Our advanced AI analyzes your audio, identifies speakers, and transcribes with high accuracy.",
+                title: dict.landing.howItWorks.steps.process.title,
+                description: dict.landing.howItWorks.steps.process.description,
               },
               {
                 step: "03",
                 icon: (
                   <Headphones className="h-8 w-8 text-teal-600 dark:text-teal-400" />
                 ),
-                title: "Review & Export",
-                description:
-                  "Edit your transcript if needed, then export in various formats including TXT, DOCX, and SRT.",
+                title: dict.landing.howItWorks.steps.review.title,
+                description: dict.landing.howItWorks.steps.review.description,
               },
-            ].map((step, i) => (
+            ].map((step: any, i: number) => (
               <motion.div
                 key={step.title}
                 initial="hidden"
@@ -361,13 +371,13 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                {dict.testimonials.badge}
+                {dict.landing.testimonials.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                {dict.testimonials.title}
+                {dict.landing.testimonials.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                {dict.testimonials.description}
+                {dict.landing.testimonials.description}
               </p>
             </motion.div>
           </div>
@@ -375,27 +385,24 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                quote:
-                  "Skriptor has completely transformed how we handle meeting notes. The accuracy is incredible, and it saves us hours every week.",
-                author: "Sarah Johnson",
-                role: "Product Manager at TechCorp",
+                quote: dict.landing.testimonials.items.sarah.quote,
+                author: dict.landing.testimonials.items.sarah.author,
+                role: dict.landing.testimonials.items.sarah.role,
                 avatar: "/placeholder.svg?height=64&width=64&text=SJ",
               },
               {
-                quote:
-                  "As a journalist, accurate transcriptions are essential. Skriptor delivers consistently excellent results, even with challenging audio.",
-                author: "Michael Chen",
-                role: "Senior Reporter, Global News",
+                quote: dict.landing.testimonials.items.michael.quote,
+                author: dict.landing.testimonials.items.michael.author,
+                role: dict.landing.testimonials.items.michael.role,
                 avatar: "/placeholder.svg?height=64&width=64&text=MC",
               },
               {
-                quote:
-                  "The speaker identification feature is a game-changer for our podcast editing workflow. We've cut post-production time in half!",
-                author: "Alex Rivera",
-                role: "Podcast Producer",
+                quote: dict.landing.testimonials.items.alex.quote,
+                author: dict.landing.testimonials.items.alex.author,
+                role: dict.landing.testimonials.items.alex.role,
                 avatar: "/placeholder.svg?height=64&width=64&text=AR",
               },
-            ].map((testimonial, i) => (
+            ].map((testimonial: any, i: number) => (
               <motion.div
                 key={testimonial.author}
                 initial="hidden"
@@ -455,13 +462,13 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                {dict.pricing.badge}
+                {dict.landing.pricing.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                {dict.pricing.title}
+                {dict.landing.pricing.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                {dict.pricing.description}
+                {dict.landing.pricing.description}
               </p>
             </motion.div>
           </div>
@@ -469,50 +476,32 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
           <div className="grid gap-8 md:grid-cols-3">
             {[
               {
-                name: "Free",
-                price: "$0",
-                description: "Perfect for occasional use",
-                features: [
-                  "Up to 10 minutes of audio per month",
-                  "Standard accuracy transcription",
-                  "2 export formats",
-                  "Email support",
-                ],
-                cta: "Get Started",
+                name: dict.landing.pricing.plans.free.name,
+                price: dict.landing.pricing.plans.free.price,
+                description: dict.landing.pricing.plans.free.description,
+                features: dict.landing.pricing.plans.free.features,
+                cta: dict.landing.pricing.plans.free.cta,
                 popular: false,
               },
               {
-                name: "Pro",
-                price: "$12",
-                period: "/month",
-                description: "Ideal for regular users",
-                features: [
-                  "Up to 5 hours of audio per month",
-                  "High accuracy transcription",
-                  "Speaker identification",
-                  "All export formats",
-                  "Priority email support",
-                ],
-                cta: "Start Free Trial",
+                name: dict.landing.pricing.plans.pro.name,
+                price: dict.landing.pricing.plans.pro.price,
+                period: dict.landing.pricing.plans.pro.period,
+                description: dict.landing.pricing.plans.pro.description,
+                features: dict.landing.pricing.plans.pro.features,
+                cta: dict.landing.pricing.plans.pro.cta,
                 popular: true,
               },
               {
-                name: "Business",
-                price: "$49",
-                period: "/month",
-                description: "For teams and heavy users",
-                features: [
-                  "Up to 20 hours of audio per month",
-                  "Highest accuracy transcription",
-                  "Advanced speaker identification",
-                  "Custom vocabulary",
-                  "Team collaboration features",
-                  "24/7 priority support",
-                ],
-                cta: "Contact Sales",
+                name: dict.landing.pricing.plans.business.name,
+                price: dict.landing.pricing.plans.business.price,
+                period: dict.landing.pricing.plans.business.period,
+                description: dict.landing.pricing.plans.business.description,
+                features: dict.landing.pricing.plans.business.features,
+                cta: dict.landing.pricing.plans.business.cta,
                 popular: false,
               },
-            ].map((plan, i) => (
+            ].map((plan: any, i: number) => (
               <motion.div
                 key={plan.name}
                 initial="hidden"
@@ -523,19 +512,16 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                 className="flex"
               >
                 <Card
-                  className={`flex flex-col h-full border-slate-200 dark:border-slate-800 ${
-                    plan.popular
+                  className={`flex flex-col h-full border-slate-200 dark:border-slate-800 ${plan.popular
                       ? "border-teal-600 dark:border-teal-400 shadow-lg relative"
                       : ""
-                  }`}
+                    }`}
                 >
-                  {plan.popular && (
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                       <Badge className="bg-teal-600 text-white hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-700">
-                        Most Popular
+                        {dict.landing.pricing.mostPopular}
                       </Badge>
                     </div>
-                  )}
                   <CardContent className="p-6 flex-1 flex flex-col">
                     <div className="mb-6">
                       <h3 className="text-xl font-semibold mb-2 text-slate-900 dark:text-white">
@@ -557,7 +543,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                     </div>
                     <div className="flex-1">
                       <ul className="space-y-3 mb-6">
-                        {plan.features.map((feature) => (
+                        {plan.features.map((feature: string) => (
                           <li key={feature} className="flex items-start">
                             <CheckCircle2 className="h-5 w-5 text-teal-600 dark:text-teal-400 mr-2 shrink-0 mt-0.5" />
                             <span className="text-slate-600 dark:text-slate-400">
@@ -568,11 +554,10 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                       </ul>
                     </div>
                     <Button
-                      className={`w-full mt-4 ${
-                        plan.popular
+                      className={`w-full mt-4 ${plan.popular
                           ? "bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700"
                           : ""
-                      }`}
+                        }`}
                       variant={plan.popular ? "default" : "outline"}
                     >
                       {plan.cta}
@@ -597,51 +582,20 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               custom={0}
             >
               <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                {dict.faq.badge}
+                {dict.landing.faq.badge}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                {dict.faq.title}
+                {dict.landing.faq.title}
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                {dict.faq.description}
+                {dict.landing.faq.description}
               </p>
             </motion.div>
           </div>
 
           <div className="max-w-3xl mx-auto">
             <Accordion type="single" collapsible className="w-full">
-              {[
-                {
-                  question: "How accurate is the transcription?",
-                  answer:
-                    "Skriptor achieves an industry-leading 98.7% accuracy rate for clear audio in supported languages. Accuracy may vary depending on audio quality, background noise, accents, and technical terminology.",
-                },
-                {
-                  question: "What languages are supported?",
-                  answer:
-                    "Skriptor currently supports over 30 languages including English, Spanish, French, German, Italian, Portuguese, Japanese, Chinese, Korean, Arabic, and many more. We're constantly adding support for additional languages.",
-                },
-                {
-                  question: "How long does transcription take?",
-                  answer:
-                    "Most transcriptions are completed in near real-time. A 60-minute audio file typically takes 2-3 minutes to process, depending on audio quality and server load.",
-                },
-                {
-                  question: "Is my data secure?",
-                  answer:
-                    "Yes, we take data security very seriously. All uploads are encrypted using TLS, and we use industry-standard security practices to protect your data. We do not share your content with third parties, and you can delete your data at any time.",
-                },
-                {
-                  question: "Can I edit the transcriptions?",
-                  answer:
-                    "Our editor allows you to make corrections, add speaker labels, and format your transcript. Changes are saved automatically as you type.",
-                },
-                {
-                  question: "What file formats are supported?",
-                  answer:
-                    "Skriptor supports most common audio formats including MP3, WAV, M4A, FLAC, OGG, and more. You can also record directly in your browser or upload video files (MP4, MOV, AVI).",
-                },
-              ].map((faq, i) => (
+              {dict.landing.faq.items.map((faq: any, i: number) => (
                 <motion.div
                   key={faq.question}
                   initial="hidden"
@@ -681,17 +635,17 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               className="max-w-[800px]"
             >
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-white">
-                {dict.cta.title}
+                {dict.landing.cta.title}
               </h2>
               <p className="text-lg text-teal-100 mb-8">
-                {dict.cta.description}
+                {dict.landing.cta.description}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   size="lg"
                   className="bg-white text-teal-700 hover:bg-teal-50"
                 >
-                  {dict.cta.getStarted}
+                  {dict.landing.cta.getStarted}
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
                 <Button
@@ -699,7 +653,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                   variant="outline"
                   className="text-white border-white hover:bg-teal-600/20"
                 >
-                  {dict.cta.contactSales}
+                  {dict.landing.cta.contactSales}
                 </Button>
               </div>
             </motion.div>
@@ -717,7 +671,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                 <span className="font-medium text-lg text-white">Skriptor</span>
               </div>
               <p className="text-slate-400 mb-4">
-                {dict.footer.description}
+                {dict.landing.footer.description}
               </p>
               <div className="flex space-x-4">
                 <Link
@@ -771,91 +725,91 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               </div>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-4">Product</h3>
+              <h3 className="font-semibold text-white mb-4">{dict.landing.footer.product}</h3>
               <ul className="space-y-2">
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Features
+                    {dict.landing.header.features}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Pricing
+                    {dict.landing.header.pricing}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    API
+                    {dict.landing.footer.links.api}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Integrations
+                    {dict.landing.footer.links.integrations}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Documentation
+                    {dict.landing.footer.links.documentation}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-4">Company</h3>
+              <h3 className="font-semibold text-white mb-4">{dict.landing.footer.company}</h3>
               <ul className="space-y-2">
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    About
+                    {dict.landing.footer.links.about}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Blog
+                    {dict.landing.footer.links.blog}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Careers
+                    {dict.landing.footer.links.careers}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Press
+                    {dict.landing.footer.links.press}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Contact
+                    {dict.landing.footer.links.contact}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-4">Legal</h3>
+              <h3 className="font-semibold text-white mb-4">{dict.landing.footer.legal}</h3>
               <ul className="space-y-2">
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Terms
+                    {dict.landing.footer.links.terms}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Privacy
+                    {dict.landing.footer.links.privacy}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Cookies
+                    {dict.landing.footer.links.cookies}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Licenses
+                    {dict.landing.footer.links.licenses}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Settings
+                    {dict.landing.footer.links.settings}
                   </Link>
                 </li>
               </ul>
@@ -863,15 +817,10 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
           </div>
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-slate-400">
-              © 2023 Skriptor. All rights reserved.
+              {dict.landing.footer.rights}
             </p>
             <div className="mt-4 md:mt-0">
-              <select className="bg-slate-800 text-slate-300 text-sm rounded-md px-3 py-1.5 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
-                <option value="en">English</option>
-                <option value="es">Español</option>
-                <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
-              </select>
+              <LanguageSwitcher currentLocale={locale} />
             </div>
           </div>
         </div>

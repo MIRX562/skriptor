@@ -15,8 +15,9 @@ import { motion } from "framer-motion";
 
 import TranscriptionUploadForm from "./transcription-upload-form";
 import TranscriptionRecordForm from "./transcription-record-form";
+import { type Dictionary } from "@/i18n/dictionaries";
 
-export function TranscriptionUpload() {
+export function TranscriptionUpload({ dict }: { dict: Dictionary }) {
   const [activeTab, setActiveTab] = useState("upload");
 
   return (
@@ -27,9 +28,9 @@ export function TranscriptionUpload() {
     >
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Create New Transcription</CardTitle>
+          <CardTitle>{dict.transcribe.title}</CardTitle>
           <CardDescription>
-            Upload an audio file or record directly to transcribe
+            {dict.transcribe.description}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -43,22 +44,22 @@ export function TranscriptionUpload() {
                 value="upload"
                 className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
               >
-                Upload File
+                {dict.transcribe.tabs.upload}
               </TabsTrigger>
               <TabsTrigger
                 value="record"
                 className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
               >
-                Record Audio
+                {dict.transcribe.tabs.record}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="upload" className="space-y-6">
-              <TranscriptionUploadForm />
+              <TranscriptionUploadForm dict={dict} />
             </TabsContent>
 
             <TabsContent value="record" className="space-y-6">
-              <TranscriptionRecordForm />
+              <TranscriptionRecordForm dict={dict} />
             </TabsContent>
           </Tabs>
         </CardContent>

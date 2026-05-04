@@ -1,8 +1,7 @@
 import { redis } from "@/lib/redis";
 import { NextRequest } from "next/server";
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
+
 
 export async function GET(
   request: NextRequest,
@@ -22,7 +21,7 @@ export async function GET(
       // Send initial status if available
       try {
         const initialStatus = await redis.get(
-          `transcription:status:${transcriptionId}`
+          `transcription:progress:${transcriptionId}:last`
         );
         if (initialStatus) {
           controller.enqueue(encoder.encode(`data: ${initialStatus}\n\n`));
@@ -44,7 +43,6 @@ export async function GET(
 
       // Set up Redis subscription
       const subscriber = redis.duplicate();
-      await subscriber.connect();
 
       await subscriber.subscribe(`transcription:progress:${transcriptionId}`);
 

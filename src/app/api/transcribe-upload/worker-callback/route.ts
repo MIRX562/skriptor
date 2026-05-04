@@ -17,6 +17,7 @@ const callbackSchema = z.object({
       originalFilename: z.string().optional(),
       mimeType: z.string().optional(),
       sizeBytes: z.number().optional(),
+      language: z.string().optional(),
     })
     .optional(),
   segments: z
@@ -103,12 +104,25 @@ export async function POST(req: NextRequest) {
     // payload.status === 'completed'
     const segs = payload.segments ?? [];
 
-    // Insert segments
+    // Build a deduplicated, ordered list of speakers from the segment data.
+    // Segments may carry a string like "SPEAKER_00" or null.
+    const speakerMap = new Map<string, number>(); // raw speaker string → speakerIndex
+    const speakersList: { index: number; label: string }[] = [];
+
+    segs.forEach((s) => {
+      if (s.speaker && !speakerMap.has(s.speaker)) {
+        const idx = speakersList.length + 1; // 1-based
+        speakerMap.set(s.speaker, idx);
+        speakersList.push({ index: idx, label: `Speaker ${idx}` });
+      }
+    });
+
+    // Insert segments with integer speakerIndex
     if (segs.length > 0) {
       const now = new Date();
       const values = segs.map((s) => ({
         transcriptionId: payload.transcriptionId,
-        speaker: s.speaker ?? null,
+        speakerIndex: s.speaker ? (speakerMap.get(s.speaker) ?? null) : null,
         text: s.text,
         startTime: Math.floor(s.startTimeMs),
         endTime: Math.floor(s.endTimeMs),
@@ -116,7 +130,6 @@ export async function POST(req: NextRequest) {
         updatedAt: now,
       }));
 
-      // Using drizzle insert
       await db.insert(segments).values(values).returning();
     }
 
@@ -127,6 +140,8 @@ export async function POST(req: NextRequest) {
         status: "completed",
         summary: payload.summary ?? null,
         metadata: payload.metadata ? (payload.metadata as unknown) : undefined,
+        language: payload.metadata?.language ?? undefined,
+        speakers: speakersList.length > 0 ? speakersList : null,
         updatedAt: new Date(),
       })
       .where(eq(transcriptions.id, payload.transcriptionId));

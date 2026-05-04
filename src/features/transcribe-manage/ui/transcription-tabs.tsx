@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranscriptionStore } from "../store/transcription-view-store";
 
 export function TranscriptionTabs() {
-  const { metadata, segments } = useTranscriptionStore();
+  const { metadata, segments, getSpeakerLabel } = useTranscriptionStore();
 
   return (
     <Tabs defaultValue="transcript" className="space-y-4">
@@ -16,7 +16,7 @@ export function TranscriptionTabs() {
           {segments.map((segment, index) => (
             <div key={index} className="p-2 border-b">
               <p>
-                <strong>{segment.speaker}:</strong> {segment.text}
+                <strong>{getSpeakerLabel(segment.speakerIndex) || "Speaker"}:</strong> {segment.text}
               </p>
             </div>
           ))}

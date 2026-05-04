@@ -1,13 +1,14 @@
+"use client";
+
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { formatTime } from "@/lib/utils";
-import type { TranscriptionData } from "../model/use-transcription";
+import type { TranscriptionData, Speaker } from "../model/use-transcription";
 
-// Defines the shape of a segment as used in the editor UI.
-// Sourced from API data via `initializeFromData`, then mutated locally during editing.
+// UI-local segment shape — speakerIndex links to the speakers list
 export interface TranscriptionSegment {
   id: string;
-  speaker: string;
+  speakerIndex: number | null;
   text: string;
   start: number; // milliseconds
   end: number;   // milliseconds
@@ -23,18 +24,21 @@ export interface TranscriptionMetadata {
   status: "completed" | "in_progress" | "failed";
   progress: number;
   mode: "fast" | "medium" | "super";
-  speakers?: number;
+  isSpeakerDiarized: boolean;
 }
 
 interface TranscriptionViewState {
   // Data (local editable copy hydrated from TanStack Query)
   segments: TranscriptionSegment[];
+  speakers: Speaker[]; // editable local copy of the speakers list
   metadata: TranscriptionMetadata | null;
+
+  // View mode
+  viewMode: "segments" | "fulltext";
 
   // UI state
   isEditing: boolean;
   isCopied: boolean;
-  editingSpeakerId: string | null;
 
   // Search state
   showSearch: boolean;
@@ -50,16 +54,19 @@ interface TranscriptionViewState {
   setSegments: (segments: TranscriptionSegment[]) => void;
   updateSegment: (
     index: number,
-    field: keyof TranscriptionSegment,
-    value: string | number
+    field: keyof Pick<TranscriptionSegment, "text" | "speakerIndex">,
+    value: string | number | null
   ) => void;
 
+  // Speaker label editing
+  updateSpeakerLabel: (speakerIndex: number, label: string) => void;
+
   setMetadata: (metadata: TranscriptionMetadata) => void;
+  setViewMode: (mode: "segments" | "fulltext") => void;
 
   // UI toggles
   setIsEditing: (isEditing: boolean) => void;
   setIsCopied: (isCopied: boolean) => void;
-  setEditingSpeakerId: (id: string | null) => void;
 
   // Search controls
   setShowSearch: (showSearch: boolean) => void;
@@ -69,6 +76,7 @@ interface TranscriptionViewState {
   setCurrentResultIndex: (index: number) => void;
 
   // Derived computations
+  getSpeakerLabel: (speakerIndex: number | null) => string | null;
   getFullTranscript: () => string;
   performSearch: () => number[];
   replaceCurrentOccurrence: () => void;
@@ -80,11 +88,12 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
   devtools(
     (set, get) => ({
       segments: [],
+      speakers: [],
       metadata: null,
 
+      viewMode: "segments",
       isEditing: false,
       isCopied: false,
-      editingSpeakerId: null,
 
       showSearch: false,
       searchTerm: "",
@@ -92,7 +101,6 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
       searchResults: [],
       currentResultIndex: -1,
 
-      // Hydrate local state from the API response (called by the component)
       initializeFromData: (data: TranscriptionData) => {
         const md = (data.metadata as { originalFilename?: string; durationSeconds?: number }) ?? {};
 
@@ -117,39 +125,47 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
               : data.model === "large"
                 ? "super"
                 : "medium",
-          speakers: data.numberOfSpeaker ?? 1,
+          isSpeakerDiarized: data.isSpeakerDiarized ?? false,
         };
+
+        const speakers: Speaker[] = data.speakers ?? [];
 
         const segments: TranscriptionSegment[] = (data.segments ?? []).map(
           (s) => ({
             id: s.id,
-            speaker: s.speaker ?? "Unknown",
+            speakerIndex: s.speakerIndex ?? null,
             text: s.text ?? "",
             start: s.startTime ?? 0,
             end: s.endTime ?? 0,
           })
         );
 
-        set({ metadata, segments });
+        set({ metadata, segments, speakers });
       },
 
       setSegments: (segments) => set({ segments }),
 
       updateSegment: (index, field, value) => {
         const segments = [...get().segments];
-        if (field === "text" || field === "speaker" || field === "id") {
-          segments[index][field] = value as string;
-        } else {
-          segments[index][field] = value as number;
+        if (field === "text") {
+          segments[index] = { ...segments[index], text: value as string };
+        } else if (field === "speakerIndex") {
+          segments[index] = { ...segments[index], speakerIndex: value as number | null };
         }
         set({ segments });
       },
 
-      setMetadata: (metadata) => set({ metadata }),
+      updateSpeakerLabel: (speakerIndex, label) => {
+        const speakers = get().speakers.map((s) =>
+          s.index === speakerIndex ? { ...s, label } : s
+        );
+        set({ speakers });
+      },
 
+      setMetadata: (metadata) => set({ metadata }),
+      setViewMode: (viewMode) => set({ viewMode }),
       setIsEditing: (isEditing) => set({ isEditing }),
       setIsCopied: (isCopied) => set({ isCopied }),
-      setEditingSpeakerId: (id) => set({ editingSpeakerId: id }),
 
       setShowSearch: (showSearch) => set({ showSearch }),
       setSearchTerm: (searchTerm) => set({ searchTerm }),
@@ -158,13 +174,20 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
       setCurrentResultIndex: (currentResultIndex) =>
         set({ currentResultIndex }),
 
+      getSpeakerLabel: (speakerIndex) => {
+        if (speakerIndex === null || speakerIndex === undefined) return null;
+        const speaker = get().speakers.find((s) => s.index === speakerIndex);
+        return speaker?.label ?? `Speaker ${speakerIndex}`;
+      },
+
       getFullTranscript: () => {
-        const { segments } = get();
+        const { segments, getSpeakerLabel } = get();
         return segments
-          .map(
-            (segment) =>
-              `${segment.speaker} (${formatTime(segment.start)}):\n${segment.text}\n`
-          )
+          .map((segment) => {
+            const label = getSpeakerLabel(segment.speakerIndex);
+            const prefix = label ? `${label} (${formatTime(segment.start)}):\n` : `(${formatTime(segment.start)}):\n`;
+            return `${prefix}${segment.text}\n`;
+          })
           .join("\n");
       },
 

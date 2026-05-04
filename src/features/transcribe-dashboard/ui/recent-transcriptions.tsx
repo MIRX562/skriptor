@@ -17,7 +17,7 @@ function formatTitle(metadata: Record<string, unknown> | null, fallback: string)
   return (metadata as { originalFilename?: string } | null)?.originalFilename ?? fallback ?? "Untitled";
 }
 
-export function RecentTranscriptions() {
+export function RecentTranscriptions({ dict }: { dict: any }) {
   const { data: transcriptions, isLoading } = useTranscriptionList();
 
   if (isLoading) {
@@ -41,7 +41,7 @@ export function RecentTranscriptions() {
   if (recent.length === 0) {
     return (
       <p className="text-sm text-muted-foreground text-center py-4">
-        No transcriptions yet. Upload your first audio file!
+        {dict.dashboard.recentTranscriptions.empty}
       </p>
     );
   }
@@ -89,9 +89,7 @@ export function RecentTranscriptions() {
               }
               className="text-xs capitalize flex-shrink-0"
             >
-              {item.status === "queued" || item.status === "processing"
-                ? "In Progress"
-                : item.status}
+              {dict.status[item.status] || item.status}
             </Badge>
           </div>
         );

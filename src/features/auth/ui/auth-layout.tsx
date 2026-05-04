@@ -4,11 +4,14 @@ import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function AuthLayout({
   children,
+  locale,
 }: {
   children: React.ReactNode;
+  locale: string;
 }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex flex-col">
@@ -30,7 +33,10 @@ export default function AuthLayout({
             </motion.div>
             <span className="font-medium text-lg">Skriptor</span>
           </Link>
-          <ModeToggle />
+          <div className="flex items-center space-x-2">
+            <LanguageSwitcher currentLocale={locale} />
+            <ModeToggle />
+          </div>
         </div>
       </header>
 

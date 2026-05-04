@@ -19,10 +19,13 @@ async def process_job(job: Job, token: str):
         progress.update("processing", 0, "Initializing...")
         
         # Run transcription
+        job_language = data.get("language")
+        print(f"Job {job.id} requested language: {job_language}")
+        
         result = transcriber.process(
             audio_url=data.get("audioUrl"),
             model_size=data.get("model", "medium"),
-            language=data.get("language", "en"),
+            language=job_language or "default",
             is_diarized=data.get("isSpeakerDiarized", False),
             num_speakers=data.get("numberOfSpeaker"),
             progress_cb=progress.update

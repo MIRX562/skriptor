@@ -44,6 +44,7 @@ export const transcriptions = pgTable("transcriptions", {
     .default(false)
     .notNull(),
   numberOfSpeaker: integer("number_of_speaker").default(1).notNull(),
+  speakers: jsonb("speakers").$type<{ index: number; label: string }[]>(),
 });
 
 export const transcriptionsRelations = relations(

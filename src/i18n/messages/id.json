@@ -1,4 +1,133 @@
 {
+  "transcribe": {
+    "title": "Buat Transkripsi Baru",
+    "description": "Unggah file audio atau rekam langsung untuk ditranskripsi",
+    "tabs": {
+      "upload": "Unggah File",
+      "record": "Rekam Audio"
+    },
+    "form": {
+      "audioFile": {
+        "label": "Pilih File Audio",
+        "description": "Pilih file audio untuk ditranskripsi."
+      },
+      "recordAudio": {
+        "label": "Rekam Audio",
+        "description": "Rekam audio Anda untuk ditranskripsi."
+      },
+      "title": {
+        "label": "Judul",
+        "placeholder": "Judul Transkripsi"
+      },
+      "language": {
+        "label": "Bahasa",
+        "placeholder": "Pilih bahasa",
+        "searchPlaceholder": "Cari bahasa...",
+        "noFound": "Bahasa tidak ditemukan.",
+        "description": "Ini adalah bahasa audio, biarkan default untuk deteksi otomatis."
+      },
+      "speed": {
+        "label": "Kecepatan Transkripsi",
+        "description": "Pilih kecepatan transkripsi berdasarkan kebutuhan Anda",
+        "fast": {
+          "label": "Cepat",
+          "description": "Akurasi lebih rendah"
+        },
+        "medium": {
+          "label": "Sedang",
+          "description": "Seimbang"
+        },
+        "super": {
+          "label": "Super",
+          "description": "Akurasi tertinggi"
+        }
+      },
+      "diarization": {
+        "label": "Identifikasi Pembicara",
+        "description": "Jika diaktifkan, hasil transkripsi akan mencakup identifikasi pembicara."
+      },
+      "speakers": {
+        "label": "Jumlah Pembicara (Maks 10)",
+        "description": "Nilai minimum adalah 1."
+      },
+      "preview": "Pratinjau Audio",
+      "actions": {
+        "cancel": "Batal",
+        "start": "Mulai Transkripsi",
+        "starting": "Memulai..."
+      }
+    },
+    "uploadArea": {
+      "clickToUpload": "Klik untuk unggah",
+      "orDragAndDrop": "atau seret dan lepas"
+    },
+    "messages": {
+      "noFile": "Silakan pilih file untuk diunggah.",
+      "noRecord": "Silakan rekam audio untuk diunggah.",
+      "uploadFailed": "Unggahan gagal.",
+      "uploadSuccess": "Transkripsi berhasil dimulai.",
+      "submitError": "Gagal mengirimkan formulir. Silakan coba lagi."
+    },
+    "overlay": {
+      "title": "Membuat tugas transkripsi...",
+      "description": "Mengunggah audio dan menyiapkan model"
+    }
+  },
+  "common": {
+    "audioInput": {
+      "start": "Mulai Rekaman",
+      "stop": "Berhenti",
+      "pause": "Jeda",
+      "resume": "Lanjutkan",
+      "discard": "Buang",
+      "ready": "Siap merekam?",
+      "readyDescription": "Klik tombol di atas untuk memulai transkripsi Anda",
+      "recording": "Merekam",
+      "paused": "Jeda",
+      "speaking": "Berbicara sekarang...",
+      "errors": {
+        "recordFailed": "Tidak dapat memulai rekaman.",
+        "micDenied": "Akses mikrofon ditolak.",
+        "micNotFound": "Mikrofon tidak ditemukan."
+      }
+    },
+    "untitled": "Transkripsi Tanpa Judul",
+    "back": "Kembali",
+    "delete": "Hapus",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "saving": "Menyimpan...",
+    "saveChanges": "Simpan Perubahan",
+    "retry": "Coba Lagi",
+    "loading": "Memuat...",
+    "error": "Kesalahan"
+  },
+  "header": {
+    "dashboard": "Dasbor",
+    "history": "Riwayat",
+    "settings": "Pengaturan"
+  },
+  "manage": {
+    "title": "Transkripsi Anda",
+    "search": "Cari transkripsi...",
+    "noResults": "Transkripsi tidak ditemukan.",
+    "empty": "Anda belum mengunggah audio apa pun.",
+    "uploadFirst": "Unggah file pertama Anda untuk memulai.",
+    "table": {
+      "name": "Nama",
+      "status": "Status",
+      "date": "Tanggal",
+      "duration": "Durasi",
+      "actions": "Aksi"
+    }
+  },
+  "view": {
+    "deleteConfirm": "Apakah Anda yakin ingin menghapus transkripsi ini?",
+    "deleteDescription": "Tindakan ini tidak dapat dibatalkan.",
+    "deleteSuccess": "Transkripsi berhasil dihapus.",
+    "saveSuccess": "Perubahan berhasil disimpan.",
+    "saveError": "Gagal menyimpan perubahan."
+  },
   "landing": {
     "header": {
       "features": "Fitur",
@@ -17,10 +146,58 @@
       "getStarted": "Mulai Gratis",
       "viewDemo": "Lihat Demo"
     },
+    "liteForm": {
+      "title": "Coba Skriptor Sekarang",
+      "description": "Unggah atau rekam file audio untuk melihat seberapa cepat transkripsi kami bekerja.",
+      "tabs": {
+        "upload": "Unggah File",
+        "record": "Rekam Audio"
+      },
+      "uploadArea": {
+        "clickToUpload": "Klik untuk mengunggah",
+        "orDragAndDrop": "atau seret dan lepas",
+        "hint": "MP3, M4A, WAV, FLAC (Maks 50MB)"
+      },
+      "audioPreview": "Pratinjau Audio",
+      "submit": "Transkripsi Sekarang",
+      "processing": "Memproses...",
+      "messages": {
+        "noFile": "Harap sediakan file audio untuk ditranskripsi.",
+        "authRequired": "Silakan daftar atau masuk untuk melanjutkan.",
+        "uploadFailed": "Unggah gagal.",
+        "started": "Transkripsi berhasil dimulai."
+      }
+    },
     "features": {
       "badge": "Fitur",
       "title": "Semua yang Anda Butuhkan untuk Transkripsi Sempurna",
-      "description": "Fitur canggih kami membuat transkripsi audio menjadi mudah, akurat, dan efisien."
+      "description": "Fitur canggih kami membuat transkripsi audio menjadi mudah, akurat, dan efisien.",
+      "items": {
+        "accuracy": {
+          "title": "Transkripsi Akurasi Tinggi",
+          "description": "Pengenalan suara terkemuka di industri dengan akurasi 98,7% di berbagai aksen dan bahasa."
+        },
+        "realtime": {
+          "title": "Pemrosesan Real-time",
+          "description": "Dapatkan transkripsi Anda dalam hitungan detik, bukan jam. Sempurna untuk konten yang sensitif terhadap waktu."
+        },
+        "languages": {
+          "title": "Dukungan Multi-bahasa",
+          "description": "Dukungan untuk 30+ bahasa dan deteksi bahasa otomatis untuk konten multibahasa."
+        },
+        "speakers": {
+          "title": "Identifikasi Pembicara",
+          "description": "Identifikasi dan beri label secara otomatis pada pembicara yang berbeda dalam rekaman Anda."
+        },
+        "summaries": {
+          "title": "Ringkasan Cerdas",
+          "description": "Ringkasan bertenaga AI dari transkripsi Anda untuk mengekstrak informasi kunci dengan cepat."
+        },
+        "vocabulary": {
+          "title": "Kosakata Kustom",
+          "description": "Tambahkan istilah dan nama khusus industri untuk meningkatkan akurasi transkripsi."
+        }
+      }
     },
     "howItWorks": {
       "badge": "Cara Kerja",
@@ -44,17 +221,104 @@
     "testimonials": {
       "badge": "Testimoni",
       "title": "Apa Kata Pengguna Kami",
-      "description": "Bergabunglah dengan ribuan pengguna puas yang mempercayakan kebutuhan transkripsi mereka pada Skriptor"
+      "description": "Bergabunglah dengan ribuan pengguna puas yang mempercayakan kebutuhan transkripsi mereka pada Skriptor",
+      "items": {
+        "sarah": {
+          "quote": "Skriptor telah sepenuhnya mengubah cara kami menangani catatan rapat. Akurasinya luar biasa, dan menghemat waktu kami berjam-jam setiap minggu.",
+          "author": "Sarah Johnson",
+          "role": "Manajer Produk di TechCorp"
+        },
+        "michael": {
+          "quote": "Sebagai jurnalis, transkripsi yang akurat sangat penting. Skriptor memberikan hasil yang konsisten luar biasa, bahkan dengan audio yang menantang.",
+          "author": "Michael Chen",
+          "role": "Reporter Senior, Global News"
+        },
+        "alex": {
+          "quote": "Fitur identifikasi pembicara adalah pengubah permainan untuk alur kerja pengeditan podcast kami. Kami telah memotong waktu pascaproduksi menjadi setengahnya!",
+          "author": "Alex Rivera",
+          "role": "Produser Podcast"
+        }
+      }
     },
     "pricing": {
       "badge": "Harga",
       "title": "Harga Sederhana dan Transparan",
-      "description": "Pilih paket yang paling cocok untuk Anda dan tim Anda"
+      "description": "Pilih paket yang paling cocok untuk Anda dan tim Anda",
+      "mostPopular": "Paling Populer",
+      "plans": {
+        "free": {
+          "name": "Gratis",
+          "price": "$0",
+          "description": "Sempurna untuk penggunaan sesekali",
+          "cta": "Mulai",
+          "features": [
+            "Hingga 10 menit audio per bulan",
+            "Transkripsi akurasi standar",
+            "2 format ekspor",
+            "Dukungan email"
+          ]
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$12",
+          "period": "/bulan",
+          "description": "Ideal untuk pengguna reguler",
+          "cta": "Mulai Uji Coba Gratis",
+          "features": [
+            "Hingga 5 jam audio per bulan",
+            "Transkripsi akurasi tinggi",
+            "Identifikasi pembicara",
+            "Semua format ekspor",
+            "Dukungan email prioritas"
+          ]
+        },
+        "business": {
+          "name": "Bisnis",
+          "price": "$49",
+          "period": "/bulan",
+          "description": "Untuk tim dan pengguna berat",
+          "cta": "Hubungi Penjualan",
+          "features": [
+            "Hingga 20 jam audio per bulan",
+            "Transkripsi akurasi tertinggi",
+            "Identifikasi pembicara tingkat lanjut",
+            "Kosakata kustom",
+            "Fitur kolaborasi tim",
+            "Dukungan prioritas 24/7"
+          ]
+        }
+      }
     },
     "faq": {
       "badge": "FAQ",
       "title": "Pertanyaan yang Sering Diajukan",
-      "description": "Semua yang perlu Anda ketahui tentang Skriptor"
+      "description": "Semua yang perlu Anda ketahui tentang Skriptor",
+      "items": [
+        {
+          "question": "Seberapa akurat transkripsinya?",
+          "answer": "Skriptor mencapai tingkat akurasi 98,7% yang terkemuka di industri untuk audio yang jelas dalam bahasa yang didukung. Akurasi dapat bervariasi tergantung pada kualitas audio, kebisingan latar belakang, aksen, dan terminologi teknis."
+        },
+        {
+          "question": "Bahasa apa saja yang didukung?",
+          "answer": "Skriptor saat ini mendukung lebih dari 30 bahasa termasuk Inggris, Spanyol, Prancis, Jerman, Italia, Portugis, Jepang, Mandarin, Korea, Arab, dan banyak lagi. Kami terus menambahkan dukungan untuk bahasa tambahan."
+        },
+        {
+          "question": "Berapa lama waktu yang dibutuhkan untuk transkripsi?",
+          "answer": "Sebagian besar transkripsi diselesaikan hampir secara real-time. File audio berdurasi 60 menit biasanya membutuhkan waktu 2-3 menit untuk diproses, tergantung pada kualitas audio dan beban server."
+        },
+        {
+          "question": "Apakah data saya aman?",
+          "answer": "Ya, kami menjaga keamanan data dengan sangat serius. Semua unggahan dienkripsi menggunakan TLS, dan kami menggunakan praktik keamanan standar industri untuk melindungi data Anda. Kami tidak membagikan konten Anda dengan pihak ketiga, dan Anda dapat menghapus data Anda kapan saja."
+        },
+        {
+          "question": "Dapatkah saya mengedit transkripsi?",
+          "answer": "Editor kami memungkinkan Anda untuk melakukan koreksi, menambahkan label pembicara, dan memformat transkrip Anda. Perubahan disimpan secara otomatis saat Anda mengetik."
+        },
+        {
+          "question": "Format file apa saja yang didukung?",
+          "answer": "Skriptor mendukung sebagian besar format audio umum termasuk MP3, WAV, M4A, FLAC, OGG, dan lainnya. Anda juga dapat merekam langsung di browser atau mengunggah file video (MP4, MOV, AVI)."
+        }
+      ]
     },
     "cta": {
       "title": "Siap Mengubah Audio Anda menjadi Teks?",
@@ -63,7 +327,289 @@
       "contactSales": "Hubungi Penjualan"
     },
     "footer": {
-      "description": "Ubah suara menjadi teks dengan presisi dan mudah."
+      "description": "Ubah ucapan menjadi teks dengan presisi dan mudah.",
+      "product": "Produk",
+      "company": "Perusahaan",
+      "legal": "Legal",
+      "rights": "© 2023 Skriptor. Hak cipta dilindungi undang-undang.",
+      "links": {
+        "api": "API",
+        "integrations": "Integrasi",
+        "documentation": "Dokumentasi",
+        "about": "Tentang",
+        "blog": "Blog",
+        "careers": "Karir",
+        "press": "Pers",
+        "contact": "Kontak",
+        "terms": "Ketentuan",
+        "privacy": "Privasi",
+        "cookies": "Cookie",
+        "licenses": "Lisensi",
+        "settings": "Pengaturan"
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dasbor",
+    "processingJob": "Memproses transkripsi tertunda...",
+    "uploadingAudio": "Mengunggah audio dan menyiapkan model",
+    "stats": {
+      "totalTranscriptions": "Total Transkripsi",
+      "hoursProcessed": "Jam Diproses",
+      "usage": "Penggunaan",
+      "accuracy": "Akurasi",
+      "allTime": "Sepanjang waktu",
+      "totalAudio": "Total audio ditranskripsi",
+      "ofPlan": "dari paket {planHours} jam",
+      "modelAccuracy": "Akurasi model WhisperX"
+    },
+    "recentTranscriptions": {
+      "title": "Transkripsi Terbaru",
+      "description": "Aktivitas transkripsi terbaru Anda"
+    },
+    "monthlyStats": {
+      "title": "Transkripsi per Bulan",
+      "description": "Volume transkripsi Anda dari waktu ke waktu"
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat data dasbor"
+    }
+  },
+  "manage": {
+    "title": "Transkripsi Anda",
+    "description": "Kelola dan lihat semua transkripsi Anda",
+    "back": "Kembali",
+    "searchPlaceholder": "Cari transkripsi...",
+    "filter": "Filter",
+    "loading": "Memuat transkripsi...",
+    "noDate": "Tanpa tanggal",
+    "noTranscriptions": "Tidak ada transkripsi ditemukan",
+    "actions": {
+      "view": "Lihat",
+      "retry": "Coba Lagi",
+      "download": "Unduh",
+      "delete": "Hapus",
+      "moreOptions": "Opsi lainnya"
+    },
+    "error": "Kesalahan",
+    "search": "Cari",
+    "noResults": "Hasil tidak ditemukan",
+    "messages": {
+      "deleteSuccess": "Transkripsi berhasil dihapus",
+      "deleteError": "Gagal menghapus transkripsi",
+      "retrySuccess": "Transkripsi antre untuk dicoba lagi",
+      "retryError": "Gagal mencoba lagi transkripsi"
+    }
+  },
+  "view": {
+    "back": "Kembali",
+    "actions": {
+      "download": "Unduh",
+      "search": "Cari",
+      "edit": "Edit",
+      "save": "Simpan",
+      "cancel": "Batal",
+      "share": "Bagikan",
+      "delete": "Hapus"
+    },
+    "download": {
+      "title": "Ekspor Transkripsi",
+      "description": "Pilih format dan opsi yang Anda inginkan untuk ekspor.",
+      "options": "Opsi Ekspor",
+      "includeTimestamp": "Sertakan Timestamp",
+      "includeSpeaker": "Sertakan Pembicara",
+      "copy": "Salin ke papan klip",
+      "txt": "Teks Biasa (.txt)",
+      "srt": "Subtitle (.srt)",
+      "pdf": "Dokumen (.pdf)",
+      "docx": "Dokumen Word (.docx)",
+      "csv": "Pemisah Koma (.csv)",
+      "xlsx": "Spreadsheet Excel (.xlsx)",
+      "exporting": "Mengekspor...",
+      "success": "File berhasil diekspor",
+      "error": "Gagal mengekspor file"
+    },
+    "metadata": {
+      "date": "Tanggal",
+      "duration": "Durasi"
+    },
+    "search": {
+      "placeholder": "Cari transkrip...",
+      "find": "Temukan",
+      "replace": "Ganti",
+      "replaceAll": "Ganti Semua"
+    },
+    "tabs": {
+      "transcript": "Segmen",
+      "readMode": "Mode Baca",
+      "summary": "Ringkasan"
+    },
+    "copied": "Tersalin!",
+    "empty": "Tidak ada segmen transkrip tersedia.",
+    "loadingAudio": "Memuat pemutar audio...",
+    "processing": {
+      "message": "Memproses audio...",
+      "title": "Memproses transkripsi",
+      "fast": "Pemrosesan cepat - akurasi lebih rendah tetapi hasil lebih cepat",
+      "medium": "Pemrosesan sedang - keseimbangan akurasi dan kecepatan",
+      "super": "Pemrosesan super - akurasi tertinggi dengan waktu pemrosesan lebih lama",
+      "loadingAudio": "Memuat audio...",
+      "checkBack": "Silakan periksa kembali nanti.",
+      "failed": "Transkripsi gagal diproses.",
+      "retryHelp": "Anda dapat mencoba lagi transkripsi ini dari opsi di bawah."
+    },
+    "audioPlayer": {
+      "play": "Putar",
+      "pause": "Jeda",
+      "skipBack": "Mundur 5 detik",
+      "skipForward": "Maju 5 detik",
+      "volume": "Volume"
+    },
+    "messages": {
+      "copySuccess": "Transkrip disalin ke papan klip",
+      "copyError": "Gagal menyalin transkrip",
+      "downloadStarted": "Unduhan dimulai",
+      "noMatches": "Tidak ada kecocokan ditemukan untuk \"{term}\"",
+      "foundMatches": "Ditemukan {count} kecocokan untuk \"{term}\"",
+      "replacedAll": "Mengganti {count} kejadian \"{search}\" dengan \"{replace}\"",
+      "saveSuccess": "Perubahan berhasil disimpan",
+      "saveError": "Gagal menyimpan perubahan",
+      "confirmDelete": "Apakah Anda yakin ingin menghapus transkripsi ini?",
+      "deleteSuccess": "Transkripsi dihapus"
+    },
+    "errors": {
+      "audioFailed": "Gagal memuat file audio. Silakan periksa koneksi Anda atau coba lagi nanti."
+    }
+  },
+  "tabs": {
+    "dashboard": "Dasbor",
+    "transcribe": "Transkripsi",
+    "manage": "Kelola",
+    "transcript": "Transkrip",
+    "summary": "Ringkasan"
+  },
+  "status": {
+    "queued": "Antre",
+    "processing": "Memproses",
+    "completed": "Selesai",
+    "failed": "Gagal",
+    "in_progress": "Sedang Berjalan",
+    "error": "Kesalahan"
+  },
+  "model": {
+    "fast": "Cepat",
+    "medium": "Sedang",
+    "super": "Super"
+  },
+  "auth": {
+    "signIn": {
+      "title": "Selamat datang kembali",
+      "description": "Masuk dengan akun Google Anda",
+      "googleButton": "Masuk dengan Google",
+      "divider": "Atau lanjutkan dengan",
+      "email": {
+        "label": "Email",
+        "placeholder": "skriptor@mail.com",
+        "description": "Masukkan email Anda."
+      },
+      "password": {
+        "label": "Kata Sandi",
+        "placeholder": "*******",
+        "description": "Masukkan kata sandi Anda."
+      },
+      "submit": "Masuk",
+      "noAccount": "Belum punya akun?",
+      "signUp": "Daftar",
+      "tosPrefix": "Dengan mengklik lanjutkan, Anda menyetujui",
+      "tos": "Ketentuan Layanan",
+      "and": "dan",
+      "privacyPolicy": "Kebijakan Privasi",
+      "messages": {
+        "loading": "Sedang masuk....",
+        "success": "Selamat Datang Kembali, {name}",
+        "error": "Gagal mengirim formulir. Silakan coba lagi."
+      }
+    },
+    "signUp": {
+      "title": "Buat akun",
+      "description": "Bergabung dengan Skriptor untuk mulai mentranskripsi",
+      "googleButton": "Daftar dengan Google",
+      "divider": "Atau lanjutkan dengan",
+      "name": {
+        "label": "Nama Lengkap",
+        "placeholder": "John Doe",
+        "description": "Masukkan nama lengkap Anda."
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "skriptor@mail.com",
+        "description": "Masukkan email Anda."
+      },
+      "password": {
+        "label": "Kata Sandi",
+        "placeholder": "*******",
+        "description": "Buat kata sandi."
+      },
+      "submit": "Daftar",
+      "hasAccount": "Sudah punya akun?",
+      "signIn": "Masuk",
+      "messages": {
+        "loading": "Sedang membuat akun....",
+        "success": "Akun berhasil dibuat",
+        "error": "Gagal membuat akun"
+      }
+    },
+    "forgotPassword": {
+      "title": "Lupa Kata Sandi",
+      "description": "Masukkan email Anda untuk mengatur ulang kata sandi",
+      "email": {
+        "label": "Email",
+        "placeholder": "skriptor@mail.com",
+        "description": "Masukkan email yang terdaftar."
+      },
+      "submit": "Kirim Tautan Atur Ulang",
+      "backToLogin": "Kembali ke masuk",
+      "messages": {
+        "loading": "Sedang mengirim tautan....",
+        "success": "Tautan atur ulang dikirim ke email Anda",
+        "error": "Gagal mengirim tautan atur ulang"
+      }
+    },
+    "resetPassword": {
+      "title": "Atur Ulang Kata Sandi",
+      "description": "Masukkan kata sandi baru Anda",
+      "password": {
+        "label": "Kata Sandi Baru",
+        "placeholder": "*******",
+        "description": "Buat kata sandi baru yang kuat."
+      },
+      "confirmPassword": {
+        "label": "Konfirmasi Kata Sandi",
+        "placeholder": "*******",
+        "description": "Ulangi kata sandi baru Anda."
+      },
+      "submit": "Atur Ulang Kata Sandi",
+      "messages": {
+        "loading": "Sedang mengatur ulang....",
+        "success": "Kata sandi berhasil diatur ulang",
+        "error": "Gagal mengatur ulang kata sandi",
+        "mismatch": "Kata sandi tidak cocok"
+      }
+    },
+    "settings": "Pengaturan",
+    "logout": "Keluar",
+    "verifyEmail": {
+      "title": "Verifikasi email Anda",
+      "description": "Kami telah mengirimkan tautan verifikasi ke alamat email Anda. Silakan periksa kotak masuk Anda untuk melanjutkan.",
+      "spamHint": "Jika Anda tidak melihat email tersebut, silakan periksa folder spam Anda.",
+      "resend": "Kirim Ulang Email Verifikasi",
+      "backToLogin": "Kembali ke masuk"
+    },
+    "emailVerified": {
+      "title": "Email Terverifikasi!",
+      "description": "Email Anda telah berhasil diverifikasi. Anda akan dialihkan ke dasbor dalam beberapa detik.",
+      "manualRedirect": "Klik di sini jika Anda tidak dialihkan secara otomatis",
+      "success": "Berhasil"
     }
   }
 }

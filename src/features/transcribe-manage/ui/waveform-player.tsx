@@ -22,6 +22,7 @@ import {
   RotateCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { type Dictionary } from "@/i18n/dictionaries";
 
 interface WaveformPlayerProps {
   audioUrl: string;
@@ -29,6 +30,7 @@ interface WaveformPlayerProps {
   onPlay?: () => void;
   onPause?: () => void;
   className?: string;
+  dict: Dictionary;
 }
 
 export interface WaveformPlayerRef {
@@ -46,6 +48,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
       onPlay,
       onPause,
       className,
+      dict,
     },
     ref
   ) {
@@ -143,7 +146,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
       ws.on("error", (e: Error | any) => {
         if (e && e.name === "AbortError") return;
         console.error("WaveSurfer error:", e);
-        setError("Failed to load audio");
+        setError(dict.view.errors.audioFailed);
         setIsLoading(false);
       });
 
@@ -208,7 +211,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
             <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10 rounded-xl">
               <div className="flex flex-col items-center gap-2">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
-                <span className="text-xs font-medium text-teal-600">Generating waveform...</span>
+                <span className="text-xs font-medium text-teal-600">{dict.view.loadingAudio}</span>
               </div>
             </div>
           )}
@@ -218,60 +221,64 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
         </div>
 
         {/* Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-4 px-1">
+        <div className="flex flex-wrap items-center justify-center sm:justify-between gap-4 px-1">
           <div className="flex items-center space-x-2">
             <Button
+              type="button"
               variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-full hover:bg-teal-50 hover:text-teal-600 dark:hover:bg-teal-900/20 dark:hover:text-teal-400 border-slate-200 dark:border-slate-800"
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full hover:bg-teal-50 hover:text-teal-600 dark:hover:bg-teal-900/20 dark:hover:text-teal-400 border-slate-200 dark:border-slate-800"
               onClick={skipBackward}
               disabled={isLoading || !!error}
-              title="Skip back 5s"
+              title={dict.view.audioPlayer.skipBack}
             >
-              <RotateCcw className="h-4 w-4" />
+              <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
 
             <Button
+              type="button"
               variant="default"
               size="icon"
-              className="h-12 w-12 rounded-full shadow-lg shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 text-white"
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full shadow-lg shadow-teal-500/20 bg-teal-600 hover:bg-teal-700 text-white"
               onClick={togglePlayPause}
               disabled={isLoading || !!error}
             >
               {isPlaying ? (
-                <Pause className="h-6 w-6 fill-current" />
+                <Pause className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
               ) : (
-                <Play className="h-6 w-6 fill-current ml-1" />
+                <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current ml-1" />
               )}
-              <span className="sr-only">{isPlaying ? "Pause" : "Play"}</span>
+              <span className="sr-only">{isPlaying ? dict.view.audioPlayer.pause : dict.view.audioPlayer.play}</span>
             </Button>
 
             <Button
+              type="button"
               variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-full hover:bg-teal-50 hover:text-teal-600 dark:hover:bg-teal-900/20 dark:hover:text-teal-400 border-slate-200 dark:border-slate-800"
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full hover:bg-teal-50 hover:text-teal-600 dark:hover:bg-teal-900/20 dark:hover:text-teal-400 border-slate-200 dark:border-slate-800"
               onClick={skipForward}
               disabled={isLoading || !!error}
-              title="Skip forward 5s"
+              title={dict.view.audioPlayer.skipForward}
             >
-              <RotateCw className="h-4 w-4" />
+              <RotateCw className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
 
           {/* Time Display */}
-          <div className="flex items-center space-x-3 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-inner">
-            <span className="text-sm font-mono font-medium text-teal-600 dark:text-teal-400">
+          <div className="flex items-center space-x-2 sm:space-x-3 px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-inner">
+            <span className="text-[11px] sm:text-sm font-mono font-medium text-teal-600 dark:text-teal-400">
               {formatTime(currentTime)}
             </span>
             <span className="text-slate-400 dark:text-slate-500">/</span>
-            <span className="text-sm font-mono text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] sm:text-sm font-mono text-slate-500 dark:text-slate-400">
               {formatTime(duration)}
             </span>
           </div>
 
           {/* Volume Control */}
-          <div className="flex items-center space-x-3 min-w-[140px]">
+          <div className="hidden sm:flex items-center space-x-3 min-w-[140px]">
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-slate-500 hover:text-teal-600"

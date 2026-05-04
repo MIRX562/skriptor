@@ -41,7 +41,11 @@ import { transcriptionUploadSchema } from "../schema/transcription-upload-schema
 
 type TranscriptionUploadValues = z.infer<typeof transcriptionUploadSchema>;
 
-export default function TranscriptionRecordForm() {
+interface TranscriptionRecordFormProps {
+  dict: any;
+}
+
+export default function TranscriptionRecordForm({ dict }: TranscriptionRecordFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const router = useRouter();
   const form = useForm<TranscriptionUploadValues>({
@@ -79,7 +83,7 @@ export default function TranscriptionRecordForm() {
         return;
       }
       toast.success("Transcription started successfully.");
-      router.push("/dashboard");
+      router.push("/dashboard?tab=manage");
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -93,8 +97,8 @@ export default function TranscriptionRecordForm() {
       {isSubmitting && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
           <Loader2 className="h-12 w-12 text-teal-600 animate-spin mb-4" />
-          <h2 className="text-xl font-semibold">Creating transcription job...</h2>
-          <p className="text-muted-foreground mt-2">Uploading audio and preparing models</p>
+          <h2 className="text-xl font-semibold">{dict.transcribe.overlay.title}</h2>
+          <p className="text-muted-foreground mt-2">{dict.transcribe.overlay.description}</p>
         </div>
       )}
       <Form {...form}>
@@ -107,7 +111,7 @@ export default function TranscriptionRecordForm() {
           name="file"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Record Audio</FormLabel>
+              <FormLabel>{dict.transcribe.form.recordAudio.label}</FormLabel>
               <FormControl>
                 <AudioInput
                   value={file}
@@ -115,13 +119,14 @@ export default function TranscriptionRecordForm() {
                     setFile(newFile ?? null);
                     field.onChange(newFile ?? null);
                     if (newFile && !form.getValues("title")) {
-                      form.setValue("title", `Recording ${new Date().toLocaleString()}`, { shouldValidate: true });
+                      form.setValue("title", `${dict.transcribe.tabs.record} ${new Date().toLocaleString()}`, { shouldValidate: true });
                     }
                   }}
+                  dict={dict}
                 />
               </FormControl>
               <FormDescription>
-                Record your audio for transcription.
+                {dict.transcribe.form.recordAudio.description}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -132,9 +137,9 @@ export default function TranscriptionRecordForm() {
           name="title"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Title</FormLabel>
+              <FormLabel>{dict.transcribe.form.title.label}</FormLabel>
               <FormControl>
-                <Input placeholder="Transcription Title" {...field} />
+                <Input placeholder={dict.transcribe.form.title.placeholder} {...field} />
               </FormControl>
             </FormItem>
           )}
@@ -144,7 +149,7 @@ export default function TranscriptionRecordForm() {
           name="language"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Language</FormLabel>
+              <FormLabel>{dict.transcribe.form.language.label}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -161,16 +166,16 @@ export default function TranscriptionRecordForm() {
                         ? languages.find(
                             (language) => language.value === field.value
                           )?.label
-                        : "Select language"}
+                        : dict.transcribe.form.language.placeholder}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
                   <Command>
-                    <CommandInput placeholder="Search language..." />
+                    <CommandInput placeholder={dict.transcribe.form.language.searchPlaceholder} />
                     <CommandList>
-                      <CommandEmpty>No language found.</CommandEmpty>
+                      <CommandEmpty>{dict.transcribe.form.language.noFound}</CommandEmpty>
                       <CommandGroup>
                         {languages.map((language) => (
                           <CommandItem
@@ -186,7 +191,7 @@ export default function TranscriptionRecordForm() {
                                 language.value === field.value
                                   ? "opacity-100"
                                   : "opacity-0"
-                              )}
+                                )}
                             />
                             {language.label}
                           </CommandItem>
@@ -197,8 +202,7 @@ export default function TranscriptionRecordForm() {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                This is the language of the audio, keep as default for
-                auto-detect.
+                {dict.transcribe.form.language.description}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -210,7 +214,7 @@ export default function TranscriptionRecordForm() {
           name="model"
           render={({ field }) => (
             <FormItem className="space-y-3">
-              <FormLabel>Transcription Speed</FormLabel>
+              <FormLabel>{dict.transcribe.form.speed.label}</FormLabel>
               <FormControl>
                 <RadioGroup
                   value={field.value}
@@ -228,9 +232,9 @@ export default function TranscriptionRecordForm() {
                       className="flex flex-col items-center justify-center h-full rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">🚀</span>
-                      <span className="font-medium">Fast</span>
+                      <span className="font-medium">{dict.transcribe.form.speed.fast.label}</span>
                       <span className="text-xs text-muted-foreground text-center">
-                        Lower accuracy
+                        {dict.transcribe.form.speed.fast.description}
                       </span>
                     </Label>
                   </div>
@@ -246,9 +250,9 @@ export default function TranscriptionRecordForm() {
                       className="flex flex-col items-center justify-center h-full rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">⚖️</span>
-                      <span className="font-medium">Medium</span>
+                      <span className="font-medium">{dict.transcribe.form.speed.medium.label}</span>
                       <span className="text-xs text-muted-foreground">
-                        Balanced
+                        {dict.transcribe.form.speed.medium.description}
                       </span>
                     </Label>
                   </div>
@@ -264,16 +268,16 @@ export default function TranscriptionRecordForm() {
                       className="flex flex-col items-center justify-center h-full rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">✨</span>
-                      <span className="font-medium">Super</span>
+                      <span className="font-medium">{dict.transcribe.form.speed.super.label}</span>
                       <span className="text-xs text-muted-foreground text-center">
-                        Highest accuracy
+                        {dict.transcribe.form.speed.super.description}
                       </span>
                     </Label>
                   </div>
                 </RadioGroup>
               </FormControl>
               <FormDescription>
-                Select transcription speed based on your needs
+                {dict.transcribe.form.speed.description}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -293,10 +297,9 @@ export default function TranscriptionRecordForm() {
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Identify Speakers</FormLabel>
+                <FormLabel>{dict.transcribe.form.diarization.label}</FormLabel>
                 <FormDescription>
-                  If enabled transcription result will include speaker
-                  identification.
+                  {dict.transcribe.form.diarization.description}
                 </FormDescription>
                 <FormMessage />
               </div>
@@ -310,7 +313,7 @@ export default function TranscriptionRecordForm() {
             name="numberOfSpeaker"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Number of Speakers (Max 10)</FormLabel>
+                <FormLabel>{dict.transcribe.form.speakers.label}</FormLabel>
                 <FormControl>
                   <div className="flex items-center space-x-2 w-[200px]">
                     <Button
@@ -321,7 +324,7 @@ export default function TranscriptionRecordForm() {
                         const value = Number(field.value) || 1;
                         if (value > 1) field.onChange(value - 1);
                       }}
-                      aria-label="Decrease"
+                      aria-label={dict.common?.audioInput?.decrease || "Decrease"}
                       className="rounded-full text-teal-400"
                     >
                       <Minus />
@@ -346,14 +349,14 @@ export default function TranscriptionRecordForm() {
                         const value = Number(field.value) || 1;
                         field.onChange(value + 1);
                       }}
-                      aria-label="Increase"
+                      aria-label={dict.common?.audioInput?.increase || "Increase"}
                       className="rounded-full text-teal-400"
                     >
                       <Plus />
                     </Button>
                   </div>
                 </FormControl>
-                <FormDescription>Minimum value is 1.</FormDescription>
+                <FormDescription>{dict.transcribe.form.speakers.description}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -366,7 +369,7 @@ export default function TranscriptionRecordForm() {
             onClick={() => form.reset()}
           >
             <X />
-            Cancel
+            {dict.transcribe.form.actions.cancel}
           </Button>
           <Button
             type="submit"
@@ -374,11 +377,11 @@ export default function TranscriptionRecordForm() {
             className="flex justify-center gap-2 bg-teal-600 hover:bg-teal-500 dark:bg-teal-400 dark:hover:bg-teal-300"
           >
             <Upload className="h-4 w-4" />
-            {isSubmitting ? "Starting..." : "Start Transcription"}
+            {isSubmitting ? dict.transcribe.form.actions.starting : dict.transcribe.form.actions.start}
           </Button>
         </div>
-      </form>
-    </Form>
+        </form>
+      </Form>
     </>
   );
 }

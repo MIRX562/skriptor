@@ -1,96 +1,56 @@
-"use client";
-
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { TranscriptionDashboard } from "@/features/transcribe-dashboard/ui/transcription-dashboard";
 import { TranscriptionList } from "@/features/transcribe-manage/ui/transcription-list";
 import { TranscriptionView } from "@/features/transcribe-manage/ui/transcription-view";
-import { SiteHeader } from "@/features/transcribe-dashboard/ui/dashboard-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AnimatePresence, motion } from "framer-motion";
-import DashboardLoading from "@/app/dashboard/loading";
+import { DashboardSkeleton } from "@/features/transcribe-dashboard/ui/dashboard-skeleton";
 import { TranscriptionUploadLoading } from "@/features/transcibe-upload/ui/transcription-upload-loading";
 import { TranscriptionUpload } from "@/features/transcibe-upload/ui/transcription-upload-view";
 import { TranscriptionListLoading } from "@/features/transcribe-manage/ui/transcription-list-loading";
 import { TranscriptionViewLoading } from "@/features/transcribe-manage/ui/transcription-view-loading";
-import { useProcessPendingJob } from "@/features/transcribe-dashboard/model/use-process-pending-job";
-import { Loader2 } from "lucide-react";
+import { getLocale } from "@/i18n/locale";
+import { getDictionary } from "@/i18n/dictionaries";
+import { DashboardTabs } from "./dashboard-tabs";
 
-export function DashboardPage() {
-  const [selectedView, setSelectedView] = useState<string | null>(null);
-  const { isProcessingPendingJob } = useProcessPendingJob();
+export async function DashboardPage({ 
+  activeTab: initialTab, 
+  selectedViewId 
+}: { 
+  activeTab?: string; 
+  selectedViewId?: string | null;
+}) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+  
+  const activeTab = initialTab || "transcribe";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      {isProcessingPendingJob && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
-          <Loader2 className="h-12 w-12 text-teal-600 animate-spin mb-4" />
-          <h2 className="text-xl font-semibold">Processing pending transcription...</h2>
-          <p className="text-muted-foreground mt-2">Uploading audio and preparing models</p>
-        </div>
-      )}
-      <SiteHeader />
-      <main className="container mx-auto p-4 md:p-6 lg:p-8">
-        <AnimatePresence mode="wait">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          >
-            <Tabs defaultValue="transcribe" orientation="vertical">
-              <div className="flex justify-center">
-                <TabsList className="grid w-full max-w-md grid-cols-3">
-                  <TabsTrigger
-                    value="dashboard"
-                    className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-                  >
-                    Dashboard
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="transcribe"
-                    className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-                  >
-                    Transcribe
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="manage"
-                    className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-                  >
-                    Manage
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="dashboard" className="space-y-6 mt-6">
-                <Suspense fallback={<DashboardLoading />}>
-                  <TranscriptionDashboard />
-                </Suspense>
-              </TabsContent>
-
-              <TabsContent value="transcribe" className="space-y-6 mt-6">
-                <Suspense fallback={<TranscriptionUploadLoading />}>
-                  <TranscriptionUpload />
-                </Suspense>
-              </TabsContent>
-
-              <TabsContent value="manage" className="space-y-6 mt-6">
-                {selectedView ? (
-                  <Suspense fallback={<TranscriptionViewLoading />}>
-                    <TranscriptionView
-                      id={selectedView}
-                      onBack={() => setSelectedView(null)}
-                    />
-                  </Suspense>
-                ) : (
-                  <Suspense fallback={<TranscriptionListLoading />}>
-                    <TranscriptionList onSelect={(id) => setSelectedView(id)} />
-                  </Suspense>
-                )}
-              </TabsContent>
-            </Tabs>
-          </motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
+    <DashboardTabs
+      activeTab={activeTab}
+      dict={dict}
+      locale={locale}
+      dashboardContent={
+        <Suspense fallback={<DashboardSkeleton />}>
+          <TranscriptionDashboard dict={dict} />
+        </Suspense>
+      }
+      transcribeContent={
+        <Suspense fallback={<TranscriptionUploadLoading />}>
+          <TranscriptionUpload dict={dict} />
+        </Suspense>
+      }
+      manageContent={
+        <Suspense fallback={selectedViewId ? <TranscriptionViewLoading /> : <TranscriptionListLoading />}>
+          <ManageTabContent selectedViewId={selectedViewId} dict={dict} />
+        </Suspense>
+      }
+    />
   );
+}
+
+// Helper component to handle the conditional view vs list in the manage tab
+function ManageTabContent({ selectedViewId, dict }: { selectedViewId?: string | null; dict: any }) {
+  if (selectedViewId) {
+    return <TranscriptionView id={selectedViewId} dict={dict} />;
+  }
+  return <TranscriptionList dict={dict} />;
 }

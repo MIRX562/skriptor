@@ -10,19 +10,22 @@ class ProgressManager:
         self.last_key = f"transcription:progress:{transcription_id}:last"
 
     def update(self, status: str, progress: int, message: str):
-        event = {
-            "id": self.transcription_id,
-            "status": status,
-            "progress": progress,
-            "message": message
-        }
-        data = json.dumps(event)
-        
-        # Publish to Pub/Sub channel
-        self.redis_client.publish(self.channel, data)
-        
-        # Store as last event for SSE reconnect support
-        self.redis_client.set(self.last_key, data, ex=3600) # 1 hour expiry
+        try:
+            event = {
+                "id": self.transcription_id,
+                "status": status,
+                "progress": progress,
+                "message": message
+            }
+            data = json.dumps(event)
+            
+            # Publish to Pub/Sub channel
+            self.redis_client.publish(self.channel, data)
+            
+            # Store as last event for SSE reconnect support
+            self.redis_client.set(self.last_key, data, ex=3600) # 1 hour expiry
+        except Exception as e:
+            print(f"Warning: Failed to update progress in Redis: {e}")
 
     def complete(self):
         self.update("completed", 100, "Processing complete")

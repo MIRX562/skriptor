@@ -2,11 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 
 export interface TranscriptionSegmentData {
   id: string;
-  speaker: string | null;
+  speakerIndex: number | null;
   text: string;
   startTime: number;
   endTime: number;
   transcriptionId: string;
+}
+
+export interface Speaker {
+  index: number;
+  label: string;
 }
 
 export interface TranscriptionData {
@@ -20,6 +25,7 @@ export interface TranscriptionData {
   audioUrl: string;
   summary: string | null;
   metadata: Record<string, unknown> | null;
+  speakers: Speaker[] | null;
   createdAt: string;
   updatedAt: string;
   userId: string;

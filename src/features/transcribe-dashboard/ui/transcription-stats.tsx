@@ -13,13 +13,15 @@ import {
 import { useTranscriptionList } from "@/features/transcribe-manage/model/use-transcription-list";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const SHORT_MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-export function TranscriptionStats() {
+export function TranscriptionStats({ dict }: { dict: any }) {
   const { data: transcriptions, isLoading } = useTranscriptionList();
+
+  const shortMonths = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(undefined, { month: "short" });
+    return Array.from({ length: 12 }, (_, i) => 
+      formatter.format(new Date(2024, i, 1))
+    );
+  }, []);
 
   const chartData = useMemo(() => {
     if (!transcriptions || transcriptions.length === 0) return [];
@@ -31,7 +33,7 @@ export function TranscriptionStats() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       months.push({
-        month: SHORT_MONTHS[d.getMonth()],
+        month: shortMonths[d.getMonth()],
         count: 0,
         year: d.getFullYear(),
         monthIndex: d.getMonth(),
@@ -48,7 +50,7 @@ export function TranscriptionStats() {
     });
 
     return months.map(({ month, count }) => ({ month, count }));
-  }, [transcriptions]);
+  }, [transcriptions, shortMonths]);
 
   if (isLoading) {
     return (
@@ -61,7 +63,7 @@ export function TranscriptionStats() {
   if (chartData.length === 0 || chartData.every((d) => d.count === 0)) {
     return (
       <div className="h-48 flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">No data yet</p>
+        <p className="text-sm text-muted-foreground">{dict.dashboard.monthlyStats.empty}</p>
       </div>
     );
   }
@@ -86,11 +88,16 @@ export function TranscriptionStats() {
           <Tooltip
             content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
+              const value = payload[0].value as number;
+              const labelText = value === 1 
+                ? dict.dashboard.monthlyStats.transcription 
+                : dict.dashboard.monthlyStats.transcriptions;
+                
               return (
                 <div className="rounded-md border bg-popover px-3 py-2 text-sm shadow-md">
                   <p className="font-medium">{label}</p>
                   <p className="text-muted-foreground">
-                    {payload[0].value} transcription{payload[0].value !== 1 ? "s" : ""}
+                    {value} {labelText}
                   </p>
                 </div>
               );

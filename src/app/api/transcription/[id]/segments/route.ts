@@ -6,14 +6,21 @@ import { transcriptions, segments } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
+const speakerSchema = z.object({
+  index: z.number().int().positive(),
+  label: z.string().min(1).max(100),
+});
+
 const segmentsUpdateSchema = z.object({
   segments: z.array(
     z.object({
       id: z.string().uuid(),
       text: z.string(),
-      speaker: z.string().nullable().optional(),
+      speakerIndex: z.number().int().nullable().optional(),
     })
   ),
+  // Optionally update speaker labels (full replacement)
+  speakers: z.array(speakerSchema).optional(),
 });
 
 export async function PATCH(
@@ -57,15 +64,16 @@ export async function PATCH(
     }
 
     const updates = parsed.data.segments;
+    const speakersUpdate = parsed.data.speakers;
 
-    // We can run updates in parallel
+    // Run segment updates in parallel
     await Promise.all(
       updates.map((updateData) =>
         db
           .update(segments)
           .set({
             text: updateData.text,
-            speaker: updateData.speaker ?? null,
+            speakerIndex: updateData.speakerIndex ?? null,
           })
           .where(
             and(
@@ -75,6 +83,14 @@ export async function PATCH(
           )
       )
     );
+
+    // Update speaker labels on the parent transcription if provided
+    if (speakersUpdate !== undefined) {
+      await db
+        .update(transcriptions)
+        .set({ speakers: speakersUpdate })
+        .where(eq(transcriptions.id, id));
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

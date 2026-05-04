@@ -7,7 +7,7 @@ export const segments = pgTable("segments", {
   transcriptionId: uuid("transcription_id")
     .references(() => transcriptions.id, { onDelete: "cascade" })
     .notNull(),
-  speaker: text("speaker"),
+  speakerIndex: integer("speaker_index"),
   text: text("text").notNull(),
   startTime: integer("start_time").notNull(),
   endTime: integer("end_time").notNull(),

@@ -8,10 +8,17 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/logo";
 import DashboardUserMenu from "./dashboard-header-user-menu";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
-export function SiteHeader() {
+export function SiteHeader({ dict, locale }: { dict?: any; locale?: string }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const headerDict = {
+    dashboard: dict?.header?.dashboard || "Dashboard",
+    history: dict?.header?.history || "History",
+    settings: dict?.header?.settings || "Settings",
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,8 +51,9 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center space-x-3">
+          <LanguageSwitcher currentLocale={locale || "en"} />
           <ModeToggle />
-          <DashboardUserMenu />
+          <DashboardUserMenu dict={dict} />
           <Button
             variant="ghost"
             size="icon"
@@ -72,25 +80,25 @@ export function SiteHeader() {
           >
             <div className="container mx-auto px-4 py-4 flex flex-col space-y-3">
               <Link
-                href="#"
+                href="/dashboard"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Dashboard
+                {headerDict.dashboard}
               </Link>
               <Link
-                href="#"
+                href="/dashboard/history"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Transcriptions
+                {headerDict.history}
               </Link>
               <Link
-                href="#"
+                href="/settings"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Settings
+                {headerDict.settings}
               </Link>
             </div>
           </motion.div>

@@ -15,6 +15,13 @@
       "when": 1776886585449,
       "tag": "0001_milky_omega_flight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777000000000,
+      "tag": "0002_speakers_jsonb_and_segment_speaker_index",
+      "breakpoints": true
     }
   ]
 }

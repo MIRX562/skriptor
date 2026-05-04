@@ -48,7 +48,7 @@ import { WaveformPlayer } from "../../transcribe-manage/ui/waveform-player";
 
 type TranscriptionUploadValues = z.infer<typeof transcriptionUploadSchema>;
 
-export default function TranscriptionUploadForm() {
+export default function TranscriptionUploadForm({ dict }: { dict: any }) {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const router = useRouter();
@@ -98,7 +98,7 @@ export default function TranscriptionUploadForm() {
     values: TranscriptionUploadValues
   ) => {
     if (!file) {
-      throw new Error("Please select a file to upload.");
+      throw new Error(dict.transcribe.messages.noFile);
     }
     const formData = new FormData();
     formData.append("file", file);
@@ -115,7 +115,7 @@ export default function TranscriptionUploadForm() {
 
     const data = await response.json();
     if (!response.ok || !data.success) {
-      const msg = data?.error ? JSON.stringify(data.error) : "Upload failed.";
+      const msg = data?.error ? JSON.stringify(data.error) : dict.transcribe.messages.uploadFailed;
       throw new Error(msg);
     }
     return data;
@@ -135,12 +135,12 @@ export default function TranscriptionUploadForm() {
           ? err.message
           : typeof err === "string"
             ? err
-            : "Failed to submit the form. Please try again.";
+            : dict.transcribe.messages.submitError;
       toast.error(message);
     },
     onSuccess: () => {
-      toast.success("Transcription started successfully.");
-      router.push("/dashboard");
+      toast.success(dict.transcribe.messages.uploadSuccess);
+      router.push("/dashboard?tab=manage");
     },
   });
 
@@ -151,8 +151,8 @@ export default function TranscriptionUploadForm() {
       {mutation.isPending && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
           <Loader2 className="h-12 w-12 text-teal-600 animate-spin mb-4" />
-          <h2 className="text-xl font-semibold">Creating transcription job...</h2>
-          <p className="text-muted-foreground mt-2">Uploading audio and preparing models</p>
+          <h2 className="text-xl font-semibold">{dict.transcribe.overlay.title}</h2>
+          <p className="text-muted-foreground mt-2">{dict.transcribe.overlay.description}</p>
         </div>
       )}
       <Form {...form}>
@@ -165,7 +165,7 @@ export default function TranscriptionUploadForm() {
           name="file"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Select Audio File</FormLabel>
+              <FormLabel>{dict.transcribe.form.audioFile.label}</FormLabel>
               <FormControl>
                 <FileUploader
                   value={file ? [file] : []}
@@ -188,8 +188,8 @@ export default function TranscriptionUploadForm() {
                     <div className="flex items-center justify-center flex-col p-8 w-full ">
                       <CloudUpload className="text-gray-500 w-10 h-10" />
                       <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span>
-                        &nbsp; or drag and drop
+                        <span className="font-semibold">{dict.transcribe.uploadArea.clickToUpload}</span>
+                        &nbsp; {dict.transcribe.uploadArea.orDragAndDrop}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         MP3,M4A,WAV,FLAC
@@ -207,7 +207,7 @@ export default function TranscriptionUploadForm() {
                 </FileUploader>
               </FormControl>
               <FormDescription>
-                Select an audio file to transcribe.
+                {dict.transcribe.form.audioFile.description}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -215,8 +215,8 @@ export default function TranscriptionUploadForm() {
         />
         {previewUrl && (
           <div className="w-full mt-4">
-            <Label className="mb-2 block">Audio Preview</Label>
-            <WaveformPlayer audioUrl={previewUrl} />
+            <Label className="mb-2 block">{dict.transcribe.form.preview}</Label>
+            <WaveformPlayer audioUrl={previewUrl} dict={dict} />
           </div>
         )}
         <FormField
@@ -224,9 +224,9 @@ export default function TranscriptionUploadForm() {
           name="title"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Title</FormLabel>
+              <FormLabel>{dict.transcribe.form.title.label}</FormLabel>
               <FormControl>
-                <Input placeholder="Transcription Title" {...field} />
+                <Input placeholder={dict.transcribe.form.title.placeholder} {...field} />
               </FormControl>
             </FormItem>
           )}
@@ -236,7 +236,7 @@ export default function TranscriptionUploadForm() {
           name="language"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Language</FormLabel>
+              <FormLabel>{dict.transcribe.form.language.label}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -253,16 +253,16 @@ export default function TranscriptionUploadForm() {
                         ? languages.find(
                             (language) => language.value === field.value
                           )?.label
-                        : "Select language"}
+                        : dict.transcribe.form.language.placeholder}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
                   <Command>
-                    <CommandInput placeholder="Search language..." />
+                    <CommandInput placeholder={dict.transcribe.form.language.searchPlaceholder} />
                     <CommandList>
-                      <CommandEmpty>No language found.</CommandEmpty>
+                      <CommandEmpty>{dict.transcribe.form.language.noFound}</CommandEmpty>
                       <CommandGroup>
                         {languages.map((language) => (
                           <CommandItem
@@ -289,8 +289,7 @@ export default function TranscriptionUploadForm() {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                This is the language of the audio, keep as default for
-                auto-detect.
+                {dict.transcribe.form.language.description}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -302,7 +301,7 @@ export default function TranscriptionUploadForm() {
           name="model"
           render={({ field }) => (
             <FormItem className="space-y-3">
-              <FormLabel>Transcription Speed</FormLabel>
+              <FormLabel>{dict.transcribe.form.speed.label}</FormLabel>
               <FormControl>
                 <RadioGroup
                   value={field.value}
@@ -320,9 +319,9 @@ export default function TranscriptionUploadForm() {
                       className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">🚀</span>
-                      <span className="font-medium">Fast</span>
+                      <span className="font-medium">{dict.transcribe.form.speed.fast.label}</span>
                       <span className="text-xs text-muted-foreground">
-                        Lower accuracy
+                        {dict.transcribe.form.speed.fast.description}
                       </span>
                     </Label>
                   </div>
@@ -338,9 +337,9 @@ export default function TranscriptionUploadForm() {
                       className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">⚖️</span>
-                      <span className="font-medium">Medium</span>
+                      <span className="font-medium">{dict.transcribe.form.speed.medium.label}</span>
                       <span className="text-xs text-muted-foreground">
-                        Balanced
+                        {dict.transcribe.form.speed.medium.description}
                       </span>
                     </Label>
                   </div>
@@ -356,16 +355,16 @@ export default function TranscriptionUploadForm() {
                       className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">✨</span>
-                      <span className="font-medium">Super</span>
+                      <span className="font-medium">{dict.transcribe.form.speed.super.label}</span>
                       <span className="text-xs text-muted-foreground">
-                        Highest accuracy
+                        {dict.transcribe.form.speed.super.description}
                       </span>
                     </Label>
                   </div>
                 </RadioGroup>
               </FormControl>
               <FormDescription>
-                Select transcription speed based on your needs
+                {dict.transcribe.form.speed.description}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -385,10 +384,9 @@ export default function TranscriptionUploadForm() {
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Identify Speakers</FormLabel>
+                <FormLabel>{dict.transcribe.form.diarization.label}</FormLabel>
                 <FormDescription>
-                  If enabled transcription result will include speaker
-                  identification.
+                  {dict.transcribe.form.diarization.description}
                 </FormDescription>
                 <FormMessage />
               </div>
@@ -402,7 +400,7 @@ export default function TranscriptionUploadForm() {
             name="numberOfSpeaker"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Number of Speakers (Max 10)</FormLabel>
+                <FormLabel>{dict.transcribe.form.speakers.label}</FormLabel>
                 <FormControl>
                   <div className="flex items-center space-x-2 w-[200px]">
                     <Button
@@ -413,7 +411,7 @@ export default function TranscriptionUploadForm() {
                         const value = Number(field.value) || 1;
                         if (value > 1) field.onChange(value - 1);
                       }}
-                      aria-label="Decrease"
+                      aria-label={dict.common?.audioInput?.decrease || "Decrease"}
                       className="rounded-full text-teal-400"
                     >
                       <Minus />
@@ -438,14 +436,14 @@ export default function TranscriptionUploadForm() {
                         const value = Number(field.value) || 1;
                         field.onChange(value + 1);
                       }}
-                      aria-label="Increase"
+                      aria-label={dict.common?.audioInput?.increase || "Increase"}
                       className="rounded-full text-teal-400"
                     >
                       <Plus />
                     </Button>
                   </div>
                 </FormControl>
-                <FormDescription>Minimum value is 1.</FormDescription>
+                <FormDescription>{dict.transcribe.form.speakers.description}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -458,14 +456,14 @@ export default function TranscriptionUploadForm() {
             onClick={() => form.reset()}
           >
             <X />
-            Cancel
+            {dict.transcribe.form.actions.cancel}
           </Button>
           <Button
             type="submit"
             className="flex justify-center gap-2 bg-teal-600 hover:bg-teal-500 dark:bg-teal-400 dark:hover:bg-teal-300"
           >
             <Upload className="h-4 w-4" />
-            Start Transcription
+            {mutation.isPending ? dict.transcribe.form.actions.starting : dict.transcribe.form.actions.start}
           </Button>
         </div>
         </form>

@@ -28,7 +28,11 @@ import { signUpEmail } from "../model/query";
 import { useRouter } from "next/navigation";
 import { signInGoogle } from "@/features/sign-in/model/query";
 
-export default function SignUpPage() {
+interface SignUpPageProps {
+  dict: any;
+}
+
+export default function SignUpPage({ dict }: SignUpPageProps) {
   const form = useForm<z.infer<typeof signUpEmailSchema>>({
     resolver: zodResolver(signUpEmailSchema),
   });
@@ -38,23 +42,23 @@ export default function SignUpPage() {
   function onSubmit(values: z.infer<typeof signUpEmailSchema>) {
     try {
       toast.promise(signUpEmail(values), {
-        loading: "Creating account...",
-        error: "Error occured, try again",
-        success: "Verification email sent, check your inbox!.",
+        loading: dict.auth.signUp.messages.loading,
+        error: dict.auth.signUp.messages.error,
+        success: dict.auth.signUp.messages.success,
       });
     } catch (error) {
       console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+      toast.error(dict.auth.signUp.messages.error);
     }
-    router.push("/sign-in");
+    router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
   }
 
   return (
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create an Account</CardTitle>
-          <CardDescription>Sign Up with your Email</CardDescription>
+          <CardTitle className="text-xl">{dict.auth.signUp.title}</CardTitle>
+          <CardDescription>{dict.auth.signUp.description}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 w-full">
           <Form {...form}>
@@ -64,11 +68,11 @@ export default function SignUpPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>{dict.auth.signUp.name.label}</FormLabel>
                     <FormControl>
-                      <Input placeholder="skriptor" {...field} />
+                      <Input placeholder={dict.auth.signUp.name.placeholder} {...field} />
                     </FormControl>
-                    <FormDescription>Enter your full name.</FormDescription>
+                    <FormDescription>{dict.auth.signUp.name.description}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -79,15 +83,15 @@ export default function SignUpPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{dict.auth.signUp.email.label}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="skriptor@mail.com"
+                        placeholder={dict.auth.signUp.email.placeholder}
                         type="email"
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>Enter your email.</FormDescription>
+                    <FormDescription>{dict.auth.signUp.email.description}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -98,11 +102,11 @@ export default function SignUpPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{dict.auth.signUp.password.label}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder="*******" {...field} />
+                      <PasswordInput placeholder={dict.auth.signUp.password.placeholder} {...field} />
                     </FormControl>
-                    <FormDescription>Enter your password.</FormDescription>
+                    <FormDescription>{dict.auth.signUp.password.description}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -112,14 +116,14 @@ export default function SignUpPage() {
                 variant="outline"
                 className="w-full bg-teal-500 dark:bg-teal-400 text-primary-foreground"
               >
-                Sign Up
+                {dict.auth.signUp.submit}
               </Button>
             </form>
           </Form>
 
           <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
             <span className="relative z-10 bg-background px-4 text-muted-foreground">
-              Or continue with
+              {dict.auth.signUp.divider}
             </span>
           </div>
 
@@ -134,17 +138,18 @@ export default function SignUpPage() {
                 fill="currentColor"
               />
             </svg>
-            Sign Up with Google
+            {dict.auth.signUp.googleButton}
           </Button>
           <div className="text-center text-sm">
-            Already have an account?{" "}
+            {dict.auth.signUp.hasAccount}{" "}
             <Link href="/sign-in" className="underline underline-offset-4">
-              Login
+              {dict.auth.signUp.signIn}
             </Link>
           </div>
           <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
-            By clicking sign up, you agree to our{" "}
-            <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+            {dict.auth.signIn.tosPrefix}{" "}
+            <a href="#">{dict.auth.signIn.tos}</a> {dict.auth.signIn.and}{" "}
+            <a href="#">{dict.auth.signIn.privacyPolicy}</a>.
           </div>
         </CardContent>
       </Card>

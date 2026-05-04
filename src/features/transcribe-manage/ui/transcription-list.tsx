@@ -29,15 +29,17 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranscriptionListStore } from "../store/transcription-list-store";
 import { useTranscriptionList, type TranscriptionListItem } from "../model/use-transcription-list";
 import { useDeleteTranscription } from "../model/use-delete-transcription";
 import { useRetryTranscription } from "../model/use-retry-transcription";
 import { useTranscriptionProgress } from "../model/use-transcription-progress";
 import { toast } from "sonner";
+import { type Dictionary } from "@/i18n/dictionaries";
 
 interface TranscriptionListProps {
-  onSelect: (id: string) => void;
+  dict: Dictionary;
 }
 
 type TranscriptionStatus = "queued" | "processing" | "completed" | "failed";
@@ -78,6 +80,7 @@ function TranscriptionListItemRow({
   onRetry,
   isDeleting,
   isRetrying,
+  dict,
 }: {
   item: TranscriptionListItem;
   index: number;
@@ -86,6 +89,7 @@ function TranscriptionListItemRow({
   onRetry: (id: string, e: React.MouseEvent) => void;
   isDeleting: boolean;
   isRetrying: boolean;
+  dict: any;
 }) {
   const displayTitle = formatTitle(item.metadata, item.title);
   const displayMode = mapMode(item.model);
@@ -116,7 +120,7 @@ function TranscriptionListItemRow({
             <span>
               {item.createdAt
                 ? new Date(item.createdAt).toLocaleDateString()
-                : "No date"}
+                : "—"}
             </span>
             <span className="flex items-center">
               <Clock className="h-3 w-3 mr-1" />
@@ -146,7 +150,7 @@ function TranscriptionListItemRow({
           }
           className="text-xs font-normal capitalize"
         >
-          {displayMode}
+          {dict.transcribe.form.speed[displayMode]?.label || displayMode}
         </Badge>
 
         <Badge
@@ -159,7 +163,7 @@ function TranscriptionListItemRow({
           }
           className="text-xs font-normal capitalize"
         >
-          {displayStatus.replace("_", " ")}
+          {dict.status[currentStatus] || displayStatus.replace("_", " ")}
         </Badge>
 
         <DropdownMenu>
@@ -171,7 +175,7 @@ function TranscriptionListItemRow({
               onClick={(e) => e.stopPropagation()}
             >
               <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">More options</span>
+              <span className="sr-only">{dict.common.options || "Options"}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -181,7 +185,7 @@ function TranscriptionListItemRow({
                 onSelect(item.id);
               }}
             >
-              View
+              {dict.common.view || "View"}
             </DropdownMenuItem>
             {currentStatus === "failed" && (
               <DropdownMenuItem
@@ -189,14 +193,14 @@ function TranscriptionListItemRow({
                 disabled={isRetrying}
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
-                Retry
+                {dict.common.retry || "Retry Job"}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
               onClick={(e) => e.stopPropagation()}
             >
               <Download className="h-4 w-4 mr-2" />
-              Download
+              {dict.manage.actions.download}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:bg-destructive/10"
@@ -204,7 +208,7 @@ function TranscriptionListItemRow({
               disabled={isDeleting}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {dict.common.delete || "Delete"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -213,11 +217,19 @@ function TranscriptionListItemRow({
   );
 }
 
-export function TranscriptionList({ onSelect }: TranscriptionListProps) {
+export function TranscriptionList({ dict }: TranscriptionListProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { searchQuery, setSearchQuery } = useTranscriptionListStore();
   const { data: transcriptions, isLoading, error } = useTranscriptionList();
   const deleteMutation = useDeleteTranscription();
   const retryMutation = useRetryTranscription();
+
+  const handleSelect = (id: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", id);
+    router.push(`/dashboard?${params.toString()}`, { scroll: false });
+  };
 
   const filteredTranscriptions = (transcriptions ?? []).filter((item) => {
     const title = formatTitle(item.metadata, item.title).toLowerCase();
@@ -229,10 +241,10 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
     e.stopPropagation();
     deleteMutation.mutate(id, {
       onSuccess: () => {
-        toast.success("Transcription deleted successfully");
+        toast.success(dict.manage.messages.deleteSuccess);
       },
       onError: (err) => {
-        toast.error(err instanceof Error ? err.message : "Failed to delete transcription");
+        toast.error(err instanceof Error ? err.message : dict.manage.error);
       },
     });
   };
@@ -241,10 +253,10 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
     e.stopPropagation();
     retryMutation.mutate(id, {
       onSuccess: () => {
-        toast.success("Transcription queued for retry");
+        toast.success(dict.manage.messages.retrySuccess || "Transcription queued for retry");
       },
       onError: (err) => {
-        toast.error(err instanceof Error ? err.message : "Failed to retry transcription");
+        toast.error(err instanceof Error ? err.message : dict.manage.error);
       },
     });
   };
@@ -257,9 +269,9 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
     >
       <Card>
         <CardHeader>
-          <CardTitle>Your Transcriptions</CardTitle>
+          <CardTitle>{dict.manage.title}</CardTitle>
           <CardDescription>
-            Manage and view all your transcriptions
+            {dict.manage.description || "Manage and view all your transcriptions"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -269,26 +281,26 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search transcriptions..."
+                  placeholder={dict.manage.search}
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Button variant="outline">Filter</Button>
+              <Button variant="outline">{dict.manage.filter || "Filter"}</Button>
             </div>
 
             <div className="space-y-2">
               {isLoading ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">
-                    Loading transcriptions...
+                    {dict.common.loading}
                   </p>
                 </div>
               ) : error ? (
                 <div className="text-center py-8">
                   <p className="text-destructive">
-                    {error instanceof Error ? error.message : "Failed to load transcriptions"}
+                    {error instanceof Error ? error.message : dict.manage.error}
                   </p>
                 </div>
               ) : filteredTranscriptions.length > 0 ? (
@@ -297,17 +309,18 @@ export function TranscriptionList({ onSelect }: TranscriptionListProps) {
                     key={item.id}
                     item={item}
                     index={index}
-                    onSelect={onSelect}
+                    onSelect={handleSelect}
                     onDelete={handleDelete}
                     onRetry={handleRetry}
                     isDeleting={deleteMutation.isPending}
                     isRetrying={retryMutation.isPending}
+                    dict={dict}
                   />
                 ))
               ) : (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">
-                    No transcriptions found
+                    {dict.manage.noResults}
                   </p>
                 </div>
               )}

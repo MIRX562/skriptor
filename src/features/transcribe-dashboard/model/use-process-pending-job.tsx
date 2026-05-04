@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getPendingJob, clearPendingJob } from "@/lib/pending-job";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -6,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 export function useProcessPendingJob() {
   const [isProcessingPendingJob, setIsProcessing] = useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   useEffect(() => {
     const processJob = async () => {
@@ -36,6 +38,7 @@ export function useProcessPendingJob() {
 
         toast.success("Transcription started successfully.");
         await clearPendingJob();
+        router.push("/dashboard?tab=manage", { scroll: false });
         
         // Invalidate the transcriptions list to show the new item
         queryClient.invalidateQueries({ queryKey: ["transcriptions"] });

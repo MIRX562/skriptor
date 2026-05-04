@@ -45,6 +45,7 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
+    redirectTo: "/email-verified",
     sendVerificationEmail: async ({ user, url }) => {
       await sendEmail({
         from: "Skriptor <skriptor@mirx.my.id>",
@@ -54,6 +55,7 @@ export const auth = betterAuth({
           userEmail: user.email,
           username: user.name,
           verificationUrl: `${url}`,
+          baseUrl: process.env.BETTER_AUTH_URL,
         }),
       });
     },

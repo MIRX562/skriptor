@@ -26,7 +26,11 @@ import {
 import Link from "next/link";
 import { signInEmail, signInGoogle } from "../model/query";
 
-export default function SignInPage() {
+interface SignInPageProps {
+  dict: any;
+}
+
+export default function SignInPage({ dict }: SignInPageProps) {
   const form = useForm<z.infer<typeof signInEmailSchema>>({
     resolver: zodResolver(signInEmailSchema),
   });
@@ -34,13 +38,13 @@ export default function SignInPage() {
   function onSubmit(values: z.infer<typeof signInEmailSchema>) {
     try {
       toast.promise(signInEmail(values), {
-        loading: "Logging in....",
+        loading: dict.auth.signIn.messages.loading,
         error: (err) => err.message,
-        success: (ctx) => `Welcome Back, ${ctx?.user.name}`,
+        success: (ctx) => dict.auth.signIn.messages.success.replace("{name}", ctx?.user.name || ""),
       });
     } catch (error) {
       console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+      toast.error(dict.auth.signIn.messages.error);
     }
   }
 
@@ -48,8 +52,8 @@ export default function SignInPage() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Login with your Google account</CardDescription>
+          <CardTitle className="text-xl">{dict.auth.signIn.title}</CardTitle>
+          <CardDescription>{dict.auth.signIn.description}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 w-full">
           <Button
@@ -63,11 +67,11 @@ export default function SignInPage() {
                 fill="currentColor"
               />
             </svg>
-            Login with Google
+            {dict.auth.signIn.googleButton}
           </Button>
           <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
             <span className="relative z-10 bg-background px-4 text-muted-foreground">
-              Or continue with
+              {dict.auth.signIn.divider}
             </span>
           </div>
           <Form {...form}>
@@ -77,15 +81,15 @@ export default function SignInPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{dict.auth.signIn.email.label}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="skriptor@mail.com"
+                        placeholder={dict.auth.signIn.email.placeholder}
                         type="email"
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>Enter your email.</FormDescription>
+                    <FormDescription>{dict.auth.signIn.email.description}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -96,11 +100,11 @@ export default function SignInPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{dict.auth.signIn.password.label}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder="*******" {...field} />
+                      <PasswordInput placeholder={dict.auth.signIn.password.placeholder} {...field} />
                     </FormControl>
-                    <FormDescription>Enter your password.</FormDescription>
+                    <FormDescription>{dict.auth.signIn.password.description}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -111,19 +115,20 @@ export default function SignInPage() {
                 variant="outline"
                 className="w-full bg-teal-500 dark:bg-teal-400 text-primary-foreground"
               >
-                Login
+                {dict.auth.signIn.submit}
               </Button>
             </form>
           </Form>
           <div className="text-center text-sm">
-            Don&apos;t have an account?{" "}
+            {dict.auth.signIn.noAccount}{" "}
             <Link href="/sign-up" className="underline underline-offset-4">
-              Sign up
+              {dict.auth.signIn.signUp}
             </Link>
           </div>
           <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
-            By clicking continue, you agree to our{" "}
-            <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+            {dict.auth.signIn.tosPrefix}{" "}
+            <a href="#">{dict.auth.signIn.tos}</a> {dict.auth.signIn.and}{" "}
+            <a href="#">{dict.auth.signIn.privacyPolicy}</a>.
           </div>
         </CardContent>
       </Card>

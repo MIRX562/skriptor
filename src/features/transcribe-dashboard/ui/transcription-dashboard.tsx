@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Max "plan" hours for the usage % bar — adjust when billing is real
 const PLAN_HOURS = 10;
 
-export function TranscriptionDashboard() {
+export function TranscriptionDashboard({ dict }: { dict: any }) {
   const { data: transcriptions, isLoading, error } = useTranscriptionList();
 
   const stats = useMemo(() => {
@@ -48,11 +48,11 @@ export function TranscriptionDashboard() {
   if (error) {
     return (
       <div className="container mx-auto p-4 space-y-6">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{dict.dashboard.title}</h2>
         <p className="text-destructive">
           {error instanceof Error
             ? error.message
-            : "Failed to load dashboard data"}
+            : dict.dashboard.errors.loadFailed}
         </p>
       </div>
     );
@@ -60,14 +60,14 @@ export function TranscriptionDashboard() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+      <h2 className="text-3xl font-bold tracking-tight">{dict.dashboard.title}</h2>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Transcriptions */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Transcriptions
+              {dict.dashboard.stats.totalTranscriptions}
             </CardTitle>
             <FileText className="h-4 w-4 text-teal-600 dark:text-teal-400" />
           </CardHeader>
@@ -78,7 +78,7 @@ export function TranscriptionDashboard() {
               <div className="text-2xl font-bold">{stats?.total ?? 0}</div>
             )}
             <p className="text-xs text-muted-foreground mt-1">
-              All time
+              {dict.dashboard.stats.allTime}
             </p>
           </CardContent>
         </Card>
@@ -87,7 +87,7 @@ export function TranscriptionDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Hours Processed
+              {dict.dashboard.stats.hoursProcessed}
             </CardTitle>
             <Clock className="h-4 w-4 text-teal-600 dark:text-teal-400" />
           </CardHeader>
@@ -100,7 +100,7 @@ export function TranscriptionDashboard() {
               </div>
             )}
             <p className="text-xs text-muted-foreground mt-1">
-              Total audio transcribed
+              {dict.dashboard.stats.totalAudio}
             </p>
           </CardContent>
         </Card>
@@ -108,7 +108,7 @@ export function TranscriptionDashboard() {
         {/* Usage */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usage</CardTitle>
+            <CardTitle className="text-sm font-medium">{dict.dashboard.stats.usage}</CardTitle>
             <Zap className="h-4 w-4 text-teal-600 dark:text-teal-400" />
           </CardHeader>
           <CardContent>
@@ -126,7 +126,7 @@ export function TranscriptionDashboard() {
               />
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              of {PLAN_HOURS}h plan
+              {dict.dashboard.stats.ofPlan.replace("{planHours}", PLAN_HOURS.toString())}
             </p>
           </CardContent>
         </Card>
@@ -134,7 +134,7 @@ export function TranscriptionDashboard() {
         {/* Accuracy */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
+            <CardTitle className="text-sm font-medium">{dict.dashboard.stats.accuracy}</CardTitle>
             <Mic className="h-4 w-4 text-teal-600 dark:text-teal-400" />
           </CardHeader>
           <CardContent>
@@ -146,7 +146,7 @@ export function TranscriptionDashboard() {
               </div>
             )}
             <p className="text-xs text-muted-foreground mt-1">
-              WhisperX model accuracy
+              {dict.dashboard.stats.modelAccuracy}
             </p>
           </CardContent>
         </Card>
@@ -155,21 +155,21 @@ export function TranscriptionDashboard() {
       <div className="flex flex-col md:flex-row gap-4">
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle>Recent Transcriptions</CardTitle>
-            <CardDescription>Your latest transcription activities</CardDescription>
+            <CardTitle>{dict.dashboard.recentTranscriptions.title}</CardTitle>
+            <CardDescription>{dict.dashboard.recentTranscriptions.description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <RecentTranscriptions />
+            <RecentTranscriptions dict={dict} />
           </CardContent>
         </Card>
 
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle>Transcriptions by Month</CardTitle>
-            <CardDescription>Your transcription volume over time</CardDescription>
+            <CardTitle>{dict.dashboard.monthlyStats.title}</CardTitle>
+            <CardDescription>{dict.dashboard.monthlyStats.description}</CardDescription>
           </CardHeader>
           <CardContent className="p-0 pb-4">
-            <TranscriptionStats />
+            <TranscriptionStats dict={dict} />
           </CardContent>
         </Card>
       </div>

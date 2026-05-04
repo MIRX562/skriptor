@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -37,6 +37,8 @@ import {
   X,
   Play,
   AlertCircle,
+  LayoutList,
+  Type,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -47,31 +49,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { useTranscriptionStore } from "../store/transcription-view-store";
 import { useTranscription } from "../model/use-transcription";
 import { useDeleteTranscription } from "../model/use-delete-transcription";
 import { useRetryTranscription } from "../model/use-retry-transcription";
 import { useSaveSegments } from "../model/use-save-segments";
-import { formatSrtTime, formatTime } from "@/lib/utils";
+import { cn, formatSrtTime, formatTime } from "@/lib/utils";
 import { WaveformPlayer, type WaveformPlayerRef } from "./waveform-player";
 import { useTranscriptionProgress } from "../model/use-transcription-progress";
+import { SegmentRow } from "./segment-row";
+import { DownloadOptions } from "./DownloadOptions";
+import { type Dictionary } from "@/i18n/dictionaries";
 
 interface TranscriptionViewProps {
   id: string;
-  onBack: () => void;
+  dict: Dictionary;
 }
 
-export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
-  const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(
-    null
-  );
+export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const transcriptContainerRef = useRef<HTMLDivElement>(null);
-  const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const userScrollRef = useRef(false);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
   const audioPlayerRef = useRef<WaveformPlayerRef | null>(null);
 
   // TanStack Query hooks
@@ -83,9 +87,10 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
 
   const liveProgress = useTranscriptionProgress(id, transcriptionData?.status ?? "processing");
 
-  // Zustand store — UI-only state + editable local copy of segments
+  // Zustand store
   const {
     segments,
+    speakers,
     metadata,
     isEditing,
     isCopied,
@@ -94,6 +99,7 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
     replaceTerm,
     searchResults,
     currentResultIndex,
+    viewMode,
 
     initializeFromData,
     setIsEditing,
@@ -101,15 +107,22 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
     setShowSearch,
     setSearchTerm,
     setReplaceTerm,
+    setViewMode,
 
     updateSegment,
-
+    getSpeakerLabel,
     getFullTranscript,
     performSearch,
     replaceCurrentOccurrence,
     replaceAllOccurrences,
     navigateSearchResults,
   } = useTranscriptionStore();
+
+  const handleBack = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("view");
+    router.push(`/dashboard?${params.toString()}`, { scroll: false });
+  };
 
   // Hydrate Zustand store when TanStack Query resolves
   useEffect(() => {
@@ -118,44 +131,22 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
     }
   }, [transcriptionData, initializeFromData]);
 
-  // Fetch presigned audio URL separately
+  // Use proxy audio URL to bypass CORS
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/transcription/${id}/audio`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.url) {
-          setAudioUrl(data.url);
-        } else {
-          console.error("Failed to load audio URL:", data.error);
-        }
-      })
-      .catch(console.error);
+    setAudioUrl(`/api/transcription/${id}/audio`);
   }, [id]);
 
-  // Find the active segment based on current playback time
   const findActiveSegment = useCallback(
     (currentTime: number) => {
       if (!segments || segments.length === 0) return null;
-
       for (let i = 0; i < segments.length; i++) {
         const segment = segments[i];
         const nextSegment = i < segments.length - 1 ? segments[i + 1] : null;
-
         const segmentStart = segment.start / 1000;
-        const segmentEnd = nextSegment
-          ? nextSegment.start / 1000
-          : segment.end / 1000;
-
-        if (currentTime >= segmentStart && currentTime < segmentEnd) {
-          return i;
-        }
+        const segmentEnd = nextSegment ? nextSegment.start / 1000 : segment.end / 1000;
+        if (currentTime >= segmentStart && currentTime < segmentEnd) return i;
       }
-
-      if (currentTime >= segments[segments.length - 1].start / 1000) {
-        return segments.length - 1;
-      }
-
       return null;
     },
     [segments]
@@ -171,702 +162,306 @@ export function TranscriptionView({ id, onBack }: TranscriptionViewProps) {
     [activeSegmentIndex, findActiveSegment]
   );
 
+  const rowVirtualizer = useVirtualizer({
+    count: segments.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 80,
+    overscan: 10,
+  });
+
   // Scroll to active segment
   useEffect(() => {
-    if (
-      activeSegmentIndex !== null &&
-      !isEditing &&
-      isPlaying &&
-      !userScrollRef.current &&
-      transcriptContainerRef.current &&
-      segmentRefs.current[activeSegmentIndex]
-    ) {
-      const activeSegment = segmentRefs.current[activeSegmentIndex];
-      if (activeSegment) {
-        activeSegment.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (activeSegmentIndex !== null && isPlaying) {
+      if (viewMode === "segments") {
+        rowVirtualizer.scrollToIndex(activeSegmentIndex, { align: "center", behavior: "auto" });
+      } else if (viewMode === "fulltext") {
+        const element = document.getElementById(`read-segment-${activeSegmentIndex}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        }
       }
     }
-  }, [activeSegmentIndex, isEditing, isPlaying]);
+  }, [activeSegmentIndex, isPlaying, viewMode, rowVirtualizer]);
 
-  // Handle user scroll
+  // Recalculate virtualizer when switching back to segments mode
   useEffect(() => {
-    const handleScroll = () => {
-      userScrollRef.current = true;
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
-        userScrollRef.current = false;
-      }, 5000);
-    };
-
-    const container = transcriptContainerRef.current;
-    if (container) container.addEventListener("scroll", handleScroll);
-
-    return () => {
-      if (container) container.removeEventListener("scroll", handleScroll);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-    };
-  }, []);
+    if (viewMode === "segments") {
+      rowVirtualizer.measure();
+    }
+  }, [viewMode, rowVirtualizer]);
 
   const handleSegmentClick = (index: number) => {
     if (isEditing) return;
     const segment = segments[index];
-    if (segment) {
-      setActiveSegmentIndex(index);
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.jumpToTime(segment.start / 1000);
+    if (segment && audioPlayerRef.current) {
+      audioPlayerRef.current.jumpToTime(segment.start / 1000);
+      if (viewMode === "segments") {
+        rowVirtualizer.scrollToIndex(index, { align: "center", behavior: "smooth" });
       }
-    }
-  };
-
-  // Effect to handle search when searchTerm changes
-  useEffect(() => {
-    if (showSearch && searchTerm.trim()) {
-      performSearch();
-    }
-  }, [showSearch, searchTerm, performSearch]);
-
-  const handleCopyToClipboard = () => {
-    const transcriptText = getFullTranscript();
-    navigator.clipboard
-      .writeText(transcriptText)
-      .then(() => {
-        setIsCopied(true);
-        toast.success("Transcript copied to clipboard");
-        setTimeout(() => setIsCopied(false), 2000);
-      })
-      .catch(() => {
-        toast.error("Failed to copy transcript to clipboard");
-      });
-  };
-
-  const handleDownloadPlainText = () => {
-    const transcriptText = getFullTranscript();
-    const blob = new Blob([transcriptText], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${metadata?.title.replace(/\s+/g, "_") || "transcript"}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success("Download started");
-  };
-
-  const handleDownloadSRT = () => {
-    let srtContent = "";
-    let counter = 1;
-
-    segments.forEach((segment) => {
-      const startTime = formatSrtTime(segment.start);
-      const endTime = formatSrtTime(segment.end);
-      srtContent += `${counter}\n${startTime} --> ${endTime}\n${segment.speaker}: ${segment.text}\n\n`;
-      counter++;
-    });
-
-    const blob = new Blob([srtContent], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${metadata?.title.replace(/\s+/g, "_") || "transcript"}.srt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success("Download started");
-  };
-
-  const highlightSearchTerm = (text: string, isCurrentResult: boolean) => {
-    if (!searchTerm || !showSearch) return text;
-
-    const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
-    return parts.map((part, i) => {
-      if (part.toLowerCase() === searchTerm.toLowerCase()) {
-        return (
-          <span
-            key={i}
-            className={`${isCurrentResult ? "bg-yellow-300 dark:bg-yellow-800" : "bg-yellow-100 dark:bg-yellow-900"}`}
-          >
-            {part}
-          </span>
-        );
-      }
-      return part;
-    });
-  };
-
-  const handleNavigateSearchResults = (direction: "next" | "prev") => {
-    navigateSearchResults(direction);
-    if (!isEditing && searchResults.length > 0) {
-      const element = document.getElementById(
-        `segment-${searchResults[currentResultIndex]}`
-      );
-      element?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   };
 
   const handleSearch = () => {
     const results = performSearch();
-    if (!results || results.length === 0) {
-      toast.info(`No matches found for "${searchTerm}"`);
-    } else {
-      toast.info(`Found ${results.length} matches for "${searchTerm}"`);
-      if (results.length > 0 && !isEditing) {
-        const element = document.getElementById(`segment-${results[0]}`);
-        element?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+    if (results.length > 0 && viewMode === "segments") {
+      rowVirtualizer.scrollToIndex(results[0], { align: "center" });
     }
   };
 
-  const handleReplaceAll = () => {
-    replaceAllOccurrences();
-    toast.success(
-      `Replaced ${searchResults.length} occurrences of "${searchTerm}" with "${replaceTerm}"`
-    );
+  const handleCopyToClipboard = () => {
+    const text = getFullTranscript();
+    navigator.clipboard.writeText(text).then(() => {
+      setIsCopied(true);
+      toast.success(dict.view.messages.copySuccess);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
   };
 
   const handleSaveChanges = () => {
     saveSegmentsMutation.mutate(
-      segments.map((s) => ({ id: s.id, text: s.text, speaker: s.speaker })),
+      {
+        segments: segments.map((s) => ({ id: s.id, text: s.text, speakerIndex: s.speakerIndex })),
+        speakers: speakers,
+      },
       {
         onSuccess: () => {
-          toast.success("Changes saved successfully");
+          toast.success(dict.view.messages.saveSuccess);
           setIsEditing(false);
         },
         onError: (err) => {
-          toast.error(err instanceof Error ? err.message : "Failed to save changes");
+          toast.error(err instanceof Error ? err.message : dict.view.messages.saveError);
         },
       }
     );
   };
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    // Re-initialize from cached query data to discard local edits
-    if (transcriptionData) {
-      initializeFromData(transcriptionData);
-    }
-  };
-
   const handleDelete = () => {
-    if (!confirm("Are you sure you want to delete this transcription?")) return;
+    if (!confirm(dict.view.messages.confirmDelete)) return;
     deleteMutation.mutate(id, {
       onSuccess: () => {
-        toast.success("Transcription deleted");
-        onBack();
-      },
-      onError: (err) => {
-        toast.error(
-          err instanceof Error ? err.message : "Failed to delete transcription"
-        );
+        toast.success(dict.view.messages.deleteSuccess);
+        handleBack();
       },
     });
   };
 
-  // Invalidate and re-fetch when SSE signals completion
-  const invalidateTranscription = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["transcription", id] });
-  }, [queryClient, id]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
-      </div>
-    );
-  }
-
+  if (isLoading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div></div>;
   if (!metadata) return null;
 
-  const currentStatus = liveProgress?.status === "pending" || liveProgress?.status === "processing"
-    ? "in_progress"
-    : liveProgress?.status ?? metadata.status;
-
+  const currentStatus = liveProgress?.status === "pending" || liveProgress?.status === "processing" ? "in_progress" : liveProgress?.status ?? metadata.status;
   const currentProgress = liveProgress?.progress ?? metadata.progress;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between">
-          <div className="space-y-1">
+        <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-3 sm:p-6 pb-2 sm:pb-4">
+          <div className="space-y-1 min-w-0 flex-1 w-full">
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 mr-1"
-                onClick={onBack}
-              >
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4" />
-                <span className="sr-only">Back</span>
               </Button>
-              <CardTitle>{metadata.title}</CardTitle>
+              <CardTitle className="text-lg sm:text-xl truncate">{metadata.title}</CardTitle>
             </div>
-            <CardDescription>
-              <div className="flex items-center gap-3 text-sm">
-                <span>{metadata.date}</span>
-                <span className="flex items-center">
-                  <Clock className="h-3.5 w-3.5 mr-1" />
-                  {metadata.duration}
-                </span>
-
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant={
-                      metadata.mode === "fast"
-                        ? "outline"
-                        : metadata.mode === "medium"
-                          ? "secondary"
-                          : "default"
-                    }
-                    className="text-xs font-normal capitalize flex items-center gap-1"
-                  >
-                    {metadata.mode === "fast" && <Zap className="h-3 w-3" />}
-                    {metadata.mode === "medium" && (
-                      <BarChart2 className="h-3 w-3" />
-                    )}
-                    {metadata.mode === "super" && (
-                      <CheckCircle2 className="h-3 w-3" />
-                    )}
-                    {metadata.mode}
-                  </Badge>
-
-                  <Badge
-                variant={
-                  currentStatus === "completed"
-                    ? "outline"
-                    : currentStatus === "in_progress"
-                      ? "secondary"
-                      : "default"
-                }
-                className="capitalize"
-              >
-                {currentStatus.replace("_", " ")}
-              </Badge>
-                </div>
-              </div>
+            <CardDescription className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs">
+              <span className="flex items-center gap-1 shrink-0"><Clock className="h-3 w-3" /> {metadata.duration}</span>
+              <span className="shrink-0">{metadata.date}</span>
+              <Badge variant="outline" className="capitalize px-1.5 py-0 h-5 text-[9px] sm:text-[10px]">{dict.status[currentStatus] || currentStatus}</Badge>
             </CardDescription>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Download dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                  <ChevronDown className="h-3 w-3 ml-1 opacity-70" />
+          <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+            <DownloadOptions 
+              metadata={metadata} 
+              segments={segments} 
+              speakers={speakers} 
+              dict={dict} 
+              onCopy={handleCopyToClipboard}
+              trigger={
+                <Button variant="outline" size="sm" className="h-8 sm:h-9 shrink-0">
+                  <Download className="h-4 w-4 md:mr-2" />
+                  <span className="hidden md:inline">{dict.view.actions.download}</span>
+                  <ChevronDown className="h-3 w-3 ml-1" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCopyToClipboard}>
-                  {isCopied ? (
-                    <Check className="h-4 w-4 mr-2 text-green-500" />
-                  ) : (
-                    <Copy className="h-4 w-4 mr-2" />
-                  )}
-                  Copy to clipboard
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDownloadPlainText}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Download as plain text
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDownloadSRT}>
-                  <FileCode className="h-4 w-4 mr-2" />
-                  Download as SRT
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              }
+            />
 
-            {/* Search button */}
-            <Button
-              variant={showSearch ? "default" : "outline"}
-              size="sm"
+            <Button 
+              variant={showSearch ? "default" : "outline"} 
+              size="sm" 
+              className="h-8 sm:h-9 shrink-0"
               onClick={() => setShowSearch(!showSearch)}
             >
-              <Search className="h-4 w-4 mr-2" />
-              Search
+              <Search className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{dict.view.actions.search}</span>
             </Button>
 
-            <Button variant="outline" size="sm">
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button
-              variant={isEditing ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
+            {isEditing ? (
+              <div className="flex gap-1.5 sm:gap-2 shrink-0">
+                <Button variant="outline" size="sm" className="h-8 sm:h-9" onClick={() => setIsEditing(false)}>
+                  {dict.view.actions.cancel}
+                </Button>
+                <Button variant="default" size="sm" className="h-8 sm:h-9" onClick={handleSaveChanges} disabled={saveSegmentsMutation.isPending}>
+                  <Save className="h-4 w-4 md:mr-2" />
+                  <span className="hidden md:inline">{dict.view.actions.save}</span>
+                  <span className="md:hidden">{dict.view.actions.save}</span>
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" className="h-8 sm:h-9 shrink-0" onClick={() => setIsEditing(true)}>
+                <Pencil className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">{dict.view.actions.edit}</span>
+              </Button>
+            )}
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 sm:h-9 shrink-0 text-destructive hover:bg-destructive/10" 
+              onClick={handleDelete} 
+              disabled={deleteMutation.isPending}
             >
-              {isEditing ? (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </>
-              ) : (
-                <>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit
-                </>
-              )}
+              <Trash2 className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{dict.view.actions.delete || "Delete"}</span>
             </Button>
           </div>
         </CardHeader>
 
         {currentStatus === "in_progress" && (
-          <div className="px-6 pb-2">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium">
-                {liveProgress?.message || "Processing transcription"}
-              </span>
-              <span className="text-sm font-medium">{currentProgress}%</span>
-            </div>
-            <Progress value={currentProgress} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-1">
-              {metadata.mode === "fast"
-                ? "Fast processing - lower accuracy but quicker results"
-                : metadata.mode === "medium"
-                  ? "Medium processing - balanced accuracy and speed"
-                  : "Super processing - highest accuracy with longer processing time"}
-            </p>
+          <div className="px-6 pb-4">
+            <div className="flex justify-between text-xs mb-1"><span>{liveProgress?.message || dict.view.processing.message}</span><span>{currentProgress}%</span></div>
+            <Progress value={currentProgress} className="h-1.5" />
           </div>
         )}
 
-        <CardContent>
-          {/* Audio Player */}
-          <div className="mb-4 p-3 border rounded-md bg-slate-50 dark:bg-slate-900">
+        <CardContent className="space-y-4 p-3 sm:p-6">
+          <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-900/50">
             {audioUrl ? (
-              <WaveformPlayer
-                ref={audioPlayerRef}
-                audioUrl={audioUrl}
-                onTimeUpdate={handleTimeUpdate}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-              />
+              <WaveformPlayer ref={audioPlayerRef} audioUrl={audioUrl} onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} dict={dict} />
             ) : (
-              <div className="h-10 flex items-center justify-center text-sm text-muted-foreground">
-                Loading audio...
-              </div>
+              <div className="h-12 flex items-center justify-center text-sm text-muted-foreground">{dict.view.loadingAudio}</div>
             )}
           </div>
 
-          {/* Search and replace UI */}
           {showSearch && (
-            <div className="mb-4 p-3 border rounded-md bg-slate-50 dark:bg-slate-900">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 flex items-center gap-2">
-                    <Search className="h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search text..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="h-8"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSearch();
-                      }}
-                    />
-                  </div>
-                  <Button size="sm" variant="secondary" onClick={handleSearch}>
-                    Find
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setShowSearch(false)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                  </Button>
+            <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-900/50 space-y-2">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder={dict.view.search.placeholder} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 flex items-center gap-2">
-                    <Replace className="h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Replace with..."
-                      value={replaceTerm}
-                      onChange={(e) => setReplaceTerm(e.target.value)}
-                      className="h-8"
-                    />
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={replaceCurrentOccurrence}
-                    disabled={searchResults.length === 0}
-                  >
-                    Replace
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={handleReplaceAll}
-                    disabled={searchResults.length === 0}
-                  >
-                    Replace All
-                  </Button>
-                </div>
-
-                {searchResults.length > 0 && (
-                  <div className="flex items-center justify-between text-sm mt-1">
-                    <span className="text-muted-foreground">
-                      {currentResultIndex + 1} of {searchResults.length} matches
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2"
-                        onClick={() => handleNavigateSearchResults("prev")}
-                        disabled={searchResults.length <= 1}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2"
-                        onClick={() => handleNavigateSearchResults("next")}
-                        disabled={searchResults.length <= 1}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                <Button size="sm" onClick={handleSearch}>{dict.view.search.find}</Button>
               </div>
             </div>
           )}
 
-          <Tabs defaultValue="transcript" className="space-y-4">
-            <TabsList>
-              <TabsTrigger
-                value="transcript"
-                className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-              >
-                Transcript
-              </TabsTrigger>
-              <TabsTrigger
-                value="summary"
-                className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-              >
-                Summary
-              </TabsTrigger>
-            </TabsList>
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+            <div className="flex items-center justify-between mb-2">
+              <TabsList className="h-9 p-1 w-full sm:w-auto">
+                <TabsTrigger value="segments" className="flex-1 sm:flex-initial text-xs px-3 h-7">
+                  <LayoutList className="h-3 w-3 mr-1.5" /> 
+                  {dict.view.tabs.transcript}
+                </TabsTrigger>
+                <TabsTrigger value="fulltext" className="flex-1 sm:flex-initial text-xs px-3 h-7">
+                  <Type className="h-3 w-3 mr-1.5" /> 
+                  {dict.view.tabs.readMode || "Read Mode"}
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            <TabsContent value="transcript" className="space-y-4">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <FileAudio className="h-4 w-4" />
-                  <span>Full transcript • {metadata.duration}</span>
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-xs flex items-center gap-1"
-                  onClick={handleCopyToClipboard}
-                >
-                  {isCopied ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 mr-1 text-green-500" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5 mr-1" />
-                      Copy
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              <div
-                ref={transcriptContainerRef}
-                className="border rounded-md p-4 h-[400px] overflow-y-auto"
-              >
-                {currentStatus === "in_progress" ? (
-                  <div className="flex flex-col items-center justify-center h-full text-slate-500">
-                    <div className="w-8 h-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin mb-4" />
-                    <p>{liveProgress?.message || "Transcription is currently processing..."}</p>
-                    <p className="text-xs">Please check back later.</p>
-                  </div>
-                ) : currentStatus === "failed" ? (
-                  <div className="flex flex-col items-center justify-center h-full text-red-500">
-                    <AlertCircle className="w-8 h-8 mb-4" />
-                    <p>Transcription failed to process.</p>
-                    <p className="text-xs">You can retry this transcription from the options below.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {segments.length === 0 ? (
-                      <div className="flex items-center justify-center h-full text-slate-500">
-                        <p>No transcript segments available.</p>
-                      </div>
-                    ) : (
-                      segments.map((segment, index) => (
-                        <div
-                          key={index}
-                          ref={(el) => {
-                            if (el) segmentRefs.current[index] = el;
-                          }}
-                      className={`group p-2 rounded-md transition-colors duration-200 ${
-                        activeSegmentIndex === index
-                          ? "bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800"
-                          : searchResults.includes(index) &&
-                              searchResults[currentResultIndex] === index
-                            ? "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800"
-                            : searchResults.includes(index)
-                              ? "bg-slate-50 dark:bg-slate-800/30"
-                              : "hover:bg-slate-50 dark:hover:bg-slate-800/10"
-                      }`}
-                      id={`segment-${index}`}
-                      onClick={() => !isEditing && handleSegmentClick(index)}
-                      style={{ cursor: isEditing ? "default" : "pointer" }}
+            <TabsContent value="segments" className="mt-0">
+              <div ref={parentRef} className="h-[400px] sm:h-[600px] overflow-auto border rounded-xl relative bg-slate-50/30 dark:bg-slate-900/20">
+                <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}>
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+                    <div
+                      key={virtualRow.key}
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        transform: `translateY(${virtualRow.start}px)`,
+                        padding: "4px 8px",
+                      }}
                     >
-                      <div className="flex items-start gap-2">
-                        <div className="flex-shrink-0 w-24 text-xs text-slate-500 dark:text-slate-400 pt-1 font-mono">
-                          {formatTime(segment.start)}
-                        </div>
-                        <div className="flex-1">
-                          {isEditing ? (
-                            <div className="space-y-2">
-                              {segment.speaker && (
-                                <Input
-                                  value={segment.speaker}
-                                  onChange={(e) =>
-                                    updateSegment(index, "speaker", e.target.value)
-                                  }
-                                  className="w-full p-2 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 dark:focus:ring-teal-400"
-                                />
-                              )}
-                              <textarea
-                                value={segment.text}
-                                onChange={(e) =>
-                                  updateSegment(index, "text", e.target.value)
-                                }
-                                className="w-full p-2 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 dark:focus:ring-teal-400 min-h-[60px]"
-                              />
-                            </div>
-                          ) : (
-                            <>
-                              {!isEditing && segment.speaker && (
-                                <div className="font-medium text-sm text-slate-700 dark:text-slate-300">
-                                  {segment.speaker}
-                                </div>
-                              )}
-                              <p className="text-sm">
-                                {showSearch && searchTerm
-                                  ? highlightSearchTerm(
-                                      segment.text,
-                                      searchResults[currentResultIndex] === index
-                                    )
-                                  : segment.text}
-                              </p>
-                            </>
-                          )}
-                        </div>
-                        {/* Play button for each segment */}
-                        {!isEditing && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSegmentClick(index);
-                            }}
-                          >
-                            <Play className="h-3 w-3" />
-                          </Button>
-                        )}
-                        {/* Edit controls for each segment */}
-                        {isEditing && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => {
-                              // Segment-specific actions if needed
-                            }}
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
+                      <SegmentRow
+                        index={virtualRow.index}
+                        segment={segments[virtualRow.index]}
+                        speakers={speakers}
+                        isEditing={isEditing}
+                        isActive={activeSegmentIndex === virtualRow.index}
+                        isSearchMatch={searchResults.includes(virtualRow.index)}
+                        isCurrentSearchMatch={searchResults[currentResultIndex] === virtualRow.index}
+                        searchTerm={searchTerm}
+                        showSearch={showSearch}
+                        onSegmentClick={handleSegmentClick}
+                        onTextChange={(idx, val) => updateSegment(idx, "text", val)}
+                        onSpeakerChange={(idx, val) => updateSegment(idx, "speakerIndex", val)}
+                      />
                     </div>
-                  ))
-                )}
+                  ))}
                 </div>
-              )}
               </div>
             </TabsContent>
 
-            <TabsContent value="summary" className="space-y-4">
-              <div className="border rounded-md p-4 h-[400px] overflow-y-auto">
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  {metadata.summary}
+            <TabsContent value="fulltext" className="mt-0">
+              <div className="h-[400px] sm:h-[600px] overflow-auto border rounded-xl p-4 sm:p-8 bg-white dark:bg-slate-950/50 shadow-inner">
+                <div className="prose prose-slate dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-0">
+                  {segments.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-2">
+                      <FileText className="h-10 w-10 opacity-20" />
+                      <p>{dict.view.empty}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {segments.reduce((acc: any[], s, i) => {
+                        const prev = i > 0 ? segments[i - 1] : null;
+                        const showSpeaker = !prev || prev.speakerIndex !== s.speakerIndex;
+                        
+                        if (showSpeaker || acc.length === 0) {
+                          acc.push({
+                            speakerIndex: s.speakerIndex,
+                            segments: [{ ...s, index: i }]
+                          });
+                        } else {
+                          acc[acc.length - 1].segments.push({ ...s, index: i });
+                        }
+                        return acc;
+                      }, []).map((group, groupIdx) => (
+                        <div key={groupIdx} className="space-y-2">
+                          <span className="block font-bold text-teal-600 dark:text-teal-400 text-[10px] uppercase tracking-widest mb-1">
+                            {getSpeakerLabel(group.speakerIndex) || "Unknown"}
+                          </span>
+                          <p className="text-base sm:text-lg text-justify leading-relaxed">
+                            {group.segments.map((s: any) => (
+                              <span key={s.id}>
+                                <span
+                                  id={`read-segment-${s.index}`}
+                                  onClick={() => handleSegmentClick(s.index)}
+                                  className={cn(
+                                    "cursor-pointer transition-all duration-300 rounded px-1 -mx-1 inline",
+                                    activeSegmentIndex === s.index
+                                      ? "bg-teal-200/50 dark:bg-teal-700/40 text-foreground font-semibold ring-1 ring-teal-400/30 dark:ring-teal-500/30 shadow-[0_0_15px_rgba(13,148,136,0.15)] z-10"
+                                      : "hover:bg-slate-100 dark:hover:bg-slate-800 text-foreground/80 hover:text-foreground"
+                                  )}
+                                >
+                                  {s.text}
+                                </span>
+                                {" "}
+                              </span>
+                            ))}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>
           </Tabs>
         </CardContent>
-
-        <CardFooter className="flex justify-between border-t p-6">
-          <div className="flex items-center gap-2">
-            {currentStatus === "failed" && (
-              <Button
-                variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20"
-                onClick={() => retryMutation.mutate(id, {
-                  onSuccess: () => {
-                    toast.success("Transcription queued for retry");
-                    onBack();
-                  },
-                  onError: (err) => {
-                    toast.error(err instanceof Error ? err.message : "Failed to retry");
-                  }
-                })}
-                disabled={retryMutation.isPending}
-              >
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Retry Job
-              </Button>
-            )}
-            
-            <Button
-              variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20"
-              onClick={handleDelete}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          </div>
-
-          {isEditing && (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleCancelEdit}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveChanges}
-                disabled={saveSegmentsMutation.isPending}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {saveSegmentsMutation.isPending ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          )}
-        </CardFooter>
       </Card>
     </motion.div>
   );
 }
-
-// Export for use in SSE invalidation if needed
-export type { TranscriptionViewProps };

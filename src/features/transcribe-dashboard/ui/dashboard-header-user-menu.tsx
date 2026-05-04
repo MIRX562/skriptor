@@ -14,9 +14,15 @@ import { authClient } from "@/lib/auth-client";
 import { getInitials } from "@/lib/utils";
 import Link from "next/link";
 
-export default function DashboardUserMenu() {
+export default function DashboardUserMenu({ dict }: { dict?: any }) {
   const session = authClient.useSession();
   const user = session.data?.user;
+  
+  const authDict = {
+    settings: dict?.auth?.settings || "Settings",
+    logout: dict?.auth?.logout || "Log out",
+  };
+
   if (!user) return null;
   return (
     <DropdownMenu>
@@ -32,10 +38,10 @@ export default function DashboardUserMenu() {
         <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <Link href="/settings">
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem>{authDict.settings}</DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => SignOut()}>Log out</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => SignOut()}>{authDict.logout}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

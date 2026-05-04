@@ -13,41 +13,14 @@ import { authClient } from "@/lib/auth-client";
 export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [session, setSession] = useState<{
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      emailVerified: boolean;
-      createdAt: Date;
-      updatedAt: Date;
-      image?: string | null;
-    };
-    session: {
-      id: string;
-      createdAt: Date;
-      expiresAt: Date;
-      ipAddress?: string | null;
-      userAgent?: string | null;
-    };
-  } | null>(null);
+  const { data: session } = authClient.useSession();
+  const headerDict = dict?.landing?.header || {};
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
-
-    // Fetch session status asynchronously
-    (async () => {
-      try {
-        const { data } = await authClient.getSession();
-        setSession(data || null);
-      } catch {
-        setSession(null);
-      }
-    })();
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -77,25 +50,25 @@ export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
             href="#"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            {dict.features}
+            {headerDict.features}
           </Link>
           <Link
             href="#"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            {dict.pricing}
+            {headerDict.pricing}
           </Link>
           <Link
             href="#"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            {dict.testimonials}
+            {headerDict.testimonials}
           </Link>
           <Link
             href="#"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            {dict.faq}
+            {headerDict.faq}
           </Link>
         </nav>
 
@@ -104,7 +77,7 @@ export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
             {session ? (
               <Link href="/dashboard">
                 <Button variant="outline" className="w-full justify-center">
-                  {dict.dashboard}
+                  {headerDict.dashboard}
                   <SquareArrowOutUpRight />
                 </Button>
               </Link>
@@ -112,12 +85,12 @@ export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
               <>
                 <Link href="/sign-in">
                   <Button variant="outline" className="w-full justify-center">
-                    {dict.login}
+                    {headerDict.login}
                   </Button>
                 </Link>
                 <Link href="/sign-up">
                   <Button className="w-full justify-center bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700">
-                    {dict.signup}
+                    {headerDict.signup}
                   </Button>
                 </Link>
               </>
@@ -157,34 +130,34 @@ export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Features
+                {headerDict.features}
               </Link>
               <Link
                 href="#"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Pricing
+                {headerDict.pricing}
               </Link>
               <Link
                 href="#"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Testimonials
+                {headerDict.testimonials}
               </Link>
               <Link
                 href="#"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                FAQ
+                {headerDict.faq}
               </Link>
               <div className="pt-2 flex flex-col space-y-2">
                 {session ? (
                   <Link href="/dashboard">
                     <Button variant="outline" className="w-full justify-center">
-                      Dashboard
+                      {headerDict.dashboard}
                       <SquareArrowOutUpRight />
                     </Button>
                   </Link>
@@ -195,12 +168,12 @@ export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
                         variant="outline"
                         className="w-full justify-center"
                       >
-                        Log in
+                        {headerDict.login}
                       </Button>
                     </Link>
                     <Link href="/sign-up">
                       <Button className="w-full justify-center bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700">
-                        Sign up
+                        {headerDict.signup}
                       </Button>
                     </Link>
                   </>

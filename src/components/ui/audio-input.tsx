@@ -20,6 +20,7 @@ type AudioInputProps = {
   value: File | null;
   onValueChange: (file: File | null) => void;
   className?: string;
+  dict: any;
 };
 
 function blobToFile(blob: Blob, name: string): File {
@@ -29,6 +30,7 @@ function blobToFile(blob: Blob, name: string): File {
 export const AudioInput: React.FC<AudioInputProps> = ({
   onValueChange,
   className,
+  dict,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -139,9 +141,9 @@ export const AudioInput: React.FC<AudioInputProps> = ({
     } catch (err) {
       const error = err as Error;
       console.error("Recording error:", error);
-      let msg = "Could not start recording.";
-      if (error.name === "NotAllowedError") msg = "Microphone access denied.";
-      else if (error.name === "NotFoundError") msg = "No microphone found.";
+      let msg = dict.common.audioInput.errors.recordFailed;
+      if (error.name === "NotAllowedError") msg = dict.common.audioInput.errors.micDenied;
+      else if (error.name === "NotFoundError") msg = dict.common.audioInput.errors.micNotFound;
       setError(msg);
       toast.error(msg);
     }
@@ -202,12 +204,17 @@ export const AudioInput: React.FC<AudioInputProps> = ({
 
         {/* Empty State */}
         {!isRecording && !isRecorded && (
-          <div className="flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500">
-            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-              <Mic className="w-8 h-8" />
-            </div>
-            <p className="text-sm font-medium">Click the button below to start recording</p>
-            <p className="text-xs">Your audio will be visualized in real-time</p>
+          <div className="flex flex-col items-center justify-center py-2 text-slate-400 dark:text-slate-500">
+            <Button
+              type="button"
+              size="lg"
+              className="h-20 w-20 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-xl shadow-teal-500/20 transition-all hover:scale-105 active:scale-95 mb-6 group/record"
+              onClick={startRecording}
+            >
+              <Mic className="w-10 h-10 transition-transform group-hover/record:scale-110" />
+            </Button>
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{dict.common.audioInput.ready}</p>
+            <p className="text-xs mt-1">{dict.common.audioInput.readyDescription}</p>
           </div>
         )}
 
@@ -216,7 +223,7 @@ export const AudioInput: React.FC<AudioInputProps> = ({
           <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 bg-red-500/10 text-red-500 rounded-full animate-pulse">
             <div className="w-2 h-2 rounded-full bg-red-500" />
             <span className="text-xs font-bold uppercase tracking-wider">
-              {isPaused ? "Paused" : "Recording"}
+              {isPaused ? dict.common.audioInput.paused : dict.common.audioInput.recording}
             </span>
           </div>
         )}
@@ -241,7 +248,7 @@ export const AudioInput: React.FC<AudioInputProps> = ({
              </div>
              {isRecording && (
                <span className="text-xs text-slate-500 dark:text-slate-400 animate-pulse">
-                 Speaking now...
+                 {dict.common.audioInput.speaking}
                </span>
              )}
           </div>
@@ -251,11 +258,11 @@ export const AudioInput: React.FC<AudioInputProps> = ({
               type="button"
               variant="ghost"
               size="sm"
-              className="text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
+              className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
               onClick={resetRecording}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Discard
+              {dict.common.audioInput.discard}
             </Button>
           )}
         </div>
@@ -270,65 +277,68 @@ export const AudioInput: React.FC<AudioInputProps> = ({
       )}
 
       {/* Main Controls */}
-      <div className="flex items-center justify-center gap-4">
-        {!isRecording && !isRecorded ? (
-          <Button
-            type="button"
-            size="lg"
-            className="h-16 w-16 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-xl shadow-teal-500/20 transition-all hover:scale-105 active:scale-95"
-            onClick={startRecording}
-          >
-            <Mic className="w-8 h-8 fill-current" />
-          </Button>
-        ) : isRecording ? (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="h-14 w-14 rounded-full border-2 border-slate-200 dark:border-slate-800"
-              onClick={togglePause}
-            >
-              {isPaused ? <Play className="w-6 h-6 fill-current" /> : <Pause className="w-6 h-6 fill-current" />}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="lg"
-              className="h-16 w-16 rounded-full shadow-xl shadow-red-500/20 animate-in zoom-in duration-300"
-              onClick={stopRecording}
-            >
-              <StopCircle className="w-8 h-8 fill-current" />
-            </Button>
-          </>
-        ) : (
-          <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-800 p-2 rounded-full border border-slate-200 dark:border-slate-700">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 rounded-full hover:bg-background"
-              onClick={() => {
-                wavesurferRef.current?.setTime(0);
-                wavesurferRef.current?.play();
-              }}
-            >
-              <RotateCcw className="w-5 h-5" />
-            </Button>
-            <Button
-              type="button"
-              size="lg"
-              className="h-14 w-14 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-lg"
-              onClick={togglePlayPause}
-            >
-              {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
-            </Button>
-            <div className="w-12 h-12 flex items-center justify-center">
-               <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
+      {(isRecording || isRecorded) && (
+        <div className="flex items-center justify-center gap-6">
+          {isRecording ? (
+            <>
+              <div className="flex flex-col items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="h-14 w-14 rounded-full border-2 border-slate-200 dark:border-slate-800"
+                  onClick={togglePause}
+                >
+                  {isPaused ? <Play className="w-6 h-6 fill-current" /> : <Pause className="w-6 h-6 fill-current" />}
+                </Button>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  {isPaused ? dict.common.audioInput.resume : dict.common.audioInput.pause}
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="lg"
+                  className="h-16 w-16 rounded-full shadow-xl shadow-red-500/20 animate-in zoom-in duration-300"
+                  onClick={stopRecording}
+                >
+                  <StopCircle className="w-8 h-8 fill-current" />
+                </Button>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">
+                  {dict.common.audioInput.stop}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-800 p-2 rounded-full border border-slate-200 dark:border-slate-700">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-12 w-12 rounded-full hover:bg-background"
+                onClick={() => {
+                  wavesurferRef.current?.setTime(0);
+                  wavesurferRef.current?.play();
+                }}
+              >
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+              <Button
+                type="button"
+                size="lg"
+                className="h-14 w-14 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-lg"
+                onClick={togglePlayPause}
+              >
+                {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
+              </Button>
+              <div className="w-12 h-12 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

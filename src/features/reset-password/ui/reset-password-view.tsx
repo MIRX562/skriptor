@@ -1,16 +1,20 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
-export default function ResetPasswordPage() {
+interface ResetPasswordViewProps {
+  dict: any;
+}
+
+export function ResetPasswordView({ dict }: ResetPasswordViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -22,7 +26,6 @@ export default function ResetPasswordPage() {
     password: "",
     confirmPassword: "",
   });
-  const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -42,18 +45,18 @@ export default function ResetPasswordPage() {
     const newErrors = { password: "", confirmPassword: "" };
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = dict.auth.resetPassword.password.required;
       valid = false;
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+      newErrors.password = dict.auth.resetPassword.password.minLength;
       valid = false;
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = dict.auth.resetPassword.confirmPassword.required;
       valid = false;
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = dict.auth.resetPassword.confirmPassword.match;
       valid = false;
     }
 
@@ -67,37 +70,32 @@ export default function ResetPasswordPage() {
     if (!validateForm()) return;
 
     if (!token) {
-      toast({
-        title: "Error",
-        description:
-          "Invalid or expired reset token. Please request a new password reset link.",
-        variant: "destructive",
+      toast.error(dict.auth.resetPassword.messages.errorTitle, {
+        description: dict.auth.resetPassword.messages.invalidToken,
       });
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate API call
     try {
-      // In a real app, this would be an API call to your reset password endpoint with the token
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Successful password reset
-      toast({
-        title: "Password reset successful",
-        description:
-          "Your password has been reset. You can now log in with your new password.",
+      const { error } = await authClient.resetPassword({
+        newPassword: formData.password,
       });
 
-      // Redirect to login
-      router.push("/auth/login");
-    } catch {
-      toast({
-        title: "Error",
-        description:
-          "There was a problem resetting your password. Please try again.",
-        variant: "destructive",
+      if (error) {
+        throw error;
+      }
+
+      toast.success(dict.auth.resetPassword.messages.successTitle, {
+        description: dict.auth.resetPassword.messages.successDescription,
+      });
+
+      router.push("/sign-in");
+    } catch (err: any) {
+      console.error("Reset password error:", err);
+      toast.error(dict.auth.resetPassword.messages.errorTitle, {
+        description: dict.auth.resetPassword.messages.errorDescription,
       });
     } finally {
       setIsLoading(false);
@@ -108,22 +106,22 @@ export default function ResetPasswordPage() {
     <div className="p-6 md:p-8">
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Set new password
+          {dict.auth.resetPassword.title}
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-          Create a new password for your account
+          {dict.auth.resetPassword.description}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="password">New Password</Label>
+          <Label htmlFor="password">{dict.auth.resetPassword.password.label}</Label>
           <div className="relative">
             <Input
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder={dict.auth.resetPassword.password.placeholder}
               value={formData.password}
               onChange={handleChange}
               disabled={isLoading}
@@ -145,18 +143,18 @@ export default function ResetPasswordPage() {
             <p className="text-xs text-red-500 mt-1">{errors.password}</p>
           )}
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Password must be at least 8 characters long
+            {dict.auth.resetPassword.password.hint}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Label htmlFor="confirmPassword">{dict.auth.resetPassword.confirmPassword.label}</Label>
           <div className="relative">
             <Input
               id="confirmPassword"
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder={dict.auth.resetPassword.confirmPassword.placeholder}
               value={formData.confirmPassword}
               onChange={handleChange}
               disabled={isLoading}
@@ -189,10 +187,10 @@ export default function ResetPasswordPage() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Resetting password...
+              {dict.auth.resetPassword.messages.resetting}
             </>
           ) : (
-            "Reset password"
+            dict.auth.resetPassword.submit
           )}
         </Button>
       </form>

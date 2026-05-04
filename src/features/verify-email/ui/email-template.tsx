@@ -18,12 +18,14 @@ interface VerificationEmailProps {
   username?: string;
   userEmail?: string;
   verificationUrl?: string;
+  baseUrl?: string;
 }
 
 export const VerificationEmail = ({
   username,
   userEmail,
   verificationUrl,
+  baseUrl = "https://skriptor.mirx.my.id",
 }: VerificationEmailProps) => {
   const previewText = `Verify your email address for Skriptor`;
 
@@ -34,13 +36,13 @@ export const VerificationEmail = ({
       <Tailwind>
         <Body className="bg-slate-50 my-auto mx-auto font-sans">
           <Container className="border border-solid border-slate-200 rounded-lg p-8 my-10 mx-auto max-w-[600px] bg-white">
-            <Section className="text-center">
+            <Section className="text-center mt-4">
               <Img
-                src="/logo.png"
-                width="48"
-                height="48"
+                src={`${baseUrl}/logo.png`}
+                width="64"
+                height="64"
                 alt="Skriptor Logo"
-                className="mx-auto"
+                className="mx-auto rounded-xl"
               />
             </Section>
             <Heading className="text-2xl font-bold text-center text-slate-800 my-6">
@@ -76,11 +78,11 @@ export const VerificationEmail = ({
               This verification link will expire in 24 hours. If you didn&apos;t
               create an account with Skriptor, you can safely ignore this email.
             </Text>
-            <Hr className="border-slate-200 my-6" />
-            <Text className="text-xs text-slate-500 text-center">
-              © 2023 Skriptor. All rights reserved.
+            <Hr className="border-slate-200 my-8" />
+            <Text className="text-xs text-slate-400 text-center leading-relaxed">
+              © {new Date().getFullYear()} Skriptor. All rights reserved.
               <br />
-              123 Transcription Lane, Audio City, AC 12345
+              The ultimate AI transcription platform.
             </Text>
             <Text className="text-xs text-slate-500 text-center">
               <Link href="#" className="text-teal-600 no-underline">

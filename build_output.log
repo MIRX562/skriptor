@@ -1,0 +1,114 @@
+$ next build --turbopack --debug-prerender
+⚠ Prerendering is running in debug mode with NODE_ENV='development'. This will affect performance and should not be used for production.
+▲ Next.js 16.2.4 (Turbopack)
+- Environments: .env
+- Cache Components enabled
+- Experiments (use with caution):
+  ✓ allowDevelopmentBuild (enabled by `--debug-prerender`)
+  ⨯ prerenderEarlyExit (disabled by `--debug-prerender`)
+  · serverActions
+  ✓ serverSourceMaps (enabled by `--debug-prerender`)
+  ⨯ turbopackMinify (disabled by `--debug-prerender`)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 10.6s
+  Running TypeScript ...
+  Finished TypeScript in 12.6s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/25) ...
+Error: Route "/email-verified": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at layout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/email-verified" in your browser to investigate the error.
+Error occurred prerendering page "/email-verified". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/forget-password": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at layout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/forget-password" in your browser to investigate the error.
+Error occurred prerendering page "/forget-password". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/reset-password": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at layout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/reset-password" in your browser to investigate the error.
+Error occurred prerendering page "/reset-password". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/sign-in": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at layout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/sign-in" in your browser to investigate the error.
+Error occurred prerendering page "/sign-in". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/sign-up": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at layout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/sign-up" in your browser to investigate the error.
+Error occurred prerendering page "/sign-up". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/verify-email": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at layout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/verify-email" in your browser to investigate the error.
+Error occurred prerendering page "/verify-email". Read more: https://nextjs.org/docs/messages/prerender-error
+Error fetching transcriptions: Error: During prerendering, `headers()` rejects when the prerender is complete. Typically these errors are handled by React but if you move `headers()` to a different context by using `setTimeout`, `after`, or similar functions you may observe this error and you should handle it in that context. This occurred at route "/api/transcriptions".
+    at Promise (null)
+    at GET (.next/server/chunks/[root-of-the-server]__0nhz6c.._.js:722:72) {
+  route: '/api/transcriptions',
+  expression: '`headers()`',
+  digest: 'HANGING_PROMISE_REJECTION'
+}
+  Generating static pages using 11 workers (6/25) 
+Error: Route "/dashboard": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at DashboardLoading [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/dashboard" in your browser to investigate the error.
+Error occurred prerendering page "/dashboard". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at Home [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/" in your browser to investigate the error.
+Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings/billing-history": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings/billing-history" in your browser to investigate the error.
+Error occurred prerendering page "/settings/billing-history". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings/help": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings/help" in your browser to investigate the error.
+Error occurred prerendering page "/settings/help". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings/notifications": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings/notifications" in your browser to investigate the error.
+Error occurred prerendering page "/settings/notifications". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings" in your browser to investigate the error.
+Error occurred prerendering page "/settings". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings/payment-methods": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings/payment-methods" in your browser to investigate the error.
+Error occurred prerendering page "/settings/payment-methods". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings/passwords": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings/passwords" in your browser to investigate the error.
+Error occurred prerendering page "/settings/passwords". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings/profile": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings/profile" in your browser to investigate the error.
+Error occurred prerendering page "/settings/profile". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings/subscription": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings/subscription" in your browser to investigate the error.
+Error occurred prerendering page "/settings/subscription". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: Route "/settings/support": Uncached data was accessed outside of <Suspense>. This delays the entire page from rendering, resulting in a slow user experience. Learn more: https://nextjs.org/docs/messages/blocking-route
+    at SettingsLayout [Server] (<anonymous>)
+To debug the issue, start the app in development mode by running `next dev`, then open "/settings/support" in your browser to investigate the error.
+Error occurred prerendering page "/settings/support". Read more: https://nextjs.org/docs/messages/prerender-error
+
+> Export encountered errors on 17 paths:
+	/(auth)/email-verified/page: /email-verified
+	/(auth)/forget-password/page: /forget-password
+	/(auth)/reset-password/page: /reset-password
+	/(auth)/sign-in/page: /sign-in
+	/(auth)/sign-up/page: /sign-up
+	/(auth)/verify-email/page: /verify-email
+	/dashboard/page: /dashboard
+	/page: /
+	/settings/billing-history/page: /settings/billing-history
+	/settings/help/page: /settings/help
+	/settings/notifications/page: /settings/notifications
+	/settings/page: /settings
+	/settings/passwords/page: /settings/passwords
+	/settings/payment-methods/page: /settings/payment-methods
+	/settings/profile/page: /settings/profile
+	/settings/subscription/page: /settings/subscription
+	/settings/support/page: /settings/support
+error: script "build" exited with code 1

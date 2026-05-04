@@ -6,10 +6,13 @@ const LOCALE_COOKIE = "NEXT_LOCALE";
 const DEFAULT_LOCALE = "en";
 
 export async function getLocale() {
-  const cookieStore = await cookies();
-  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
-  
-  if (cookieLocale) return cookieLocale;
+  try {
+    const cookieStore = await cookies();
+    const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
+    if (cookieLocale) return cookieLocale;
+  } catch (error) {
+    // In case cookies() is called in a context where it's not available
+  }
 
   try {
     const headersList = await headers();

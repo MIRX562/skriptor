@@ -1,4 +1,112 @@
 {
+  "transcribe": {
+    "title": "Create New Transcription",
+    "description": "Upload an audio file or record directly to transcribe",
+    "tabs": {
+      "upload": "Upload File",
+      "record": "Record Audio"
+    },
+    "form": {
+      "audioFile": {
+        "label": "Select Audio File",
+        "description": "Select an audio file to transcribe."
+      },
+      "recordAudio": {
+        "label": "Record Audio",
+        "description": "Record your audio for transcription."
+      },
+      "title": {
+        "label": "Title",
+        "placeholder": "Transcription Title"
+      },
+      "language": {
+        "label": "Language",
+        "placeholder": "Select language",
+        "searchPlaceholder": "Search language...",
+        "noFound": "No language found.",
+        "description": "This is the language of the audio, keep as default for auto-detect."
+      },
+      "speed": {
+        "label": "Transcription Speed",
+        "description": "Select transcription speed based on your needs",
+        "fast": {
+          "label": "Fast",
+          "description": "Lower accuracy"
+        },
+        "medium": {
+          "label": "Medium",
+          "description": "Balanced"
+        },
+        "super": {
+          "label": "Super",
+          "description": "Highest accuracy"
+        }
+      },
+      "diarization": {
+        "label": "Identify Speakers",
+        "description": "If enabled transcription result will include speaker identification."
+      },
+      "speakers": {
+        "label": "Number of Speakers (Max 10)",
+        "description": "Minimum value is 1."
+      },
+      "preview": "Audio Preview",
+      "actions": {
+        "cancel": "Cancel",
+        "start": "Start Transcription",
+        "starting": "Starting..."
+      }
+    },
+    "uploadArea": {
+      "clickToUpload": "Click to upload",
+      "orDragAndDrop": "or drag and drop"
+    },
+    "messages": {
+      "noFile": "Please select a file to upload.",
+      "noRecord": "Please record audio to upload.",
+      "uploadFailed": "Upload failed.",
+      "uploadSuccess": "Transcription started successfully.",
+      "submitError": "Failed to submit the form. Please try again."
+    },
+    "overlay": {
+      "title": "Creating transcription job...",
+      "description": "Uploading audio and preparing models"
+    }
+  },
+  "common": {
+    "audioInput": {
+      "start": "Start Recording",
+      "stop": "Stop",
+      "pause": "Pause",
+      "resume": "Resume",
+      "discard": "Discard",
+      "ready": "Ready to record?",
+      "readyDescription": "Click the button above to start your transcription",
+      "recording": "Recording",
+      "paused": "Paused",
+      "speaking": "Speaking now...",
+      "errors": {
+        "recordFailed": "Could not start recording.",
+        "micDenied": "Microphone access denied.",
+        "micNotFound": "No microphone found."
+      }
+    },
+    "untitled": "Untitled Transcription",
+    "back": "Back",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "retry": "Retry Job",
+    "loading": "Loading...",
+    "error": "Error"
+  },
+  "header": {
+    "dashboard": "Dashboard",
+    "history": "History",
+    "settings": "Settings"
+  },
   "landing": {
     "header": {
       "features": "Features",
@@ -17,10 +125,58 @@
       "getStarted": "Get Started Free",
       "viewDemo": "View Demo"
     },
+    "liteForm": {
+      "title": "Try Skriptor Now",
+      "description": "Upload or record an audio file to see how fast our transcription works.",
+      "tabs": {
+        "upload": "Upload File",
+        "record": "Record Audio"
+      },
+      "uploadArea": {
+        "clickToUpload": "Click to upload",
+        "orDragAndDrop": "or drag and drop",
+        "hint": "MP3, M4A, WAV, FLAC (Max 50MB)"
+      },
+      "audioPreview": "Audio Preview",
+      "submit": "Transcribe Now",
+      "processing": "Processing...",
+      "messages": {
+        "noFile": "Please provide an audio file to transcribe.",
+        "authRequired": "Please sign up or log in to continue.",
+        "uploadFailed": "Upload failed.",
+        "started": "Transcription started successfully."
+      }
+    },
     "features": {
       "badge": "Features",
       "title": "Everything You Need for Perfect Transcriptions",
-      "description": "Our powerful features make transcribing audio effortless, accurate, and efficient."
+      "description": "Our powerful features make transcribing audio effortless, accurate, and efficient.",
+      "items": {
+        "accuracy": {
+          "title": "High Accuracy Transcription",
+          "description": "Industry-leading speech recognition with 98.7% accuracy across accents and languages."
+        },
+        "realtime": {
+          "title": "Real-time Processing",
+          "description": "Get your transcriptions in seconds, not hours. Perfect for time-sensitive content."
+        },
+        "languages": {
+          "title": "Multi-language Support",
+          "description": "Support for 30+ languages and automatic language detection for multilingual content."
+        },
+        "speakers": {
+          "title": "Speaker Identification",
+          "description": "Automatically identify and label different speakers in your recordings."
+        },
+        "summaries": {
+          "title": "Smart Summaries",
+          "description": "AI-powered summaries of your transcriptions to quickly extract key information."
+        },
+        "vocabulary": {
+          "title": "Custom Vocabulary",
+          "description": "Add industry-specific terms and names to improve transcription accuracy."
+        }
+      }
     },
     "howItWorks": {
       "badge": "How It Works",
@@ -44,17 +200,104 @@
     "testimonials": {
       "badge": "Testimonials",
       "title": "What Our Users Say",
-      "description": "Join thousands of satisfied users who trust Skriptor for their transcription needs"
+      "description": "Join thousands of satisfied users who trust Skriptor for their transcription needs",
+      "items": {
+        "sarah": {
+          "quote": "Skriptor has completely transformed how we handle meeting notes. The accuracy is incredible, and it saves us hours every week.",
+          "author": "Sarah Johnson",
+          "role": "Product Manager at TechCorp"
+        },
+        "michael": {
+          "quote": "As a journalist, accurate transcriptions are essential. Skriptor delivers consistently excellent results, even with challenging audio.",
+          "author": "Michael Chen",
+          "role": "Senior Reporter, Global News"
+        },
+        "alex": {
+          "quote": "The speaker identification feature is a game-changer for our podcast editing workflow. We've cut post-production time in half!",
+          "author": "Alex Rivera",
+          "role": "Podcast Producer"
+        }
+      }
     },
     "pricing": {
       "badge": "Pricing",
       "title": "Simple, Transparent Pricing",
-      "description": "Choose the plan that works best for you and your team"
+      "description": "Choose the plan that works best for you and your team",
+      "mostPopular": "Most Popular",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "$0",
+          "description": "Perfect for occasional use",
+          "cta": "Get Started",
+          "features": [
+            "Up to 10 minutes of audio per month",
+            "Standard accuracy transcription",
+            "2 export formats",
+            "Email support"
+          ]
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$12",
+          "period": "/month",
+          "description": "Ideal for regular users",
+          "cta": "Start Free Trial",
+          "features": [
+            "Up to 5 hours of audio per month",
+            "High accuracy transcription",
+            "Speaker identification",
+            "All export formats",
+            "Priority email support"
+          ]
+        },
+        "business": {
+          "name": "Business",
+          "price": "$49",
+          "period": "/month",
+          "description": "For teams and heavy users",
+          "cta": "Contact Sales",
+          "features": [
+            "Up to 20 hours of audio per month",
+            "Highest accuracy transcription",
+            "Advanced speaker identification",
+            "Custom vocabulary",
+            "Team collaboration features",
+            "24/7 priority support"
+          ]
+        }
+      }
     },
     "faq": {
       "badge": "FAQ",
       "title": "Frequently Asked Questions",
-      "description": "Everything you need to know about Skriptor"
+      "description": "Everything you need to know about Skriptor",
+      "items": [
+        {
+          "question": "How accurate is the transcription?",
+          "answer": "Skriptor achieves an industry-leading 98.7% accuracy rate for clear audio in supported languages. Accuracy may vary depending on audio quality, background noise, accents, and technical terminology."
+        },
+        {
+          "question": "What languages are supported?",
+          "answer": "Skriptor currently supports over 30 languages including English, Spanish, French, German, Italian, Portuguese, Japanese, Chinese, Korean, Arabic, and many more. We're constantly adding support for additional languages."
+        },
+        {
+          "question": "How long does transcription take?",
+          "answer": "Most transcriptions are completed in near real-time. A 60-minute audio file typically takes 2-3 minutes to process, depending on audio quality and server load."
+        },
+        {
+          "question": "Is my data secure?",
+          "answer": "Yes, we take data security very seriously. All uploads are encrypted using TLS, and we use industry-standard security practices to protect your data. We do not share your content with third parties, and you can delete your data at any time."
+        },
+        {
+          "question": "Can I edit the transcriptions?",
+          "answer": "Our editor allows you to make corrections, add speaker labels, and format your transcript. Changes are saved automatically as you type."
+        },
+        {
+          "question": "What file formats are supported?",
+          "answer": "Skriptor supports most common audio formats including MP3, WAV, M4A, FLAC, OGG, and more. You can also record directly in your browser or upload video files (MP4, MOV, AVI)."
+        }
+      ]
     },
     "cta": {
       "title": "Ready to Transform Your Audio into Text?",
@@ -63,7 +306,289 @@
       "contactSales": "Contact Sales"
     },
     "footer": {
-      "description": "Transform speech to text with precision and ease."
+      "description": "Transform speech to text with precision and ease.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "rights": "© 2023 Skriptor. All rights reserved.",
+      "links": {
+        "api": "API",
+        "integrations": "Integrations",
+        "documentation": "Documentation",
+        "about": "About",
+        "blog": "Blog",
+        "careers": "Careers",
+        "press": "Press",
+        "contact": "Contact",
+        "terms": "Terms",
+        "privacy": "Privacy",
+        "cookies": "Cookies",
+        "licenses": "Licenses",
+        "settings": "Settings"
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "processingJob": "Processing pending transcription...",
+    "uploadingAudio": "Uploading audio and preparing models",
+    "stats": {
+      "totalTranscriptions": "Total Transcriptions",
+      "hoursProcessed": "Hours Processed",
+      "usage": "Usage",
+      "accuracy": "Accuracy",
+      "allTime": "All time",
+      "totalAudio": "Total audio transcribed",
+      "ofPlan": "of {planHours}h plan",
+      "modelAccuracy": "WhisperX model accuracy"
+    },
+    "recentTranscriptions": {
+      "title": "Recent Transcriptions",
+      "description": "Your latest transcription activities"
+    },
+    "monthlyStats": {
+      "title": "Transcriptions by Month",
+      "description": "Your transcription volume over time"
+    },
+    "errors": {
+      "loadFailed": "Failed to load dashboard data"
+    }
+  },
+  "manage": {
+    "title": "Transcription History",
+    "description": "Manage and view your audio transcriptions",
+    "back": "Back",
+    "searchPlaceholder": "Search transcriptions...",
+    "filter": "Filter",
+    "loading": "Loading transcriptions...",
+    "noDate": "No date",
+    "noTranscriptions": "No transcriptions found",
+    "actions": {
+      "view": "View",
+      "retry": "Retry",
+      "download": "Download",
+      "delete": "Delete",
+      "moreOptions": "More options"
+    },
+    "error": "Error",
+    "search": "Search",
+    "noResults": "No results found",
+    "messages": {
+      "deleteSuccess": "Transcription deleted successfully",
+      "deleteError": "Failed to delete transcription",
+      "retrySuccess": "Transcription queued for retry",
+      "retryError": "Failed to retry transcription"
+    }
+  },
+  "view": {
+    "back": "Back",
+    "actions": {
+      "download": "Download",
+      "search": "Search",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "share": "Share",
+      "delete": "Delete"
+    },
+    "download": {
+      "title": "Export Transcription",
+      "description": "Choose your preferred format and options for the export.",
+      "options": "Export Options",
+      "includeTimestamp": "Include Timestamps",
+      "includeSpeaker": "Include Speakers",
+      "copy": "Copy to clipboard",
+      "txt": "Plain Text (.txt)",
+      "srt": "Subtitles (.srt)",
+      "pdf": "Document (.pdf)",
+      "docx": "Word Document (.docx)",
+      "csv": "Comma Separated (.csv)",
+      "xlsx": "Excel Spreadsheet (.xlsx)",
+      "exporting": "Exporting...",
+      "success": "File exported successfully",
+      "error": "Failed to export file"
+    },
+    "metadata": {
+      "date": "Date",
+      "duration": "Duration"
+    },
+    "search": {
+      "placeholder": "Search transcript...",
+      "find": "Find",
+      "replace": "Replace",
+      "replaceAll": "Replace All"
+    },
+    "tabs": {
+      "transcript": "Segments",
+      "readMode": "Read Mode",
+      "summary": "Summary"
+    },
+    "copied": "Copied!",
+    "empty": "No transcript segments available.",
+    "loadingAudio": "Loading audio player...",
+    "processing": {
+      "message": "Processing audio...",
+      "title": "Processing transcription",
+      "fast": "Fast processing - lower accuracy but quicker results",
+      "medium": "Medium processing - balanced accuracy and speed",
+      "super": "Super processing - highest accuracy with longer processing time",
+      "loadingAudio": "Loading audio...",
+      "checkBack": "Please check back later.",
+      "failed": "Transcription failed to process.",
+      "retryHelp": "You can retry this transcription from the options below."
+    },
+    "audioPlayer": {
+      "play": "Play",
+      "pause": "Pause",
+      "skipBack": "Skip back 5s",
+      "skipForward": "Skip forward 5s",
+      "volume": "Volume"
+    },
+    "messages": {
+      "copySuccess": "Transcript copied to clipboard",
+      "copyError": "Failed to copy transcript",
+      "downloadStarted": "Download started",
+      "noMatches": "No matches found for \"{term}\"",
+      "foundMatches": "Found {count} matches for \"{term}\"",
+      "replacedAll": "Replaced {count} occurrences of \"{search}\" with \"{replace}\"",
+      "saveSuccess": "Changes saved successfully",
+      "saveError": "Failed to save changes",
+      "confirmDelete": "Are you sure you want to delete this transcription?",
+      "deleteSuccess": "Transcription deleted"
+    },
+    "errors": {
+      "audioFailed": "Failed to load audio file. Please check your connection or try again later."
+    }
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "transcribe": "Transcribe",
+    "manage": "Manage",
+    "transcript": "Transcript",
+    "summary": "Summary"
+  },
+  "status": {
+    "queued": "Queued",
+    "processing": "Processing",
+    "completed": "Completed",
+    "failed": "Failed",
+    "in_progress": "In Progress",
+    "error": "Error"
+  },
+  "model": {
+    "fast": "Fast",
+    "medium": "Medium",
+    "super": "Super"
+  },
+  "auth": {
+    "signIn": {
+      "title": "Welcome back",
+      "description": "Login with your Google account",
+      "googleButton": "Login with Google",
+      "divider": "Or continue with",
+      "email": {
+        "label": "Email",
+        "placeholder": "skriptor@mail.com",
+        "description": "Enter your email."
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "*******",
+        "description": "Enter your password."
+      },
+      "submit": "Login",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "tosPrefix": "By clicking continue, you agree to our",
+      "tos": "Terms of Service",
+      "and": "and",
+      "privacyPolicy": "Privacy Policy",
+      "messages": {
+        "loading": "Logging in....",
+        "success": "Welcome Back, {name}",
+        "error": "Failed to submit the form. Please try again."
+      }
+    },
+    "signUp": {
+      "title": "Create an account",
+      "description": "Join Skriptor to start transcribing",
+      "googleButton": "Sign up with Google",
+      "divider": "Or continue with",
+      "name": {
+        "label": "Full Name",
+        "placeholder": "John Doe",
+        "description": "Enter your full name."
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "skriptor@mail.com",
+        "description": "Enter your email."
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "*******",
+        "description": "Create a password."
+      },
+      "submit": "Sign up",
+      "hasAccount": "Already have an account?",
+      "signIn": "Log in",
+      "messages": {
+        "loading": "Creating account....",
+        "success": "Account created successfully",
+        "error": "Failed to create account"
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "description": "Enter your email to reset your password",
+      "email": {
+        "label": "Email",
+        "placeholder": "skriptor@mail.com",
+        "description": "Enter your registered email."
+      },
+      "submit": "Send Reset Link",
+      "backToLogin": "Back to login",
+      "messages": {
+        "loading": "Sending reset link....",
+        "success": "Reset link sent to your email",
+        "error": "Failed to send reset link"
+      }
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your new password",
+      "password": {
+        "label": "New Password",
+        "placeholder": "*******",
+        "description": "Create a new strong password."
+      },
+      "confirmPassword": {
+        "label": "Confirm Password",
+        "placeholder": "*******",
+        "description": "Repeat your new password."
+      },
+      "submit": "Reset Password",
+      "messages": {
+        "loading": "Resetting password....",
+        "success": "Password reset successfully",
+        "error": "Failed to reset password",
+        "mismatch": "Passwords do not match"
+      }
+    },
+    "settings": "Settings",
+    "logout": "Log out",
+    "verifyEmail": {
+      "title": "Verify your email",
+      "description": "We've sent a verification link to your email address. Please check your inbox to continue.",
+      "spamHint": "If you don't see the email, please check your spam folder.",
+      "resend": "Resend Verification Email",
+      "backToLogin": "Back to log in"
+    },
+    "emailVerified": {
+      "title": "Email Verified!",
+      "description": "Your email has been successfully verified. You will be redirected to the dashboard in a few seconds.",
+      "manualRedirect": "Click here if you are not redirected automatically",
+      "success": "Success"
     }
   }
 }
