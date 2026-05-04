@@ -1,0 +1,7 @@
+jiwer
+psutil
+pandas
+openpyxl
+streamlit
+plotly
+tabulate

@@ -38,6 +38,8 @@ export interface WaveformPlayerRef {
   play: () => void;
   pause: () => void;
   togglePlay: () => void;
+  skipForward: () => void;
+  skipBackward: () => void;
 }
 
 export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>(
@@ -173,6 +175,8 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
       play: () => wavesurferRef.current?.play(),
       pause: () => wavesurferRef.current?.pause(),
       togglePlay: () => wavesurferRef.current?.playPause(),
+      skipForward,
+      skipBackward,
     }));
 
     const togglePlayPause = () => {

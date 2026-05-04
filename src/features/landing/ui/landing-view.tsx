@@ -450,7 +450,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Pricing Section
       <section className="py-20 md:py-32 bg-slate-50 dark:bg-slate-900">
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col items-center text-center mb-12 md:mb-20">
@@ -568,7 +568,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQ Section */}
       <section className="py-20 md:py-32 bg-white dark:bg-slate-950">

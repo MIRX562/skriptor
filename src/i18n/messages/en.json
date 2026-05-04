@@ -350,6 +350,11 @@
       "title": "Transcriptions by Month",
       "description": "Your transcription volume over time"
     },
+    "actions": {
+      "newTranscription": "New Transcription",
+      "startNow": "Start Now",
+      "uploadOrRecord": "Upload or record audio"
+    },
     "errors": {
       "loadFailed": "Failed to load dashboard data"
     }
@@ -389,7 +394,14 @@
       "save": "Save",
       "cancel": "Cancel",
       "share": "Share",
-      "delete": "Delete"
+      "delete": "Delete",
+      "manageSpeakers": "Manage Speakers"
+    },
+    "manageSpeakers": {
+      "title": "Manage Speakers",
+      "description": "Rename speaker labels to identify them easily throughout the transcript.",
+      "label": "Speaker {index}",
+      "placeholder": "Enter speaker name..."
     },
     "download": {
       "title": "Export Transcription",
@@ -454,6 +466,7 @@
       "saveSuccess": "Changes saved successfully",
       "saveError": "Failed to save changes",
       "confirmDelete": "Are you sure you want to delete this transcription?",
+      "confirmDeleteDescription": "This action cannot be undone. All audio and segments will be permanently removed.",
       "deleteSuccess": "Transcription deleted"
     },
     "errors": {

@@ -140,7 +140,7 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
     },
     onSuccess: () => {
       toast.success(dict.transcribe.messages.uploadSuccess);
-      router.push("/dashboard?tab=manage");
+      router.push("/dashboard/manage");
     },
   });
 

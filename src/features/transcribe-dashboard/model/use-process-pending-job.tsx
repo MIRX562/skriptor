@@ -38,7 +38,7 @@ export function useProcessPendingJob() {
 
         toast.success("Transcription started successfully.");
         await clearPendingJob();
-        router.push("/dashboard?tab=manage", { scroll: false });
+        router.push("/dashboard/manage", { scroll: false });
         
         // Invalidate the transcriptions list to show the new item
         queryClient.invalidateQueries({ queryKey: ["transcriptions"] });

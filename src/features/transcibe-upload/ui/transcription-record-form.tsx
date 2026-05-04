@@ -83,7 +83,7 @@ export default function TranscriptionRecordForm({ dict }: TranscriptionRecordFor
         return;
       }
       toast.success("Transcription started successfully.");
-      router.push("/dashboard?tab=manage");
+      router.push("/dashboard/manage");
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");

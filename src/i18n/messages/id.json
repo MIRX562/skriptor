@@ -371,6 +371,11 @@
       "title": "Transkripsi per Bulan",
       "description": "Volume transkripsi Anda dari waktu ke waktu"
     },
+    "actions": {
+      "newTranscription": "Transkripsi Baru",
+      "startNow": "Mulai Sekarang",
+      "uploadOrRecord": "Unggah atau rekam audio"
+    },
     "errors": {
       "loadFailed": "Gagal memuat data dasbor"
     }
@@ -410,7 +415,14 @@
       "save": "Simpan",
       "cancel": "Batal",
       "share": "Bagikan",
-      "delete": "Hapus"
+      "delete": "Hapus",
+      "manageSpeakers": "Kelola Pembicara"
+    },
+    "manageSpeakers": {
+      "title": "Kelola Pembicara",
+      "description": "Ubah nama label pembicara untuk mengidentifikasi mereka dengan mudah di seluruh transkrip.",
+      "label": "Pembicara {index}",
+      "placeholder": "Masukkan nama pembicara..."
     },
     "download": {
       "title": "Ekspor Transkripsi",
@@ -475,6 +487,7 @@
       "saveSuccess": "Perubahan berhasil disimpan",
       "saveError": "Gagal menyimpan perubahan",
       "confirmDelete": "Apakah Anda yakin ingin menghapus transkripsi ini?",
+      "confirmDeleteDescription": "Tindakan ini tidak dapat dibatalkan. Semua audio dan segmen akan dihapus secara permanen.",
       "deleteSuccess": "Transkripsi dihapus"
     },
     "errors": {

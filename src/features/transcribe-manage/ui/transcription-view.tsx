@@ -39,6 +39,7 @@ import {
   AlertCircle,
   LayoutList,
   Type,
+  Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -47,6 +48,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -110,6 +121,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     setViewMode,
 
     updateSegment,
+    updateSpeakerLabel,
     getSpeakerLabel,
     getFullTranscript,
     performSearch,
@@ -118,10 +130,10 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     navigateSearchResults,
   } = useTranscriptionStore();
 
+  const [isSpeakerDialogOpen, setIsSpeakerDialogOpen] = useState(false);
+
   const handleBack = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("view");
-    router.push(`/dashboard?${params.toString()}`, { scroll: false });
+    router.push("/dashboard/manage", { scroll: false });
   };
 
   // Hydrate Zustand store when TanStack Query resolves
@@ -183,6 +195,34 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     }
   }, [activeSegmentIndex, isPlaying, viewMode, rowVirtualizer]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in any input/textarea
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA" ||
+        isEditing
+      ) {
+        return;
+      }
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        audioPlayerRef.current?.togglePlay();
+      } else if (e.code === "ArrowLeft") {
+        e.preventDefault();
+        audioPlayerRef.current?.skipBackward();
+      } else if (e.code === "ArrowRight") {
+        e.preventDefault();
+        audioPlayerRef.current?.skipForward();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isEditing]);
+
   // Recalculate virtualizer when switching back to segments mode
   useEffect(() => {
     if (viewMode === "segments") {
@@ -236,11 +276,18 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
   };
 
   const handleDelete = () => {
-    if (!confirm(dict.view.messages.confirmDelete)) return;
-    deleteMutation.mutate(id, {
-      onSuccess: () => {
-        toast.success(dict.view.messages.deleteSuccess);
-        handleBack();
+    toast(dict.view.messages.confirmDelete, {
+      description: dict.view.messages.confirmDeleteDescription,
+      action: {
+        label: dict.common.delete,
+        onClick: () => {
+          deleteMutation.mutate(id, {
+            onSuccess: () => {
+              toast.success(dict.view.messages.deleteSuccess);
+              handleBack();
+            },
+          });
+        },
       },
     });
   };
@@ -252,7 +299,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
   const currentProgress = liveProgress?.progress ?? metadata.progress;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+    <div className="space-y-4">
       <Card>
         <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-3 sm:p-6 pb-2 sm:pb-4">
           <div className="space-y-1 min-w-0 flex-1 w-full">
@@ -307,10 +354,68 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                 </Button>
               </div>
             ) : (
-              <Button variant="outline" size="sm" className="h-8 sm:h-9 shrink-0" onClick={() => setIsEditing(true)}>
-                <Pencil className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">{dict.view.actions.edit}</span>
-              </Button>
+              <div className="flex gap-1.5 sm:gap-2 shrink-0">
+                {metadata.isSpeakerDiarized && (
+                  <Dialog open={isSpeakerDialogOpen} onOpenChange={setIsSpeakerDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 sm:h-9">
+                        <Users className="h-4 w-4 md:mr-2" />
+                        <span className="hidden md:inline">{dict.view.actions.manageSpeakers}</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>{dict.view.manageSpeakers.title}</DialogTitle>
+                        <DialogDescription>
+                          {dict.view.manageSpeakers.description}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
+                        {speakers.map((speaker) => (
+                          <div key={speaker.index} className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor={`speaker-${speaker.index}`} className="text-right text-xs">
+                              {dict.view.manageSpeakers.label.replace("{index}", speaker.index.toString())}
+                            </Label>
+                            <Input
+                              id={`speaker-${speaker.index}`}
+                              value={speaker.label}
+                              onChange={(e) => updateSpeakerLabel(speaker.index, e.target.value)}
+                              className="col-span-3 h-8 text-sm"
+                              placeholder={dict.view.manageSpeakers.placeholder}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <DialogFooter>
+                        <Button 
+                          onClick={() => {
+                            saveSegmentsMutation.mutate(
+                              { segments, speakers },
+                              {
+                                onSuccess: () => {
+                                  toast.success(dict.view.messages.saveSuccess);
+                                  setIsSpeakerDialogOpen(false);
+                                },
+                                onError: (err) => {
+                                  toast.error(err instanceof Error ? err.message : dict.view.messages.saveError);
+                                }
+                              }
+                            );
+                          }}
+                          disabled={saveSegmentsMutation.isPending}
+                        >
+                          {saveSegmentsMutation.isPending ? dict.common.saving : dict.common.save}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
+
+                <Button variant="outline" size="sm" className="h-8 sm:h-9" onClick={() => setIsEditing(true)}>
+                  <Pencil className="h-4 w-4 md:mr-2" />
+                  <span className="hidden md:inline">{dict.view.actions.edit}</span>
+                </Button>
+              </div>
             )}
             
             <Button 
@@ -462,6 +567,6 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
           </Tabs>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

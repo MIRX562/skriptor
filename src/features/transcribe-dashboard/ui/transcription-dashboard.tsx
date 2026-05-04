@@ -1,14 +1,9 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Clock, FileText, Mic, Zap } from "lucide-react";
+import { Clock, FileText, Plus, Zap } from "lucide-react";
+import Link from "next/link";
 import { useTranscriptionList } from "@/features/transcribe-manage/model/use-transcription-list";
 import { RecentTranscriptions } from "./recent-transcriptions";
 import { TranscriptionStats } from "./transcription-stats";
@@ -131,25 +126,28 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
           </CardContent>
         </Card>
 
-        {/* Accuracy */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{dict.dashboard.stats.accuracy}</CardTitle>
-            <Mic className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold">
-                {stats && stats.total > 0 ? `${stats.accuracy}%` : "—"}
+        {/* New Transcription CTA */}
+        <Link 
+          href="/dashboard/transcribe"
+          className="group"
+        >
+          <Card className="h-full border-dashed border-teal-200 dark:border-teal-900/50 hover:border-teal-500 hover:bg-teal-50/50 dark:hover:bg-teal-900/10 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {dict.dashboard.actions.newTranscription}
+              </CardTitle>
+              <Plus className="h-4 w-4 text-teal-600 dark:text-teal-400 group-hover:scale-125 transition-transform" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                {dict.dashboard.actions.startNow}
               </div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">
-              {dict.dashboard.stats.modelAccuracy}
-            </p>
-          </CardContent>
-        </Card>
+              <p className="text-xs text-muted-foreground mt-1">
+                {dict.dashboard.actions.uploadOrRecord}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">

@@ -363,28 +363,3 @@ Returns a single transcription with its segments for the authenticated user.
 Auth-guarded + ownership check. Segments ordered by `startTime asc`. Used by `useTranscription(id)` TanStack Query hook.
 
 ---
-
-## Known Tech Debt (Priority Order)
-
-1. **`redis.ts` imports `Queue` from `bullmq` but never uses it** — remove the import; the Queue should live in `lib/queue.ts`
-2. ~~**Both Zustand stores use hardcoded mock data**~~ — ✅ RESOLVED: stores wired to real API via TanStack Query hooks
-3. ~~**`query.ts` uses stale schema references**~~ — ✅ RESOLVED: `query.ts` deleted; hooks use correct schema
-4. ~~**Audio player hardcodes `/sample1.mp3`**~~ — ✅ RESOLVED: uses presigned URL from `GET /api/transcription/[id]/audio`
-5. **`next.config.ts` suppresses all TS and lint errors** — resolve actual errors, then remove the flags
-6. **`lib/minio.ts`** — legacy client, must not be used in new code; delete after storage migration
-7. ~~**"Save Changes" and "Delete Transcription" buttons are unimplemented**~~ — ✅ RESOLVED: wired to `useSaveSegments` and `useDeleteTranscription` mutations
-8. **`numberOfSpeaker` schema inconsistency** — Drizzle schema has `.notNull()` but SQL migration omitted `NOT NULL` — run a new migration to align
-9. **`features/transcibe-upload/server/initiate-job.ts`** — dead code file; may be deleted (upload handled entirely by the API route)
-
----
-
-## Storage Migration (MinIO → Garage)
-
-When the time comes to cut over:
-1. Provision Garage, create bucket, issue access keys
-2. Rename env vars: `MINIO_*` → `S3_*` (already reflected in rules)
-3. Point `S3_ENDPOINT` at the Garage endpoint
-4. Verify `forcePathStyle: true` (already set — Garage requires it)
-5. Test presigned URL generation and expiry
-6. Migrate existing S3 objects (`aws s3 sync` or `rclone`)
-7. Delete `src/lib/minio.ts` — it is no longer needed

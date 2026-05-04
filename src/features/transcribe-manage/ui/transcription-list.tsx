@@ -226,9 +226,7 @@ export function TranscriptionList({ dict }: TranscriptionListProps) {
   const retryMutation = useRetryTranscription();
 
   const handleSelect = (id: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("view", id);
-    router.push(`/dashboard?${params.toString()}`, { scroll: false });
+    router.push(`/dashboard/manage/${id}`, { scroll: false });
   };
 
   const filteredTranscriptions = (transcriptions ?? []).filter((item) => {
@@ -262,72 +260,66 @@ export function TranscriptionList({ dict }: TranscriptionListProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>{dict.manage.title}</CardTitle>
-          <CardDescription>
-            {dict.manage.description || "Manage and view all your transcriptions"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder={dict.manage.search}
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Button variant="outline">{dict.manage.filter || "Filter"}</Button>
+    <Card>
+      <CardHeader>
+        <CardTitle>{dict.manage.title}</CardTitle>
+        <CardDescription>
+          {dict.manage.description || "Manage and view all your transcriptions"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder={dict.manage.search}
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-
-            <div className="space-y-2">
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    {dict.common.loading}
-                  </p>
-                </div>
-              ) : error ? (
-                <div className="text-center py-8">
-                  <p className="text-destructive">
-                    {error instanceof Error ? error.message : dict.manage.error}
-                  </p>
-                </div>
-              ) : filteredTranscriptions.length > 0 ? (
-                filteredTranscriptions.map((item, index) => (
-                  <TranscriptionListItemRow
-                    key={item.id}
-                    item={item}
-                    index={index}
-                    onSelect={handleSelect}
-                    onDelete={handleDelete}
-                    onRetry={handleRetry}
-                    isDeleting={deleteMutation.isPending}
-                    isRetrying={retryMutation.isPending}
-                    dict={dict}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    {dict.manage.noResults}
-                  </p>
-                </div>
-              )}
-            </div>
+            <Button variant="outline">{dict.manage.filter || "Filter"}</Button>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+
+          <div className="space-y-2">
+            {isLoading ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  {dict.common.loading}
+                </p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-destructive">
+                  {error instanceof Error ? error.message : dict.manage.error}
+                </p>
+              </div>
+            ) : filteredTranscriptions.length > 0 ? (
+              filteredTranscriptions.map((item, index) => (
+                <TranscriptionListItemRow
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  onSelect={handleSelect}
+                  onDelete={handleDelete}
+                  onRetry={handleRetry}
+                  isDeleting={deleteMutation.isPending}
+                  isRetrying={retryMutation.isPending}
+                  dict={dict}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  {dict.manage.noResults}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

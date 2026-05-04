@@ -48,4 +48,3 @@ The following MCP servers are available and should be used by AI agents:
 - **Database Changes**: Use `drizzle-mcp` to verify the schema before generating migrations.
 - **Middleware**: Use `src/proxy.ts` (Proxy convention) instead of `middleware.ts`.
 - **Dynamic Routes**: Always await `params` in dynamic route handlers.
-- **Tools Usage**: never ever run dev server since its always already running, never use browser_eval since almost everything needs auth logins

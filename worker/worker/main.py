@@ -18,11 +18,13 @@ async def process_job(job: Job, token: str):
         # Update status to processing
         progress.update("processing", 0, "Initializing...")
         
-        # Run transcription
+        # Run transcription in a separate thread to avoid blocking the event loop
+        # This allows BullMQ to renew the lock for long-running jobs
         job_language = data.get("language")
         print(f"Job {job.id} requested language: {job_language}")
         
-        result = transcriber.process(
+        result = await asyncio.to_thread(
+            transcriber.process,
             audio_url=data.get("audioUrl"),
             model_size=data.get("model", "medium"),
             language=job_language or "default",
@@ -60,13 +62,13 @@ async def main():
     print("Starting Skriptor Worker...")
     
     # Initialize BullMQ Worker
-    # Note: BullMQ connection usually expects redis URL or dict
     worker = Worker(
         "transcription", 
         process_job, 
         {
             "connection": config.REDIS_URL,
-            "concurrency": 1
+            "concurrency": 1,
+            "lockDuration": 300000, # 5 minutes (prevents timeout for long audio)
         }
     )
     
