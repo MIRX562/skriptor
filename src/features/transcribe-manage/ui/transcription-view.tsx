@@ -1,53 +1,31 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback, useMemo } from "react";
+import { useRef, useEffect, useState, useCallback, memo } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import {
   ArrowLeft,
   Clock,
   Download,
-  FileAudio,
   Pencil,
-  RotateCcw,
   Save,
-  Share2,
   Trash2,
-  Zap,
-  BarChart2,
-  CheckCircle2,
-  Copy,
   FileText,
-  FileCode,
-  Check,
   ChevronDown,
   Search,
-  Replace,
-  X,
-  Play,
-  AlertCircle,
   LayoutList,
   Type,
   Users,
 } from "lucide-react";
-import { motion } from "framer-motion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +36,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -68,11 +47,13 @@ import { useTranscription } from "../model/use-transcription";
 import { useDeleteTranscription } from "../model/use-delete-transcription";
 import { useRetryTranscription } from "../model/use-retry-transcription";
 import { useSaveSegments } from "../model/use-save-segments";
-import { cn, formatSrtTime, formatTime } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { WaveformPlayer, type WaveformPlayerRef } from "./waveform-player";
 import { useTranscriptionProgress } from "../model/use-transcription-progress";
 import { SegmentRow } from "./segment-row";
 import { DownloadOptions } from "./DownloadOptions";
+import { SearchControls } from "./search-controls";
+import { FloatingToolbar } from "./floating-toolbar";
 import { type Dictionary } from "@/i18n/dictionaries";
 
 interface TranscriptionViewProps {
@@ -87,14 +68,13 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const audioPlayerRef = useRef<WaveformPlayerRef | null>(null);
 
   // TanStack Query hooks
   const { data: transcriptionData, isLoading } = useTranscription(id);
   const deleteMutation = useDeleteTranscription();
-  const retryMutation = useRetryTranscription();
   const saveSegmentsMutation = useSaveSegments(id);
-  const queryClient = useQueryClient();
 
   const liveProgress = useTranscriptionProgress(id, transcriptionData?.status ?? "processing");
 
@@ -104,10 +84,8 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     speakers,
     metadata,
     isEditing,
-    isCopied,
     showSearch,
     searchTerm,
-    replaceTerm,
     searchResults,
     currentResultIndex,
     viewMode,
@@ -116,18 +94,13 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     setIsEditing,
     setIsCopied,
     setShowSearch,
-    setSearchTerm,
-    setReplaceTerm,
     setViewMode,
 
     updateSegment,
     updateSpeakerLabel,
     getSpeakerLabel,
     getFullTranscript,
-    performSearch,
-    replaceCurrentOccurrence,
-    replaceAllOccurrences,
-    navigateSearchResults,
+    clearSearch
   } = useTranscriptionStore();
 
   const [isSpeakerDialogOpen, setIsSpeakerDialogOpen] = useState(false);
@@ -230,6 +203,21 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     }
   }, [viewMode, rowVirtualizer]);
 
+  // Scroll to current search result
+  useEffect(() => {
+    if (searchResults.length > 0 && currentResultIndex >= 0 && showSearch) {
+      const matchIndex = searchResults[currentResultIndex];
+      if (viewMode === "segments") {
+        rowVirtualizer.scrollToIndex(matchIndex, { align: "center", behavior: "smooth" });
+      } else if (viewMode === "fulltext") {
+        const element = document.getElementById(`read-segment-${matchIndex}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    }
+  }, [searchResults, currentResultIndex, viewMode, rowVirtualizer, showSearch]);
+
   const handleSegmentClick = (index: number) => {
     if (isEditing) return;
     const segment = segments[index];
@@ -241,12 +229,6 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     }
   };
 
-  const handleSearch = () => {
-    const results = performSearch();
-    if (results.length > 0 && viewMode === "segments") {
-      rowVirtualizer.scrollToIndex(results[0], { align: "center" });
-    }
-  };
 
   const handleCopyToClipboard = () => {
     const text = getFullTranscript();
@@ -292,189 +274,243 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     });
   };
 
-  if (isLoading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div></div>;
-  if (!metadata) return null;
+  const handleSearchClose = useCallback(() => {
+    clearSearch();
+    setShowSearch(false);
+  }, [clearSearch, setShowSearch]);
 
-  const currentStatus = liveProgress?.status === "pending" || liveProgress?.status === "processing" ? "in_progress" : liveProgress?.status ?? metadata.status;
-  const currentProgress = liveProgress?.progress ?? metadata.progress;
+  if (isLoading || !metadata || metadata.id !== id) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div></div>;
+
+  // Determine status: prioritize completed/failed from database. 
+  // If database says it's in_progress, check live progress for details.
+  const isCompletedInDb = metadata.status === "completed" || metadata.status === "failed";
+  const currentStatus = isCompletedInDb 
+    ? metadata.status 
+    : (liveProgress?.status === "pending" || liveProgress?.status === "processing") 
+      ? "in_progress" 
+      : metadata.status;
+
+  const currentProgress = isCompletedInDb ? 100 : (liveProgress?.progress ?? 0);
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-3 sm:p-6 pb-2 sm:pb-4">
-          <div className="space-y-1 min-w-0 flex-1 w-full">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleBack}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <CardTitle className="text-lg sm:text-xl truncate">{metadata.title}</CardTitle>
+      <Card className="overflow-hidden pt-0 md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
+        <CardHeader className="flex flex-row items-center justify-between gap-1 sm:gap-2 p-3 sm:p-6 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full" 
+              onClick={handleBack}
+            >
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+            <div className="flex flex-col min-w-0">
+              <CardTitle className="text-base sm:text-lg md:text-xl font-bold truncate">
+                {metadata.title}
+              </CardTitle>
+              <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                <span>{metadata.date}</span>
+                <span className="opacity-30">•</span>
+                <span>{metadata.duration}</span>
+              </div>
             </div>
-            <CardDescription className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs">
-              <span className="flex items-center gap-1 shrink-0"><Clock className="h-3 w-3" /> {metadata.duration}</span>
-              <span className="shrink-0">{metadata.date}</span>
-              <Badge variant="outline" className="capitalize px-1.5 py-0 h-5 text-[9px] sm:text-[10px]">{dict.status[currentStatus] || currentStatus}</Badge>
-            </CardDescription>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 no-scrollbar">
-            <DownloadOptions 
-              metadata={metadata} 
-              segments={segments} 
-              speakers={speakers} 
-              dict={dict} 
-              onCopy={handleCopyToClipboard}
-              trigger={
-                <Button variant="outline" size="sm" className="h-8 sm:h-9 shrink-0">
-                  <Download className="h-4 w-4 md:mr-2" />
-                  <span className="hidden md:inline">{dict.view.actions.download}</span>
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              }
-            />
-
-            <Button 
-              variant={showSearch ? "default" : "outline"} 
-              size="sm" 
-              className="h-8 sm:h-9 shrink-0"
-              onClick={() => setShowSearch(!showSearch)}
-            >
-              <Search className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">{dict.view.actions.search}</span>
-            </Button>
-
-            {isEditing ? (
-              <div className="flex gap-1.5 sm:gap-2 shrink-0">
-                <Button variant="outline" size="sm" className="h-8 sm:h-9" onClick={() => setIsEditing(false)}>
-                  {dict.view.actions.cancel}
-                </Button>
-                <Button variant="default" size="sm" className="h-8 sm:h-9" onClick={handleSaveChanges} disabled={saveSegmentsMutation.isPending}>
-                  <Save className="h-4 w-4 md:mr-2" />
-                  <span className="hidden md:inline">{dict.view.actions.save}</span>
-                  <span className="md:hidden">{dict.view.actions.save}</span>
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-1.5 sm:gap-2 shrink-0">
-                {metadata.isSpeakerDiarized && (
-                  <Dialog open={isSpeakerDialogOpen} onOpenChange={setIsSpeakerDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-8 sm:h-9">
-                        <Users className="h-4 w-4 md:mr-2" />
-                        <span className="hidden md:inline">{dict.view.actions.manageSpeakers}</span>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>{dict.view.manageSpeakers.title}</DialogTitle>
-                        <DialogDescription>
-                          {dict.view.manageSpeakers.description}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
-                        {speakers.map((speaker) => (
-                          <div key={speaker.index} className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor={`speaker-${speaker.index}`} className="text-right text-xs">
-                              {dict.view.manageSpeakers.label.replace("{index}", speaker.index.toString())}
-                            </Label>
-                            <Input
-                              id={`speaker-${speaker.index}`}
-                              value={speaker.label}
-                              onChange={(e) => updateSpeakerLabel(speaker.index, e.target.value)}
-                              className="col-span-3 h-8 text-sm"
-                              placeholder={dict.view.manageSpeakers.placeholder}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <DialogFooter>
-                        <Button 
-                          onClick={() => {
-                            saveSegmentsMutation.mutate(
-                              { segments, speakers },
-                              {
-                                onSuccess: () => {
-                                  toast.success(dict.view.messages.saveSuccess);
-                                  setIsSpeakerDialogOpen(false);
-                                },
-                                onError: (err) => {
-                                  toast.error(err instanceof Error ? err.message : dict.view.messages.saveError);
-                                }
-                              }
-                            );
-                          }}
-                          disabled={saveSegmentsMutation.isPending}
-                        >
-                          {saveSegmentsMutation.isPending ? dict.common.saving : dict.common.save}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
-
-                <Button variant="outline" size="sm" className="h-8 sm:h-9" onClick={() => setIsEditing(true)}>
-                  <Pencil className="h-4 w-4 md:mr-2" />
-                  <span className="hidden md:inline">{dict.view.actions.edit}</span>
-                </Button>
-              </div>
-            )}
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-8 sm:h-9 shrink-0 text-destructive hover:bg-destructive/10" 
-              onClick={handleDelete} 
-              disabled={deleteMutation.isPending}
-            >
-              <Trash2 className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">{dict.view.actions.delete || "Delete"}</span>
-            </Button>
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 sm:h-9 shrink-0 text-destructive hover:bg-destructive/10 bg-white dark:bg-slate-950 border-destructive/20 px-2 sm:px-3" 
+            onClick={handleDelete} 
+            disabled={deleteMutation.isPending}
+          >
+            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+            <span className="hidden md:inline">{dict.view.actions.delete || "Delete"}</span>
+          </Button>
         </CardHeader>
 
         {currentStatus === "in_progress" && (
-          <div className="px-6 pb-4">
-            <div className="flex justify-between text-xs mb-1"><span>{liveProgress?.message || dict.view.processing.message}</span><span>{currentProgress}%</span></div>
-            <Progress value={currentProgress} className="h-1.5" />
+          <div className="px-6 py-3 bg-teal-50/30 dark:bg-teal-900/10 border-b border-teal-100 dark:border-teal-900/30">
+            <div className="flex justify-between text-[10px] sm:text-xs mb-1.5 font-medium text-teal-700 dark:text-teal-400">
+              <span>{liveProgress?.message || dict.view.processing.message}</span>
+              <span>{currentProgress}%</span>
+            </div>
+            <Progress value={currentProgress} className="h-1.5 bg-teal-100 dark:bg-teal-950" />
           </div>
         )}
 
-        <CardContent className="space-y-4 p-3 sm:p-6">
-          <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-900/50">
+        <CardContent className="space-y-4 p-4 sm:p-6">
+          <div className="p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 shadow-inner">
             {audioUrl ? (
-              <WaveformPlayer ref={audioPlayerRef} audioUrl={audioUrl} onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} dict={dict} />
+              <MemoizedWaveformPlayer 
+                ref={audioPlayerRef} 
+                audioUrl={audioUrl} 
+                onTimeUpdate={handleTimeUpdate} 
+                onPlay={() => setIsPlaying(true)} 
+                onPause={() => setIsPlaying(false)} 
+                dict={dict} 
+              />
             ) : (
-              <div className="h-12 flex items-center justify-center text-sm text-muted-foreground">{dict.view.loadingAudio}</div>
+              <div className="h-12 flex items-center justify-center text-sm text-muted-foreground italic">
+                {dict.view.loadingAudio}
+              </div>
             )}
           </div>
 
-          {showSearch && (
-            <div className="p-3 border rounded-lg bg-slate-50/50 dark:bg-slate-900/50 space-y-2">
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder={dict.view.search.placeholder} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9" onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
-                </div>
-                <Button size="sm" onClick={handleSearch}>{dict.view.search.find}</Button>
-              </div>
-            </div>
-          )}
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar max-w-full">
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-auto">
+                <TabsList className="flex h-8 p-0 bg-transparent border-none shadow-none">
+                  <TabsTrigger 
+                    value="segments" 
+                    className="text-xs h-7 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-teal-600 dark:data-[state=active]:text-teal-400 shadow-none data-[state=active]:shadow-sm"
+                  >
+                    <LayoutList className="h-3.5 w-3.5 md:mr-2" />
+                    <span className="hidden md:inline">{dict.view.tabs.transcript}</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="fulltext" 
+                    className="text-xs h-7 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-teal-600 dark:data-[state=active]:text-teal-400 shadow-none data-[state=active]:shadow-sm"
+                  >
+                    <Type className="h-3.5 w-3.5 md:mr-2" />
+                    <span className="hidden md:inline">{dict.view.tabs.readMode || "Read Mode"}</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              
+              <div className="w-[1px] h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
 
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
-            <div className="flex items-center justify-between mb-2">
-              <TabsList className="h-9 p-1 w-full sm:w-auto">
-                <TabsTrigger value="segments" className="flex-1 sm:flex-initial text-xs px-3 h-7">
-                  <LayoutList className="h-3 w-3 mr-1.5" /> 
-                  {dict.view.tabs.transcript}
-                </TabsTrigger>
-                <TabsTrigger value="fulltext" className="flex-1 sm:flex-initial text-xs px-3 h-7">
-                  <Type className="h-3 w-3 mr-1.5" /> 
-                  {dict.view.tabs.readMode || "Read Mode"}
-                </TabsTrigger>
-              </TabsList>
-            </div>
+              <DownloadOptions 
+                metadata={metadata} 
+                segments={segments} 
+                speakers={speakers} 
+                dict={dict} 
+                onCopy={handleCopyToClipboard}
+                trigger={
+                  <Button variant="ghost" size="sm" className="h-8 shrink-0 hover:bg-white dark:hover:bg-slate-950">
+                    <Download className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">{dict.view.actions.download}</span>
+                    <ChevronDown className="h-3 w-3 ml-1" />
+                  </Button>
+                }
+              />
 
-            <TabsContent value="segments" className="mt-0">
-              <div ref={parentRef} className="h-[400px] sm:h-[600px] overflow-auto border rounded-xl relative bg-slate-50/30 dark:bg-slate-900/20">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={cn(
+                  "h-8 shrink-0 hover:bg-white dark:hover:bg-slate-950",
+                  showSearch && "bg-white text-teal-600 dark:bg-slate-950 dark:text-teal-400 shadow-sm"
+                )}
+                onClick={() => {
+                  if (showSearch) {
+                    clearSearch();
+                  }
+                  setShowSearch(!showSearch);
+                }}
+              >
+                <Search className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">{dict.view.actions.search}</span>
+              </Button>
+
+              <div className="w-[1px] h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
+
+              {isEditing ? (
+                <>
+                  <Button variant="ghost" size="sm" className="h-8" onClick={() => setIsEditing(false)}>
+                    {dict.view.actions.cancel}
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="h-8 bg-teal-600 hover:bg-teal-700 text-white" 
+                    onClick={handleSaveChanges} 
+                    disabled={saveSegmentsMutation.isPending}
+                  >
+                    <Save className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">{dict.view.actions.save}</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {metadata.isSpeakerDiarized && (
+                    <Dialog open={isSpeakerDialogOpen} onOpenChange={setIsSpeakerDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 hover:bg-white dark:hover:bg-slate-950">
+                          <Users className="h-4 w-4 md:mr-2" />
+                          <span className="hidden md:inline">{dict.view.actions.manageSpeakers}</span>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>{dict.view.manageSpeakers.title}</DialogTitle>
+                          <DialogDescription>
+                            {dict.view.manageSpeakers.description}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
+                          {speakers.map((speaker) => (
+                            <div key={speaker.index} className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor={`speaker-${speaker.index}`} className="text-right text-xs">
+                                {dict.view.manageSpeakers.label.replace("{index}", speaker.index.toString())}
+                              </Label>
+                              <Input
+                                id={`speaker-${speaker.index}`}
+                                value={speaker.label}
+                                onChange={(e) => updateSpeakerLabel(speaker.index, e.target.value)}
+                                className="col-span-3 h-8 text-sm"
+                                placeholder={dict.view.manageSpeakers.placeholder}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <DialogFooter>
+                          <Button 
+                            onClick={() => {
+                              saveSegmentsMutation.mutate(
+                                { segments, speakers },
+                                {
+                                  onSuccess: () => {
+                                    toast.success(dict.view.messages.saveSuccess);
+                                    setIsSpeakerDialogOpen(false);
+                                  },
+                                  onError: (err) => {
+                                    toast.error(err instanceof Error ? err.message : dict.view.messages.saveError);
+                                  }
+                                }
+                              );
+                            }}
+                            disabled={saveSegmentsMutation.isPending}
+                          >
+                            {saveSegmentsMutation.isPending ? dict.common.saving : dict.common.save}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+
+                  <Button variant="ghost" size="sm" className="h-8 hover:bg-white dark:hover:bg-slate-950" onClick={() => setIsEditing(true)}>
+                    <Pencil className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">{dict.view.actions.edit}</span>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {showSearch && (
+              <SearchControls 
+                dict={dict} 
+                onClose={handleSearchClose} 
+              />
+            )}
+          </AnimatePresence>
+
+          <div ref={contentRef} className="relative">
+            {viewMode === "segments" ? (
+              <div ref={parentRef} className="h-[400px] sm:h-[600px] overflow-auto border border-slate-200 dark:border-slate-800 rounded-xl relative bg-white dark:bg-slate-950/50 shadow-inner">
                 <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}>
                   {rowVirtualizer.getVirtualItems().map((virtualRow) => (
                     <div
@@ -508,11 +544,9 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                   ))}
                 </div>
               </div>
-            </TabsContent>
-
-            <TabsContent value="fulltext" className="mt-0">
-              <div className="h-[400px] sm:h-[600px] overflow-auto border rounded-xl p-4 sm:p-8 bg-white dark:bg-slate-950/50 shadow-inner">
-                <div className="prose prose-slate dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-0">
+            ) : (
+              <ScrollArea className="h-[400px] sm:h-[600px] border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950/50 shadow-inner">
+                <div className="p-4 sm:p-8 prose prose-slate dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-0">
                   {segments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-2">
                       <FileText className="h-10 w-10 opacity-20" />
@@ -562,11 +596,15 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                     </div>
                   )}
                 </div>
-              </div>
-            </TabsContent>
-          </Tabs>
+              </ScrollArea>
+            )}
+          </div>
         </CardContent>
       </Card>
+
+      <FloatingToolbar containerRef={contentRef} dict={dict} />
     </div>
   );
 }
+
+const MemoizedWaveformPlayer = memo(WaveformPlayer);

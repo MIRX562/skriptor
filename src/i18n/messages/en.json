@@ -428,7 +428,14 @@
       "placeholder": "Search transcript...",
       "find": "Find",
       "replace": "Replace",
-      "replaceAll": "Replace All"
+      "replaceAll": "Replace All",
+      "replacePlaceholder": "Replace with...",
+      "results": "{current} of {total}"
+    },
+    "floating": {
+      "copy": "Copy",
+      "find": "Find",
+      "replace": "Replace"
     },
     "tabs": {
       "transcript": "Segments",

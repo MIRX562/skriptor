@@ -16,8 +16,8 @@ export function useTranscriptionProgress(
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // We only need to listen to SSE if the transcription is not completed or failed.
     if (initialStatus === "completed" || initialStatus === "failed") {
+      setProgressState(null);
       return;
     }
 
@@ -28,6 +28,7 @@ export function useTranscriptionProgress(
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data) as ProgressEvent;
+        if (data.id !== transcriptionId) return;
         setProgressState(data);
 
         // If the worker has finished processing, close SSE and refetch data

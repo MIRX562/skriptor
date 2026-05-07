@@ -1,14 +1,13 @@
 "use client";
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { SiteHeader } from "./dashboard-header";
+import { DashboardNav } from "./dashboard-nav";
 import { useProcessPendingJob } from "@/features/transcribe-dashboard/model/use-process-pending-job";
 import { Loader2 } from "lucide-react";
 
 import { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-
 interface DashboardTabsProps {
   dict: any;
   locale: string;
@@ -20,24 +19,9 @@ export function DashboardTabs({
   locale,
   children,
 }: DashboardTabsProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const { isProcessingPendingJob } = useProcessPendingJob();
 
-  // Determine active tab based on current pathname
-  const activeTab = pathname.startsWith("/dashboard/transcribe")
-    ? "transcribe"
-    : pathname.startsWith("/dashboard/manage")
-    ? "manage"
-    : "dashboard";
-
-  const handleTabChange = (value: string) => {
-    if (value === "dashboard") {
-      router.push("/dashboard");
-    } else {
-      router.push(`/dashboard/${value}`);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
@@ -49,36 +33,11 @@ export function DashboardTabs({
         </div>
       )}
       <SiteHeader dict={dict} locale={locale} />
-      <main className="container mx-auto p-4 md:p-6 lg:p-8">
+      <div className="md:hidden">
+        <DashboardNav dict={dict} />
+      </div>
+      <main className="container mx-auto p-0 py-2 md:py-4 md:p-6 lg:p-8">
         <div className="w-full max-w-4xl mx-auto">
-          <Tabs 
-            value={activeTab} 
-            onValueChange={handleTabChange} 
-            className="w-full"
-          >
-            <div className="flex justify-center">
-              <TabsList className="grid w-full max-w-md grid-cols-3">
-                <TabsTrigger
-                  value="dashboard"
-                  className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-                >
-                  {dict.tabs.dashboard}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="transcribe"
-                  className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-                >
-                  {dict.tabs.transcribe}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="manage"
-                  className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-                >
-                  {dict.tabs.manage}
-                </TabsTrigger>
-              </TabsList>
-            </div>
-          </Tabs>
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -87,7 +46,6 @@ export function DashboardTabs({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="mt-6"
             >
               {children}
             </motion.div>

@@ -28,10 +28,15 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
         0;
       return sum + dur;
     }, 0);
-    const hoursProcessed = parseFloat((totalSeconds / 3600).toFixed(1));
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    const hoursProcessed = `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
     const usagePercentage = Math.min(
       100,
-      Math.round((hoursProcessed / PLAN_HOURS) * 100)
+      Math.round(((totalSeconds / 3600) / PLAN_HOURS) * 100)
     );
 
     // Accuracy: fixed at 98% for now (no per-segment confidence score yet)
@@ -54,12 +59,12 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight">{dict.dashboard.title}</h2>
+    <div className="container mx-auto px-0 md:px-4 space-y-6">
+      <h2 className="text-2xl md:text-3xl font-bold tracking-tight px-4 md:px-0">{dict.dashboard.title}</h2>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Transcriptions */}
-        <Card>
+        <Card className="md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {dict.dashboard.stats.totalTranscriptions}
@@ -79,7 +84,7 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
         </Card>
 
         {/* Hours Processed */}
-        <Card>
+        <Card className="md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {dict.dashboard.stats.hoursProcessed}
@@ -91,7 +96,7 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
               <Skeleton className="h-8 w-16" />
             ) : (
               <div className="text-2xl font-bold">
-                {stats?.hoursProcessed ?? 0}h
+                {stats?.hoursProcessed ?? "00:00:00"}
               </div>
             )}
             <p className="text-xs text-muted-foreground mt-1">
@@ -101,7 +106,7 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
         </Card>
 
         {/* Usage */}
-        <Card>
+        <Card className="md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{dict.dashboard.stats.usage}</CardTitle>
             <Zap className="h-4 w-4 text-teal-600 dark:text-teal-400" />
@@ -126,23 +131,25 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
           </CardContent>
         </Card>
 
-        {/* New Transcription CTA */}
         <Link 
           href="/dashboard/transcribe"
           className="group"
         >
-          <Card className="h-full border-dashed border-teal-200 dark:border-teal-900/50 hover:border-teal-500 hover:bg-teal-50/50 dark:hover:bg-teal-900/10 transition-all duration-300">
+          <Card className="h-full bg-teal-600 dark:bg-teal-500 border-none shadow-lg hover:bg-teal-700 dark:hover:bg-teal-400 transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-150 transition-transform duration-500">
+              <Plus className="h-24 w-24 text-white" />
+            </div>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-teal-50">
                 {dict.dashboard.actions.newTranscription}
               </CardTitle>
-              <Plus className="h-4 w-4 text-teal-600 dark:text-teal-400 group-hover:scale-125 transition-transform" />
+              <Plus className="h-4 w-4 text-white group-hover:rotate-90 transition-transform" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+              <div className="text-2xl font-bold text-white">
                 {dict.dashboard.actions.startNow}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-teal-100/80 mt-1">
                 {dict.dashboard.actions.uploadOrRecord}
               </p>
             </CardContent>
@@ -151,7 +158,7 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
-        <Card className="flex-1">
+        <Card className="flex-1 md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
           <CardHeader>
             <CardTitle>{dict.dashboard.recentTranscriptions.title}</CardTitle>
             <CardDescription>{dict.dashboard.recentTranscriptions.description}</CardDescription>
@@ -161,7 +168,7 @@ export function TranscriptionDashboard({ dict }: { dict: any }) {
           </CardContent>
         </Card>
 
-        <Card className="flex-1">
+        <Card className="flex-1 md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
           <CardHeader>
             <CardTitle>{dict.dashboard.monthlyStats.title}</CardTitle>
             <CardDescription>{dict.dashboard.monthlyStats.description}</CardDescription>

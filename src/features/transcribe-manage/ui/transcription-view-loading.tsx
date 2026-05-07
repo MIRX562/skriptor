@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function TranscriptionViewLoading() {
   return (
-    <Card>
+    <Card className="md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-transparent md:bg-card">
       <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-3 sm:p-6 pb-2 sm:pb-4">
         <div className="space-y-1 min-w-0 flex-1 w-full">
           <div className="flex items-center gap-2">

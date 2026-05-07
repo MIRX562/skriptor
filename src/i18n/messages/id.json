@@ -449,7 +449,14 @@
       "placeholder": "Cari transkrip...",
       "find": "Temukan",
       "replace": "Ganti",
-      "replaceAll": "Ganti Semua"
+      "replaceAll": "Ganti Semua",
+      "replacePlaceholder": "Ganti dengan...",
+      "results": "{current} dari {total}"
+    },
+    "floating": {
+      "copy": "Salin",
+      "find": "Cari",
+      "replace": "Ganti"
     },
     "tabs": {
       "transcript": "Segmen",

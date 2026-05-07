@@ -23,7 +23,7 @@ def generate_report():
         'peak_ram_mb': 'max',
         'peak_vram_mb': 'max',
         'peak_cpu_percent': 'mean'
-    }).reindex(["tiny", "base", "small", "medium", "large-v2", "large-v3"]).dropna()
+    }).reindex(["tiny", "base", "small", "medium", "large-v2", "large-v3", "turbo"]).dropna()
 
     # 2. Summary by Dataset
     summary_dataset = df.groupby(['dataset', 'model']).agg({
@@ -50,7 +50,7 @@ def generate_report():
 
     report_md += "## Analysis\n"
     report_md += "### Accuracy vs Model Size\n"
-    report_md += "As expected, larger models generally provide lower Word Error Rate (WER). `large-v3` usually offers the best performance for complex audio, while `small` or `medium` offer a good balance for general Indonesian transcription.\n\n"
+    report_md += "As expected, larger models generally provide lower Word Error Rate (WER). `large-v3` and `turbo` usually offer the best performance for complex audio, while `small` or `medium` offer a good balance for general Indonesian transcription. `turbo` is particularly interesting for its speed-to-accuracy ratio.\n\n"
     
     report_md += "### Resource Efficiency\n"
     report_md += "The Real-Time Factor (RTF) increases significantly with model size. `tiny` and `base` are extremely fast but less accurate. `large-v3` requires substantial VRAM and processing time.\n\n"

@@ -40,17 +40,6 @@ export async function GET(
           );
           if (initialStatus && !isClosed && !request.signal.aborted) {
             controller.enqueue(encoder.encode(`data: ${initialStatus}\n\n`));
-          } else if (!isClosed && !request.signal.aborted) {
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  id: transcriptionId,
-                  status: "pending",
-                  message: "Waiting for worker to process",
-                  timestamp: Date.now(),
-                })}\n\n`
-              )
-            );
           }
         }
       } catch (err) {

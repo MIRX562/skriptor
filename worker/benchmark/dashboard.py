@@ -34,14 +34,14 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("Accuracy (WER) vs Model")
     fig_wer = px.box(filtered_df, x="model", y="wer", color="model", 
-                     category_orders={"model": ["tiny", "base", "small", "medium", "large-v2", "large-v3"]},
+                     category_orders={"model": ["tiny", "base", "small", "medium", "large-v2", "large-v3", "turbo"]},
                      title="Word Error Rate Distribution")
     st.plotly_chart(fig_wer, use_container_width=True)
 
 with col2:
     st.subheader("Efficiency (RTF) vs Model")
     fig_rtf = px.box(filtered_df, x="model", y="rtf", color="model",
-                     category_orders={"model": ["tiny", "base", "small", "medium", "large-v2", "large-v3"]},
+                     category_orders={"model": ["tiny", "base", "small", "medium", "large-v2", "large-v3", "turbo"]},
                      title="Real-Time Factor (Processing Time / Audio Duration)")
     st.plotly_chart(fig_rtf, use_container_width=True)
 
@@ -51,7 +51,7 @@ col_cer1, col_cer2 = st.columns(2)
 with col_cer1:
     st.subheader("Character Error Rate (CER) vs Model")
     fig_cer = px.box(filtered_df, x="model", y="cer", color="model",
-                     category_orders={"model": ["tiny", "base", "small", "medium", "large-v2", "large-v3"]},
+                     category_orders={"model": ["tiny", "base", "small", "medium", "large-v2", "large-v3", "turbo"]},
                      title="Character Error Rate Distribution")
     st.plotly_chart(fig_cer, use_container_width=True)
 

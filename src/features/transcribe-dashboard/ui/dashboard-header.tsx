@@ -3,22 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Logo from "@/components/logo";
 import DashboardUserMenu from "./dashboard-header-user-menu";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { DashboardNav } from "./dashboard-nav";
 
 export function SiteHeader({ dict, locale }: { dict?: any; locale?: string }) {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const headerDict = {
-    dashboard: dict?.header?.dashboard || "Dashboard",
-    history: dict?.header?.history || "History",
-    settings: dict?.header?.settings || "Settings",
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,60 +42,19 @@ export function SiteHeader({ dict, locale }: { dict?: any; locale?: string }) {
           </Link>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <LanguageSwitcher currentLocale={locale || "en"} />
-          <ModeToggle />
+        <div className="hidden md:flex items-center justify-center flex-1 mx-4">
+          <DashboardNav dict={dict} className="max-w-md" />
+        </div>
+
+        <div className="flex items-center space-x-3 shrink-0">
+          <div className="flex items-center space-x-1 sm:space-x-3">
+            <LanguageSwitcher currentLocale={locale || "en"} />
+            <ModeToggle />
+          </div>
           <DashboardUserMenu dict={dict} />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </Button>
+          
         </div>
       </div>
-
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800"
-          >
-            <div className="container mx-auto px-4 py-4 flex flex-col space-y-3">
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {headerDict.dashboard}
-              </Link>
-              <Link
-                href="/dashboard/history"
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {headerDict.history}
-              </Link>
-              <Link
-                href="/settings"
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {headerDict.settings}
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 }

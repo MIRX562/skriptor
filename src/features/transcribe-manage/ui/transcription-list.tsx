@@ -37,6 +37,8 @@ import { useRetryTranscription } from "../model/use-retry-transcription";
 import { useTranscriptionProgress } from "../model/use-transcription-progress";
 import { toast } from "sonner";
 import { type Dictionary } from "@/i18n/dictionaries";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { X } from "lucide-react";
 
 interface TranscriptionListProps {
   dict: Dictionary;
@@ -107,15 +109,15 @@ function TranscriptionListItemRow({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.05 }}
-      className="flex items-center justify-between p-4 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer gap-4 group/item"
       onClick={() => onSelect(item.id)}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         <div className="flex items-center justify-center w-10 h-10 rounded-md bg-slate-100 dark:bg-slate-800">
           <FileAudio className="h-5 w-5 text-slate-500" />
         </div>
-        <div>
-          <h3 className="font-medium">{displayTitle}</h3>
+        <div className="min-w-0">
+          <h3 className="font-medium truncate">{displayTitle}</h3>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>
               {item.createdAt
@@ -130,11 +132,11 @@ function TranscriptionListItemRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
         {displayStatus === "in_progress" && (
-          <div className="w-24 mr-2">
+          <div className="flex-1 sm:w-24 sm:flex-none mr-2">
             <Progress value={currentProgressPercent} className="h-2" />
-            <p className="text-xs text-right mt-1 text-muted-foreground">
+            <p className="text-[10px] text-right mt-1 text-muted-foreground">
               {currentProgressPercent}%
             </p>
           </div>
@@ -217,6 +219,7 @@ function TranscriptionListItemRow({
   );
 }
 
+
 export function TranscriptionList({ dict }: TranscriptionListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -260,39 +263,50 @@ export function TranscriptionList({ dict }: TranscriptionListProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{dict.manage.title}</CardTitle>
+    <Card className="md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl sm:text-2xl">{dict.manage.title}</CardTitle>
         <CardDescription>
           {dict.manage.description || "Manage and view all your transcriptions"}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder={dict.manage.search}
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button variant="outline">{dict.manage.filter || "Filter"}</Button>
+      <CardContent className="p-0">
+        <div className="px-4 sm:px-6 py-2 border-y border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder={dict.manage.search}
+              className="pl-8 pr-8 h-9 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
+          <Button variant="outline" size="sm" className="h-9 shrink-0 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+            {dict.manage.filter || "Filter"}
+          </Button>
+        </div>
 
-          <div className="space-y-2">
+        <ScrollArea className="h-[calc(100vh-280px)] min-h-[400px]">
+          <div className="p-4 sm:p-6 space-y-3">
             {isLoading ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+                <p className="text-sm text-muted-foreground">
                   {dict.common.loading}
                 </p>
               </div>
             ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-destructive">
+              <div className="text-center py-20 px-4">
+                <p className="text-destructive font-medium">
                   {error instanceof Error ? error.message : dict.manage.error}
                 </p>
               </div>
@@ -311,14 +325,15 @@ export function TranscriptionList({ dict }: TranscriptionListProps) {
                 />
               ))
             ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  {dict.manage.noResults}
+              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3 opacity-50">
+                <FileAudio className="h-12 w-12 stroke-[1px]" />
+                <p className="text-sm">
+                  {searchQuery ? dict.manage.noResults : (dict.manage.noTranscriptions || "No transcriptions yet")}
                 </p>
               </div>
             )}
           </div>
-        </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );

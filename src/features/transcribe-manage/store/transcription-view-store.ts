@@ -75,6 +75,7 @@ interface TranscriptionViewState {
   setReplaceTerm: (term: string) => void;
   setSearchResults: (results: number[]) => void;
   setCurrentResultIndex: (index: number) => void;
+  clearSearch: () => void;
 
   // Derived computations
   getSpeakerLabel: (speakerIndex: number | null) => string | null;
@@ -119,7 +120,7 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
             data.status === "processing" || data.status === "queued"
               ? "in_progress"
               : (data.status as "completed" | "failed"),
-          progress: 100,
+          progress: 0,
           mode:
             data.model === "small"
               ? "fast"
@@ -189,6 +190,15 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
       setSearchResults: (searchResults) => set({ searchResults }),
       setCurrentResultIndex: (currentResultIndex) =>
         set({ currentResultIndex }),
+
+      clearSearch: () => {
+        set({
+          searchTerm: "",
+          replaceTerm: "",
+          searchResults: [],
+          currentResultIndex: -1,
+        });
+      },
 
       getSpeakerLabel: (speakerIndex) => {
         if (speakerIndex === null || speakerIndex === undefined) return null;

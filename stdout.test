@@ -1,2 +1,0 @@
-◇ injected env (0) from .env.local // tip: ⌘ suppress logs { quiet: true }
-◇ injected env (0) from .env // tip: ⌘ override existing { override: true }

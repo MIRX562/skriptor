@@ -27,12 +27,11 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 
 # Install dependencies using uv
-# We use --system to install into the system python since we are in a container
-RUN uv pip install --system -r pyproject.toml
-RUN uv pip install --system git+https://github.com/m-bain/whisperX.git
+RUN uv pip install --no-cache --system -r pyproject.toml
+RUN uv pip install --no-cache --system git+https://github.com/m-bain/whisperX.git
 
-# Copy source code
-COPY . .
+# Copy source code (respects .dockerignore)
+COPY worker ./worker
 
 # Run the worker
 CMD ["python3", "-m", "worker.main"]

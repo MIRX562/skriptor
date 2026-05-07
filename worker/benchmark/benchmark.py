@@ -24,7 +24,7 @@ except ImportError:
     from worker.worker.transcriber import Transcriber
     from worker.worker.config import config
 
-MODELS = ["tiny", "base", "small", "medium", "large-v2", "large-v3"]
+MODELS = ["tiny", "base", "small", "medium", "large-v2", "large-v3", "turbo"]
 DATASET_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'audio_dataset'))
 
 def get_gpu_memory():

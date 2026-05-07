@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, FileText } from "lucide-react";
+import Link from "next/link";
 import { useTranscriptionList } from "@/features/transcribe-manage/model/use-transcription-list";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +25,7 @@ export function RecentTranscriptions({ dict }: { dict: any }) {
     return (
       <div className="space-y-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="flex items-center gap-4">
+          <div key={i} className="flex items-center gap-4 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50">
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="space-y-2 flex-1">
               <Skeleton className="h-4 w-3/4" />
@@ -60,12 +61,18 @@ export function RecentTranscriptions({ dict }: { dict: any }) {
           : "—";
 
         return (
-          <div key={item.id} className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
+          <Link 
+            key={item.id} 
+            href={`/dashboard/manage/${item.id}`}
+            className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm transition-all hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-900 group"
+          >
+            <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
               <FileText className="h-5 w-5 text-teal-600 dark:text-teal-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium truncate">{title}</h4>
+              <h4 className="text-sm font-medium truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                {title}
+              </h4>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>{date}</span>
                 {duration !== "—" && (
@@ -91,7 +98,7 @@ export function RecentTranscriptions({ dict }: { dict: any }) {
             >
               {dict.status[item.status] || item.status}
             </Badge>
-          </div>
+          </Link>
         );
       })}
     </div>
