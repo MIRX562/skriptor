@@ -49,48 +49,36 @@ export function SettingsTabs({ children }: SettingsTabsProps) {
   ];
 
   return (
-    <div className="flex flex-col md:flex-row gap-6">
-      <Tabs
-        value={currentTab}
-        onValueChange={handleTabChange}
-        orientation="vertical"
-        className="w-full md:w-64 shrink-0"
-      >
-        <TabsList className="w-full flex flex-col h-auto justify-start bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className="w-full justify-start px-3 py-2 h-9 mb-1 data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
-            >
-              {tab.icon}
-              {tab.label}
-            </TabsTrigger>
-          ))}
-          <Separator />
-          <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800 mx-2">
-            <TabsTrigger
-              value="back"
-              className="justify-start px-3 py-2 h-9 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/20"
-              onClick={() => router.push("/dashboard")}
-            >
-              <SquareArrowUpLeft className="h-4 w-4 mr-2" />
-              Go to Dashboard
-            </TabsTrigger>
-            <TabsTrigger
-              value=""
-              className="justify-start px-3 py-2 h-9 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-              onClick={() => SignOut()}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Log out
-            </TabsTrigger>
-          </div>
-        </TabsList>
-      </Tabs>
+    <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+      <div className="w-full md:w-64 shrink-0">
+        <Tabs
+          value={currentTab}
+          onValueChange={handleTabChange}
+          orientation="vertical"
+          className="w-full"
+        >
+          <TabsList className="w-full flex flex-col h-auto justify-start bg-white dark:bg-slate-900/50 backdrop-blur-sm p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div className="px-3 py-2 mb-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                Account Settings
+              </h2>
+            </div>
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="w-full justify-start px-4 py-2.5 h-10 mb-1 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-500/10 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-sm data-[state=active]:font-medium hover:bg-slate-50 dark:hover:bg-slate-800/50"
+              >
+                {tab.icon}
+                <span className="ml-2">{tab.label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
 
       <div className="flex-1">
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-white dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[500px]">
           {children}
         </div>
       </div>

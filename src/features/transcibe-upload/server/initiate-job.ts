@@ -22,14 +22,7 @@ async function enqueueTranscriptionJob(data: TranscriptionJobPayload) {
   });
 }
 
-export async function initiateJob(input: unknown) {
-  // Validate input using Zod
-  const parsed = transcriptionUploadSchema.safeParse(input);
-  if (!parsed.success) {
-    throw new Error("Invalid input: " + JSON.stringify(parsed.error.flatten()));
-  }
-  const data = parsed.data;
-
+export async function initiateJob(input: any) {
   // Auth
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -37,39 +30,43 @@ export async function initiateJob(input: unknown) {
   if (!session?.user?.id) throw new Error("Not authenticated");
   const userId = session.user.id;
 
-  // File validation
-  const audio = data.file;
-  if (!(audio instanceof File)) throw new Error("No file uploaded");
+  const { title, language, model, isSpeakerDiarized, numberOfSpeaker, storageKey, file } = input;
 
-  // Generate unique filename
-  const ext = (audio.type && audio.type.split("/")[1]) || "webm";
-  const uniqueId = randomUUID();
-  const filename = `${userId}-${uniqueId}-${data.title}.${ext}`;
-  const buffer = Buffer.from(await audio.arrayBuffer());
+  let filename = storageKey;
+  let metadata: any = {};
 
-  // Extract audio metadata (basic: type, size, name, duration if possible)
-  let duration: number | undefined = undefined;
-  try {
-    // Try to extract duration using AudioContext if available (Node.js: use a library, but here just placeholder)
-    // In a real Node.js environment, use 'music-metadata' or similar
-    // For now, just leave as undefined or set to 0
-    duration = 0;
-  } catch {
-    duration = undefined;
-  }
-  const metadata = {
-    filename,
-    originalName: audio.name,
-    type: audio.type,
-    size: audio.size,
-    duration,
-  };
+  if (!filename && file instanceof File) {
+    // Legacy/Small file path: Upload from server
+    const ext = (file.type && file.type.split("/")[1]) || "webm";
+    const uniqueId = randomUUID();
+    filename = `${userId}-${uniqueId}-${title}.${ext}`;
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-  // Upload to S3/Minio
-  try {
-    await uploadAudio(buffer, filename, audio.type);
-  } catch (err) {
-    throw new Error(`Failed to upload audio to storage: ${err}`);
+    metadata = {
+      filename,
+      originalName: file.name,
+      type: file.type,
+      size: file.size,
+      duration: 0,
+    };
+
+    try {
+      await uploadAudio(buffer, filename, file.type);
+    } catch (err) {
+      throw new Error(`Failed to upload audio to storage: ${err}`);
+    }
+  } else if (filename) {
+    // New path: File already uploaded to S3 via presigned URL
+    // Metadata should ideally be passed in or fetched, but for now we use placeholders
+    metadata = {
+      filename,
+      originalName: title, // Use title as fallback
+      size: input.fileSize || 0,
+      type: input.fileType || "audio/mpeg",
+      duration: 0,
+    };
+  } else {
+    throw new Error("No file or storageKey provided");
   }
 
   // Insert job in DB
@@ -78,17 +75,17 @@ export async function initiateJob(input: unknown) {
     job = await db
       .insert(transcriptions)
       .values({
-        title: data.title,
-        language: data.language,
+        title,
+        language,
         status: "queued",
         userId,
         createdAt: new Date(),
         updatedAt: new Date(),
         audioUrl: filename,
         metadata,
-        model: data.model,
-        isSpeakerDiarized: !!data.isSpeakerDiarized,
-        numberOfSpeaker: data.numberOfSpeaker,
+        model,
+        isSpeakerDiarized: !!isSpeakerDiarized,
+        numberOfSpeaker: numberOfSpeaker || 1,
       })
       .returning();
   } catch (err) {

@@ -269,11 +269,32 @@ def run_benchmark(limit=None, selected_models=None):
                 ref_info = gt_map[audio['name']]
                 ref_text = ref_info['text']
                 
-                # Detailed WER analysis
-                wer_output = jiwer.process(ref_text, hyp_text)
-                
-                # Detailed CER analysis (split by character)
-                cer_output = jiwer.process(list(ref_text), list(hyp_text))
+                # Detailed analysis - use jiwer.process if available (3.0+), fallback to wer()
+                try:
+                    if hasattr(jiwer, 'process') and callable(jiwer.process):
+                        wer_output = jiwer.process(ref_text, hyp_text)
+                        s, d, i = wer_output.substitutions, wer_output.deletions, wer_output.insertions
+                        wer_val = wer_output.wer
+                    else:
+                        # Fallback for jiwer < 3.0
+                        wer_val = wer(ref_text, hyp_text)
+                        s, d, i = 0, 0, 0
+                except Exception as e:
+                    print(f"Metric calculation error: {e}")
+                    wer_val = wer(ref_text, hyp_text)
+                    s, d, i = 0, 0, 0
+
+                try:
+                    if hasattr(jiwer, 'process') and callable(jiwer.process):
+                        cer_output = jiwer.process(list(ref_text), list(hyp_text))
+                        cs, cd, ci = cer_output.substitutions, cer_output.deletions, cer_output.insertions
+                        cer_val = cer_output.wer
+                    else:
+                        cer_val = cer(list(ref_text), list(hyp_text))
+                        cs, cd, ci = 0, 0, 0
+                except:
+                    cer_val = cer(list(ref_text), list(hyp_text))
+                    cs, cd, ci = 0, 0, 0
                 
                 results.append({
                     'model': model_size,
@@ -282,14 +303,14 @@ def run_benchmark(limit=None, selected_models=None):
                     'duration_sec': round(duration, 2),
                     'processing_time_sec': round(processing_time, 2),
                     'rtf': round(rtf, 4),
-                    'wer': round(wer_output.wer, 4),
-                    'wer_sub': wer_output.substitutions,
-                    'wer_del': wer_output.deletions,
-                    'wer_ins': wer_output.insertions,
-                    'cer': round(cer_output.wer, 4), # jiwer 'wer' on characters is CER
-                    'cer_sub': cer_output.substitutions,
-                    'cer_del': cer_output.deletions,
-                    'cer_ins': cer_output.insertions,
+                    'wer': round(wer_val, 4),
+                    'wer_sub': s,
+                    'wer_del': d,
+                    'wer_ins': i,
+                    'cer': round(cer_val, 4),
+                    'cer_sub': cs,
+                    'cer_del': cd,
+                    'cer_ins': ci,
                     'wpm': ref_info['wpm'],
                     'lexical_density': ref_info['lexical_density'],
                     'avg_word_len': ref_info['avg_word_len'],
@@ -300,10 +321,12 @@ def run_benchmark(limit=None, selected_models=None):
                     'timestamp': datetime.now().isoformat()
                 })
                 
-                print(f"DONE: WER={wer_output.wer:.4f}, RTF={rtf:.4f}, VRAM={stats.get('peak_vram', 0):.0f}MB")
+                print(f"DONE: WER={wer_val:.4f}, RTF={rtf:.4f}, VRAM={stats.get('peak_vram', 0):.0f}MB")
                 
             except Exception as e:
                 print(f"FAILED {audio['name']} with {model_size}: {e}")
+                import traceback
+                traceback.print_exc()
                 stop_event.set()
                 monitor_thread.join()
 
@@ -331,8 +354,6 @@ def run_benchmark(limit=None, selected_models=None):
     print(f"\nBenchmark complete!")
     print(f"Results saved to {main_output_file}")
     print(f"Individual run saved to {individual_file}")
-    
-    print(f"\nBenchmark complete! Results saved to {output_file}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Benchmark Whisper models")

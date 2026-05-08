@@ -37,6 +37,15 @@ export async function getPresignedUrl(key: string, expiresIn: number = 3600): Pr
   return await getSignedUrl(s3, command, { expiresIn });
 }
 
+export async function getUploadUrl(key: string, contentType: string, expiresIn: number = 3600): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+    ContentType: contentType,
+  });
+  return await getSignedUrl(s3, command, { expiresIn });
+}
+
 /** Delete an audio object from S3. Silently ignores NoSuchKey errors. */
 export async function deleteAudio(key: string): Promise<void> {
   try {

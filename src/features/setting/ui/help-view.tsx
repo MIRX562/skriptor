@@ -29,34 +29,34 @@ export default function HelpView() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-teal-500/50 transition-colors cursor-pointer group">
-          <CardContent className="pt-6">
-            <div className="rounded-full bg-teal-50 dark:bg-teal-900/20 w-10 h-10 flex items-center justify-center mb-4 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/40 transition-colors">
-              <Mail className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/50 rounded-3xl overflow-hidden shadow-sm hover:border-teal-500/50 transition-all duration-300 cursor-pointer group">
+          <CardContent className="p-8">
+            <div className="rounded-2xl bg-teal-50 dark:bg-teal-950 w-12 h-12 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+              <Mail className="h-6 w-6 text-teal-600 dark:text-teal-400" />
             </div>
-            <h3 className="font-semibold text-slate-900 dark:text-white">Email Support</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Get help via email within 24 hours.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">Email Support</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">Get expert help via email within 24 hours.</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-teal-500/50 transition-colors cursor-pointer group">
-          <CardContent className="pt-6">
-            <div className="rounded-full bg-teal-50 dark:bg-teal-900/20 w-10 h-10 flex items-center justify-center mb-4 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/40 transition-colors">
-              <FileText className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+        <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/50 rounded-3xl overflow-hidden shadow-sm hover:border-teal-500/50 transition-all duration-300 cursor-pointer group">
+          <CardContent className="p-8">
+            <div className="rounded-2xl bg-teal-50 dark:bg-teal-950 w-12 h-12 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+              <FileText className="h-6 w-6 text-teal-600 dark:text-teal-400" />
             </div>
-            <h3 className="font-semibold text-slate-900 dark:text-white">Documentation</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Read our guides and API docs.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">Documentation</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">Read our comprehensive guides and API docs.</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-teal-500/50 transition-colors cursor-pointer group">
-          <CardContent className="pt-6">
-            <div className="rounded-full bg-teal-50 dark:bg-teal-900/20 w-10 h-10 flex items-center justify-center mb-4 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/40 transition-colors">
-              <MessageCircle className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+        <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/50 rounded-3xl overflow-hidden shadow-sm hover:border-teal-500/50 transition-all duration-300 cursor-pointer group">
+          <CardContent className="p-8">
+            <div className="rounded-2xl bg-teal-50 dark:bg-teal-900/20 w-12 h-12 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+              <MessageCircle className="h-6 w-6 text-teal-600 dark:text-teal-400" />
             </div>
-            <h3 className="font-semibold text-slate-900 dark:text-white">Community</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Join our Discord for quick questions.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">Community</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">Join our Discord community for quick help.</p>
           </CardContent>
         </Card>
       </div>

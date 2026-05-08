@@ -34,6 +34,7 @@ import { LiteTranscriptionForm } from "./lite-transcription-form";
 import SoftAurora from "@/components/SoftAurora";
 import GradientText from "@/components/GradientText";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import Logo from "@/components/logo";
 
 export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
 
@@ -88,10 +89,10 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                   colors={["#0d9488", "#2dd4bf", "#5eead4"]}
                   animationSpeed={5}
                 >
-                {dict.landing.hero.titleHighlight}
+                  {dict.landing.hero.titleHighlight}
                 </GradientText>
               </h1>
-                {dict.landing.hero.description}
+              {dict.landing.hero.description}
               <div className="flex flex-col sm:flex-row gap-3 mt-2">
                 <Button
                   size="lg"
@@ -105,41 +106,6 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                   <Play className="ml-1 h-4 w-4" />
                 </Button>
               </div>
-              {/* <div className="flex items-center gap-4 mt-4">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="inline-block h-8 w-8 rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-200 dark:bg-slate-800"
-                    >
-                      <Image
-                        src={`/placeholder.svg?height=32&width=32&text=${i}`}
-                        alt={`User ${i}`}
-                        width={32}
-                        height={32}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  <span className="font-medium">4,000+</span> happy users
-                </p>
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      className="h-4 w-4 fill-current text-yellow-500"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
-                  ))}
-                  <span className="ml-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-                    4.9/5
-                  </span>
-                </div>
-              </div> */}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -147,40 +113,15 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="relative mx-auto lg:mr-0 w-full max-w-[600px] z-10 mt-8 lg:mt-0"
             >
-              <LiteTranscriptionForm 
-                dict={dict.landing.liteForm} 
-                common={dict.common} 
+              <LiteTranscriptionForm
+                dict={dict.landing.liteForm}
+                common={dict.common}
                 fullDict={dict}
               />
             </motion.div>
           </div>
         </div>
       </section>
-
-      {/* Logos Section */}
-      {/* <section className="py-12 border-y border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <p className="text-sm text-center text-slate-500 dark:text-slate-400">
-              TRUSTED BY COMPANIES WORLDWIDE
-            </p>
-            <div className="flex flex-wrap justify-center gap-8 md:gap-12 lg:gap-16 grayscale opacity-70">
-              {["Google", "Microsoft", "Spotify", "Airbnb", "Amazon"].map(
-                (company) => (
-                  <div
-                    key={company}
-                    className="flex items-center justify-center"
-                  >
-                    <span className="text-xl font-semibold text-slate-400 dark:text-slate-600">
-                      {company}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </div>
-      </section> */}
 
       {/* Features Section */}
       <section className="py-20 md:py-32 bg-white dark:bg-slate-950">
@@ -359,217 +300,6 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 md:py-32 bg-white dark:bg-slate-950">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col items-center text-center mb-12 md:mb-20">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-              custom={0}
-            >
-              <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                {dict.landing.testimonials.badge}
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                {dict.landing.testimonials.title}
-              </h2>
-              <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                {dict.landing.testimonials.description}
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                quote: dict.landing.testimonials.items.sarah.quote,
-                author: dict.landing.testimonials.items.sarah.author,
-                role: dict.landing.testimonials.items.sarah.role,
-                avatar: "/placeholder.svg?height=64&width=64&text=SJ",
-              },
-              {
-                quote: dict.landing.testimonials.items.michael.quote,
-                author: dict.landing.testimonials.items.michael.author,
-                role: dict.landing.testimonials.items.michael.role,
-                avatar: "/placeholder.svg?height=64&width=64&text=MC",
-              },
-              {
-                quote: dict.landing.testimonials.items.alex.quote,
-                author: dict.landing.testimonials.items.alex.author,
-                role: dict.landing.testimonials.items.alex.role,
-                avatar: "/placeholder.svg?height=64&width=64&text=AR",
-              },
-            ].map((testimonial: any, i: number) => (
-              <motion.div
-                key={testimonial.author}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeIn}
-                custom={i}
-              >
-                <Card className="h-full border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow">
-                  <CardContent className="p-6 flex flex-col gap-4">
-                    <div className="flex-1">
-                      <svg
-                        className="h-8 w-8 text-teal-600 dark:text-teal-400 mb-4"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
-                      </svg>
-                      <p className="text-slate-600 dark:text-slate-400 italic mb-6">
-                        {testimonial.quote}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Image
-                        src={testimonial.avatar || "/placeholder.svg"}
-                        alt={testimonial.author}
-                        width={48}
-                        height={48}
-                        className="rounded-full"
-                      />
-                      <div>
-                        <h4 className="font-semibold text-slate-900 dark:text-white">
-                          {testimonial.author}
-                        </h4>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                          {testimonial.role}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section
-      <section className="py-20 md:py-32 bg-slate-50 dark:bg-slate-900">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col items-center text-center mb-12 md:mb-20">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeIn}
-              custom={0}
-            >
-              <Badge className="mb-4 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/30">
-                {dict.landing.pricing.badge}
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
-                {dict.landing.pricing.title}
-              </h2>
-              <p className="text-lg text-slate-600 dark:text-slate-400 max-w-[800px] mx-auto">
-                {dict.landing.pricing.description}
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                name: dict.landing.pricing.plans.free.name,
-                price: dict.landing.pricing.plans.free.price,
-                description: dict.landing.pricing.plans.free.description,
-                features: dict.landing.pricing.plans.free.features,
-                cta: dict.landing.pricing.plans.free.cta,
-                popular: false,
-              },
-              {
-                name: dict.landing.pricing.plans.pro.name,
-                price: dict.landing.pricing.plans.pro.price,
-                period: dict.landing.pricing.plans.pro.period,
-                description: dict.landing.pricing.plans.pro.description,
-                features: dict.landing.pricing.plans.pro.features,
-                cta: dict.landing.pricing.plans.pro.cta,
-                popular: true,
-              },
-              {
-                name: dict.landing.pricing.plans.business.name,
-                price: dict.landing.pricing.plans.business.price,
-                period: dict.landing.pricing.plans.business.period,
-                description: dict.landing.pricing.plans.business.description,
-                features: dict.landing.pricing.plans.business.features,
-                cta: dict.landing.pricing.plans.business.cta,
-                popular: false,
-              },
-            ].map((plan: any, i: number) => (
-              <motion.div
-                key={plan.name}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeIn}
-                custom={i}
-                className="flex"
-              >
-                <Card
-                  className={`flex flex-col h-full border-slate-200 dark:border-slate-800 ${plan.popular
-                      ? "border-teal-600 dark:border-teal-400 shadow-lg relative"
-                      : ""
-                    }`}
-                >
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <Badge className="bg-teal-600 text-white hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-700">
-                        {dict.landing.pricing.mostPopular}
-                      </Badge>
-                    </div>
-                  <CardContent className="p-6 flex-1 flex flex-col">
-                    <div className="mb-6">
-                      <h3 className="text-xl font-semibold mb-2 text-slate-900 dark:text-white">
-                        {plan.name}
-                      </h3>
-                      <div className="flex items-baseline mb-2">
-                        <span className="text-3xl font-bold text-slate-900 dark:text-white">
-                          {plan.price}
-                        </span>
-                        {plan.period && (
-                          <span className="text-slate-600 dark:text-slate-400">
-                            {plan.period}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-slate-600 dark:text-slate-400">
-                        {plan.description}
-                      </p>
-                    </div>
-                    <div className="flex-1">
-                      <ul className="space-y-3 mb-6">
-                        {plan.features.map((feature: string) => (
-                          <li key={feature} className="flex items-start">
-                            <CheckCircle2 className="h-5 w-5 text-teal-600 dark:text-teal-400 mr-2 shrink-0 mt-0.5" />
-                            <span className="text-slate-600 dark:text-slate-400">
-                              {feature}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <Button
-                      className={`w-full mt-4 ${plan.popular
-                          ? "bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-600 dark:hover:bg-teal-700"
-                          : ""
-                        }`}
-                      variant={plan.popular ? "default" : "outline"}
-                    >
-                      {plan.cta}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section> */}
-
       {/* FAQ Section */}
       <section className="py-20 md:py-32 bg-white dark:bg-slate-950">
         <div className="container mx-auto px-4 md:px-6">
@@ -667,7 +397,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 mb-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Headphones className="h-6 w-6 text-teal-400" />
+                <Logo />
                 <span className="font-medium text-lg text-white">Skriptor</span>
               </div>
               <p className="text-slate-400 mb-4">

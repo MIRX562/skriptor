@@ -6,44 +6,34 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file");
+    const storageKey = formData.get("storageKey");
     const title = formData.get("title");
     const language = formData.get("language");
     const model = formData.get("model");
     const isSpeakerDiarized = formData.get("isSpeakerDiarized");
     const numberOfSpeaker = formData.get("numberOfSpeaker");
+    const fileSize = formData.get("fileSize");
+    const fileType = formData.get("fileType");
 
-    // Validate file
-    if (!file || typeof file !== "object" || !("arrayBuffer" in file)) {
+    // Basic validation
+    if (!file && !storageKey) {
       return NextResponse.json(
-        { success: false, error: "No file uploaded." },
-        { status: 400 }
-      );
-    }
-
-    // Validate other fields using zod schema (single file)
-    const parsed = transcriptionUploadSchema.safeParse({
-      file,
-      title,
-      language,
-      model,
-      isSpeakerDiarized:
-        typeof isSpeakerDiarized === "string"
-          ? isSpeakerDiarized === "true"
-          : false,
-      numberOfSpeaker: Number(numberOfSpeaker),
-    });
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: parsed.error.flatten() },
+        { success: false, error: "No file or storage key provided." },
         { status: 400 }
       );
     }
 
     // Call initiateJob with validated data
     await initiateJob({
-      ...parsed.data,
-      file, // Pass the file object for further processing
+      title: title as string,
+      language: language as string,
+      model: model as string,
+      isSpeakerDiarized: isSpeakerDiarized === "true",
+      numberOfSpeaker: Number(numberOfSpeaker),
+      storageKey: storageKey as string,
+      file,
+      fileSize: Number(fileSize),
+      fileType: fileType as string,
     });
 
     return NextResponse.json({ success: true });

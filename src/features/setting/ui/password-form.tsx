@@ -62,22 +62,22 @@ export function PasswordForm() {
   }
 
   return (
-    <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 max-w-2xl">
-      <CardContent className="pt-6">
+    <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/50 rounded-3xl overflow-hidden shadow-sm max-w-2xl">
+      <CardContent className="p-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
               name="currentPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-900 dark:text-slate-200">Current Password</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-900 dark:text-slate-200">Current Password</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
                       placeholder="••••••••"
                       {...field}
-                      className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-teal-500"
+                      className="h-12 bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 focus-visible:ring-teal-500 rounded-xl transition-all"
                     />
                   </FormControl>
                   <FormMessage />
@@ -90,16 +90,16 @@ export function PasswordForm() {
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-900 dark:text-slate-200">New Password</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-900 dark:text-slate-200">New Password</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
                       placeholder="••••••••"
                       {...field}
-                      className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-teal-500"
+                      className="h-12 bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 focus-visible:ring-teal-500 rounded-xl transition-all"
                     />
                   </FormControl>
-                  <FormDescription className="text-slate-500 dark:text-slate-400">
+                  <FormDescription className="text-xs text-slate-500 dark:text-slate-500">
                     Must be at least 8 characters long.
                   </FormDescription>
                   <FormMessage />
@@ -112,13 +112,13 @@ export function PasswordForm() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-900 dark:text-slate-200">Confirm New Password</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-900 dark:text-slate-200">Confirm New Password</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
                       placeholder="••••••••"
                       {...field}
-                      className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-teal-500"
+                      className="h-12 bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 focus-visible:ring-teal-500 rounded-xl transition-all"
                     />
                   </FormControl>
                   <FormMessage />
@@ -129,7 +129,7 @@ export function PasswordForm() {
             <Button
               type="submit"
               disabled={form.formState.isSubmitting}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition-colors"
+              className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-lg shadow-teal-500/20 transition-all active:scale-[0.98]"
             >
               {form.formState.isSubmitting ? "Updating..." : "Update Password"}
             </Button>
