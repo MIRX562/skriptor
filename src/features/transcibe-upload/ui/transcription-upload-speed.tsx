@@ -28,13 +28,13 @@ export default function TranscriptionSpeed() {
         </div>
 
         <div>
-          <RadioGroupItem value="medium" id="medium" className="peer sr-only" />
+          <RadioGroupItem value="turbo" id="turbo" className="peer sr-only" />
           <Label
-            htmlFor="medium"
+            htmlFor="turbo"
             className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
           >
             <span className="text-2xl mb-1">⚖️</span>
-            <span className="font-medium">Medium</span>
+            <span className="font-medium">Turbo</span>
             <span className="text-xs text-muted-foreground">Balanced</span>
           </Label>
         </div>

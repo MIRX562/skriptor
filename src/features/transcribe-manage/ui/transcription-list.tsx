@@ -45,7 +45,7 @@ interface TranscriptionListProps {
 }
 
 type TranscriptionStatus = "queued" | "processing" | "completed" | "failed";
-type TranscriptionMode = "fast" | "medium" | "super";
+type TranscriptionMode = "fast" | "turbo" | "super";
 
 function mapStatus(
   status: TranscriptionStatus
@@ -54,10 +54,10 @@ function mapStatus(
   return status;
 }
 
-function mapMode(model: "small" | "medium" | "large"): TranscriptionMode {
+function mapMode(model: "small" | "turbo" | "large"): TranscriptionMode {
   if (model === "small") return "fast";
   if (model === "large") return "super";
-  return "medium";
+  return "turbo";
 }
 
 function formatDuration(metadata: Record<string, unknown> | null, status: string): string {
@@ -146,7 +146,7 @@ function TranscriptionListItemRow({
           variant={
             displayMode === "fast"
               ? "outline"
-              : displayMode === "medium"
+              : displayMode === "turbo"
                 ? "secondary"
                 : "default"
           }

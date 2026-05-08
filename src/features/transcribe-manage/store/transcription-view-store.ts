@@ -23,7 +23,7 @@ export interface TranscriptionMetadata {
   summary: string;
   status: "completed" | "in_progress" | "failed";
   progress: number;
-  mode: "fast" | "medium" | "super";
+  mode: "fast" | "turbo" | "super";
   isSpeakerDiarized: boolean;
 }
 
@@ -126,7 +126,7 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
               ? "fast"
               : data.model === "large"
                 ? "super"
-                : "medium",
+                : "turbo",
           isSpeakerDiarized: data.isSpeakerDiarized ?? false,
         };
 

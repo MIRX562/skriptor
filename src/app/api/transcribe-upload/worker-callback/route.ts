@@ -13,7 +13,7 @@ const callbackSchema = z.object({
   metadata: z
     .object({
       durationSeconds: z.number().optional(),
-      model: z.enum(["small", "medium", "large"]).optional(),
+      model: z.enum(["small", "turbo", "large"]).optional(),
       originalFilename: z.string().optional(),
       mimeType: z.string().optional(),
       sizeBytes: z.number().optional(),

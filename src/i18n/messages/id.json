@@ -33,8 +33,8 @@
           "label": "Cepat",
           "description": "Akurasi lebih rendah"
         },
-        "medium": {
-          "label": "Sedang",
+        "turbo": {
+          "label": "Turbo",
           "description": "Seimbang"
         },
         "super": {
@@ -470,7 +470,7 @@
       "message": "Memproses audio...",
       "title": "Memproses transkripsi",
       "fast": "Pemrosesan cepat - akurasi lebih rendah tetapi hasil lebih cepat",
-      "medium": "Pemrosesan sedang - keseimbangan akurasi dan kecepatan",
+      "turbo": "Pemrosesan Turbo - keseimbangan akurasi dan kecepatan",
       "super": "Pemrosesan super - akurasi tertinggi dengan waktu pemrosesan lebih lama",
       "loadingAudio": "Memuat audio...",
       "checkBack": "Silakan periksa kembali nanti.",
@@ -518,7 +518,7 @@
   },
   "model": {
     "fast": "Cepat",
-    "medium": "Sedang",
+    "turbo": "Turbo",
     "super": "Super"
   },
   "auth": {

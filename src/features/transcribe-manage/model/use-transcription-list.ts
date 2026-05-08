@@ -4,7 +4,7 @@ export interface TranscriptionListItem {
   id: string;
   title: string;
   status: "queued" | "processing" | "completed" | "failed";
-  model: "small" | "medium" | "large";
+  model: "small" | "turbo" | "large";
   language: string;
   isSpeakerDiarized: boolean;
   numberOfSpeaker: number;

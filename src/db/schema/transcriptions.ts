@@ -22,7 +22,7 @@ export const transcriptionStatus = pgEnum("transcription_status", [
 
 export const transcriptionMode = pgEnum("transcription_mode", [
   "small",
-  "medium",
+  "turbo",
   "large",
 ]);
 
@@ -39,7 +39,7 @@ export const transcriptions = pgTable("transcriptions", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   audioUrl: text("audio_url").notNull(),
   metadata: jsonb("metadata"),
-  model: transcriptionMode("model").notNull().default("medium"),
+  model: transcriptionMode("model").notNull().default("turbo"),
   isSpeakerDiarized: boolean("speaker_identification_enabled")
     .default(false)
     .notNull(),

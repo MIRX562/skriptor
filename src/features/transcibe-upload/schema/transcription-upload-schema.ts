@@ -7,7 +7,7 @@ export const transcriptionUploadSchema = z
     }),
     title: z.string(),
     language: z.string(),
-    model: z.enum(["small", "medium", "large"]),
+    model: z.enum(["small", "turbo", "large"]),
     isSpeakerDiarized: z.boolean(),
     numberOfSpeaker: z.number().min(1).max(10),
   })

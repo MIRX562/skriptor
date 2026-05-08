@@ -26,7 +26,7 @@ async def process_job(job: Job, token: str):
         result = await asyncio.to_thread(
             transcriber.process,
             audio_url=data.get("audioUrl"),
-            model_size=data.get("model", "medium"),
+            model_size=data.get("model", "turbo"),
             language=job_language or "default",
             is_diarized=data.get("isSpeakerDiarized", False),
             num_speakers=data.get("numberOfSpeaker"),

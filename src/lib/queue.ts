@@ -6,7 +6,7 @@ export interface TranscriptionJobPayload {
   filename: string;
   audioUrl: string;
   language: string;
-  model: "small" | "medium" | "large";
+  model: "small" | "turbo" | "large";
   isSpeakerDiarized: boolean;
   numberOfSpeaker: number;
 }

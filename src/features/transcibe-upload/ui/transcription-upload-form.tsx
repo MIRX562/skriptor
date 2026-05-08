@@ -80,7 +80,7 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
     defaultValues: {
       title: "",
       language: "default",
-      model: "medium",
+      model: "turbo",
       isSpeakerDiarized: false,
       numberOfSpeaker: 1,
     },
@@ -328,18 +328,18 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
 
                   <div>
                     <RadioGroupItem
-                      value="medium"
-                      id="medium"
+                      value="turbo"
+                      id="turbo"
                       className="peer sr-only"
                     />
                     <Label
-                      htmlFor="medium"
+                      htmlFor="turbo"
                       className="flex flex-col items-center justify-center h-24 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-teal-600 dark:peer-data-[state=checked]:border-teal-400 [&:has([data-state=checked])]:border-teal-600 dark:[&:has([data-state=checked])]:border-teal-400 cursor-pointer"
                     >
                       <span className="text-2xl mb-1">⚖️</span>
-                      <span className="font-medium">{dict.transcribe.form.speed.medium.label}</span>
+                      <span className="font-medium">{dict.transcribe.form.speed.turbo.label}</span>
                       <span className="text-xs text-muted-foreground">
-                        {dict.transcribe.form.speed.medium.description}
+                        {dict.transcribe.form.speed.turbo.description}
                       </span>
                     </Label>
                   </div>
