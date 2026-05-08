@@ -42,6 +42,5 @@ COPY benchmark ./benchmark
 COPY "audio_dataset/1762320200795-hari-minggoean" "./audio_dataset/1762320200795-hari-minggoean/"
 COPY "audio_dataset/1763685862325-homostoria" "./audio_dataset/1763685862325-homostoria/"
 
-# Set the entrypoint to run the benchmark
-# We use bash to run the benchmark and then keep the dashboard available or just exit
-CMD ["python3", "benchmark/benchmark.py"]
+# Jalankan benchmark, lalu jalankan dashboard agar container tetap hidup
+CMD ["sh", "-c", "python3 benchmark/benchmark.py && streamlit run benchmark/dashboard.py --server.port 8501 --server.address 0.0.0.0"]

@@ -26,6 +26,48 @@ st.sidebar.header("Filters")
 selected_models = st.sidebar.multiselect("Select Models", options=df['model'].unique(), default=df['model'].unique())
 selected_datasets = st.sidebar.multiselect("Select Datasets", options=df['dataset'].unique(), default=df['dataset'].unique())
 
+st.sidebar.divider()
+st.sidebar.header("📥 Download Results")
+
+# JSON Download
+json_str = json.dumps(data, indent=2)
+st.sidebar.download_button(
+    label="Download JSON",
+    data=json_str,
+    file_name=f"benchmark_results_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.json",
+    mime="application/json"
+)
+
+# Markdown Download
+md_str = df.to_markdown(index=False)
+st.sidebar.download_button(
+    label="Download Markdown",
+    data=md_str,
+    file_name=f"benchmark_results_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.md",
+    mime="text/markdown"
+)
+
+# Excel Download
+import io
+buffer = io.BytesIO()
+with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+    df.to_excel(writer, index=False, sheet_name='Benchmark Results')
+    # Add summary sheet
+    summary_df = df.groupby('model').agg({
+        'wer': 'mean',
+        'cer': 'mean',
+        'rtf': 'mean',
+        'peak_vram_mb': 'max'
+    }).reset_index()
+    summary_df.to_excel(writer, index=False, sheet_name='Summary')
+
+st.sidebar.download_button(
+    label="Download Excel (XLSX)",
+    data=buffer.getvalue(),
+    file_name=f"benchmark_results_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
 filtered_df = df[df['model'].isin(selected_models) & df['dataset'].isin(selected_datasets)]
 
 # Layout

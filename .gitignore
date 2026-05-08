@@ -23,7 +23,7 @@
 # misc
 .DS_Store
 *.pem
-/worker/audio_dataset
+/worker/audio_dataset/
 
 # debug
 npm-debug.log*

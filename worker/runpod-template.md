@@ -47,6 +47,11 @@ Gunakan template ini untuk menjalankan pengujian akurasi (WER/CER) dan kecepatan
     *   *Alasan*: Image benchmark lebih besar karena mengandung dataset audio lokal. Dibutuhkan ruang ekstra untuk memuat semua model (tiny s/d large-v3) secara bergantian.
 *   **Volume Disk**: **5 GB** (Opsional)
 
+### Environment Variables
+| Variable | Value | Description |
+|:---|:---|:---|
+| `HUGGING_FACE_TOKEN` | `hf_xxxxxx` | Diperlukan jika Anda mengaktifkan pengujian Diarization |
+
 ### Port Settings
 | Port | Protocol | Description |
 |:---|:---|:---|

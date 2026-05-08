@@ -9,6 +9,7 @@ import { nextCookies } from "better-auth/next-js";
 
 export const auth = betterAuth({
   appName: "Skriptor",
+  baseURL: process.env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -18,7 +19,7 @@ export const auth = betterAuth({
       verification,
     },
   }),
-  trustedOrigins: ["skriptor://"],
+  trustedOrigins: [process.env.BETTER_AUTH_URL as string, "skriptor://"],
   secondaryStorage: {
     get: async (key) => {
       const value = await redis.get(key);
@@ -64,8 +65,10 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      redirectURI: process.env.BETTER_AUTH_URL + "/api/auth/callback/google",
     },
   },
   plugins: [nextCookies()],
+  advanced: {
+    trustProxy: true,
+  },
 });
