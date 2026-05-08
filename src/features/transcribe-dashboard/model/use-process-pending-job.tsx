@@ -40,6 +40,8 @@ export function useProcessPendingJob() {
         const s3Response = await fetch(uploadUrl, {
           method: "PUT",
           body: file,
+          mode: "cors",
+          credentials: "omit",
           headers: {
             "Content-Type": file.type,
           },

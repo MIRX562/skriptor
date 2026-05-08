@@ -123,6 +123,8 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
     const s3Response = await fetch(uploadUrl, {
       method: "PUT",
       body: file,
+      mode: "cors",
+      credentials: "omit",
       headers: {
         "Content-Type": file.type,
       },

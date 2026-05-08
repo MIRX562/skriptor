@@ -13,7 +13,7 @@ export const s3 = new S3Client({
     accessKeyId: process.env.S3_ACCESS_KEY!,
     secretAccessKey: process.env.S3_SECRET_KEY!,
   },
-  forcePathStyle: true,
+  forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
 });
 
 export const S3_BUCKET = process.env.S3_BUCKET!;

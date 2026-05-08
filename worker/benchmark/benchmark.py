@@ -280,20 +280,25 @@ def run_benchmark(limit=None, selected_models=None):
                         wer_val = wer(ref_text, hyp_text)
                         s, d, i = 0, 0, 0
                 except Exception as e:
-                    print(f"Metric calculation error: {e}")
+                    print(f"Metric calculation error (WER): {e}")
                     wer_val = wer(ref_text, hyp_text)
                     s, d, i = 0, 0, 0
 
                 try:
                     if hasattr(jiwer, 'process') and callable(jiwer.process):
-                        cer_output = jiwer.process(list(ref_text), list(hyp_text))
+                        # For CER S/I/D, we treat characters as words by joining with spaces
+                        ref_chars = " ".join(list(ref_text))
+                        hyp_chars = " ".join(list(hyp_text))
+                        cer_output = jiwer.process(ref_chars, hyp_chars)
                         cs, cd, ci = cer_output.substitutions, cer_output.deletions, cer_output.insertions
                         cer_val = cer_output.wer
                     else:
-                        cer_val = cer(list(ref_text), list(hyp_text))
+                        # Legacy cer() on strings
+                        cer_val = cer(ref_text, hyp_text)
                         cs, cd, ci = 0, 0, 0
-                except:
-                    cer_val = cer(list(ref_text), list(hyp_text))
+                except Exception as e:
+                    print(f"Metric calculation error (CER): {e}")
+                    cer_val = cer(ref_text, hyp_text)
                     cs, cd, ci = 0, 0, 0
                 
                 results.append({
