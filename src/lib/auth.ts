@@ -46,7 +46,6 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
-    redirectTo: "/email-verified",
     sendVerificationEmail: async ({ user, url }) => {
       await sendEmail({
         from: "Skriptor <skriptor@mirx.my.id>",
@@ -68,7 +67,4 @@ export const auth = betterAuth({
     },
   },
   plugins: [nextCookies()],
-  advanced: {
-    trustProxy: true,
-  },
 });
