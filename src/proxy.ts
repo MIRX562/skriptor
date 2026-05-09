@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
 // Define route groups
-const publicRoutes = ["/", "/sign-in", "/sign-up"];
+const publicRoutes = ["/", "/sign-in", "/sign-up", "/architecture"];
 const authRoutes = ["/sign-in", "/sign-up"];
 const protectedRoutes = ["/dashboard", "/profile", "/settings"];
 
@@ -29,5 +29,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/sign-in", "/sign-up", "/dashboard", "/profile", "/settings"],
+  matcher: ["/", "/sign-in", "/sign-up", "/dashboard", "/profile", "/settings", "/architecture"],
 };

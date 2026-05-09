@@ -80,5 +80,5 @@ Berdasarkan ukuran model yang akan dijalankan:
 2.  Gunakan **HTTP Service** pada port `8501`.
 3.  Jika Anda ingin melihat dashboard secara interaktif, jalankan perintah ini di terminal Pod:
     ```bash
-    streamlit run benchmark/dashboard.py --server.port 8501
+    streamlit run benchmark/dashboard.py --server.port 8501 --server.enableCORS false --server.enableXsrfProtection false
     ```

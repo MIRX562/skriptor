@@ -134,6 +134,7 @@
       "pricing": "Harga",
       "testimonials": "Testimoni",
       "faq": "FAQ",
+      "architecture": "Arsitektur",
       "dashboard": "Dasbor",
       "login": "Masuk",
       "signup": "Daftar"
@@ -345,7 +346,8 @@
         "privacy": "Privasi",
         "cookies": "Cookie",
         "licenses": "Lisensi",
-        "settings": "Pengaturan"
+        "settings": "Pengaturan",
+        "architecture": "Arsitektur"
       }
     }
   },
@@ -416,7 +418,15 @@
       "cancel": "Batal",
       "share": "Bagikan",
       "delete": "Hapus",
-      "manageSpeakers": "Kelola Pembicara"
+      "manageSpeakers": "Kelola Pembicara",
+      "retranscribe": "Transkripsi Ulang"
+    },
+    "retranscribe": {
+      "title": "Opsi Transkripsi Ulang",
+      "description": "Jalankan transkripsi lagi dengan pengaturan berbeda. Ini akan menggantikan transkrip saat ini.",
+      "warning": "Peringatan: Semua pengeditan manual dan label pembicara akan hilang dan diganti dengan hasil baru.",
+      "confirm": "Mulai Transkripsi Ulang",
+      "success": "Transkripsi ulang dimulai"
     },
     "manageSpeakers": {
       "title": "Kelola Pembicara",
@@ -437,6 +447,7 @@
       "docx": "Dokumen Word (.docx)",
       "csv": "Pemisah Koma (.csv)",
       "xlsx": "Spreadsheet Excel (.xlsx)",
+      "originalAudio": "Audio Asli",
       "exporting": "Mengekspor...",
       "success": "File berhasil diekspor",
       "error": "Gagal mengekspor file"

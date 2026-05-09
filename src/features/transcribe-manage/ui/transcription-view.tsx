@@ -54,6 +54,7 @@ import { SegmentRow } from "./segment-row";
 import { DownloadOptions } from "./DownloadOptions";
 import { SearchControls } from "./search-controls";
 import { FloatingToolbar } from "./floating-toolbar";
+import { RetranscribeDialog } from "./RetranscribeDialog";
 import { type Dictionary } from "@/i18n/dictionaries";
 
 interface TranscriptionViewProps {
@@ -489,6 +490,17 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                       </DialogContent>
                     </Dialog>
                   )}
+
+                  <RetranscribeDialog 
+                    id={id} 
+                    dict={dict} 
+                    currentSettings={{
+                      language: transcriptionData?.language || "en",
+                      model: transcriptionData?.model || "turbo",
+                      isSpeakerDiarized: transcriptionData?.isSpeakerDiarized || false,
+                      numberOfSpeaker: transcriptionData?.numberOfSpeaker || 1,
+                    }}
+                  />
 
                   <Button variant="ghost" size="sm" className="h-8 hover:bg-white dark:hover:bg-slate-950" onClick={() => setIsEditing(true)}>
                     <Pencil className="h-4 w-4 md:mr-2" />

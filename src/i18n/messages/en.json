@@ -113,6 +113,7 @@
       "pricing": "Pricing",
       "testimonials": "Testimonials",
       "faq": "FAQ",
+      "architecture": "Architecture",
       "dashboard": "Dashboard",
       "login": "Log in",
       "signup": "Sign up"
@@ -324,7 +325,8 @@
         "privacy": "Privacy",
         "cookies": "Cookies",
         "licenses": "Licenses",
-        "settings": "Settings"
+        "settings": "Settings",
+        "architecture": "Architecture"
       }
     }
   },
@@ -395,7 +397,15 @@
       "cancel": "Cancel",
       "share": "Share",
       "delete": "Delete",
-      "manageSpeakers": "Manage Speakers"
+      "manageSpeakers": "Manage Speakers",
+      "retranscribe": "Re-transcribe"
+    },
+    "retranscribe": {
+      "title": "Re-transcribe Options",
+      "description": "Run the transcription again with different settings. This will replace the current transcript.",
+      "warning": "Warning: All manual edits and speaker labels will be lost and replaced with the new results.",
+      "confirm": "Start Retranscription",
+      "success": "Retranscription started"
     },
     "manageSpeakers": {
       "title": "Manage Speakers",
@@ -416,6 +426,7 @@
       "docx": "Word Document (.docx)",
       "csv": "Comma Separated (.csv)",
       "xlsx": "Excel Spreadsheet (.xlsx)",
+      "originalAudio": "Original Audio",
       "exporting": "Exporting...",
       "success": "File exported successfully",
       "error": "Failed to export file"

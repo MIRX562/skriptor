@@ -47,25 +47,19 @@ export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
 
         <nav className="hidden md:flex items-center space-x-8">
           <Link
-            href="#"
+            href="#features"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
             {headerDict.features}
           </Link>
           <Link
-            href="#"
+            href="/architecture"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
-            {headerDict.pricing}
+            {headerDict.architecture}
           </Link>
           <Link
-            href="#"
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
-          >
-            {headerDict.testimonials}
-          </Link>
-          <Link
-            href="#"
+            href="#faq"
             className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
             {headerDict.faq}
@@ -126,28 +120,21 @@ export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
           >
             <div className="container mx-auto px-4 py-4 flex flex-col space-y-3">
               <Link
-                href="#"
+                href="#features"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {headerDict.features}
               </Link>
               <Link
-                href="#"
+                href="/architecture"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                {headerDict.pricing}
+                {headerDict.architecture}
               </Link>
               <Link
-                href="#"
-                className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {headerDict.testimonials}
-              </Link>
-              <Link
-                href="#"
+                href="#faq"
                 className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

@@ -41,6 +41,7 @@ export async function GET(
       const { s3, S3_BUCKET } = await import("@/lib/storage");
       const { Readable } = await import("stream");
 
+      const download = new URL(request.url).searchParams.get("download") === "true";
       const range = request.headers.get("range");
 
       const command = new GetObjectCommand({
@@ -57,6 +58,15 @@ export async function GET(
       if (s3Response.ContentRange) headers.set("Content-Range", s3Response.ContentRange);
       headers.set("Accept-Ranges", "bytes");
       headers.set("Cache-Control", "public, max-age=3600");
+
+      if (download) {
+        const extension = record.audioUrl.split(".").pop();
+        const safeTitle = record.title.replace(/[/\\?%*:|"<>]/g, "-");
+        headers.set(
+          "Content-Disposition",
+          `attachment; filename="${safeTitle}.${extension}"`
+        );
+      }
 
       // @ts-ignore - response.Body is a Node stream but Readable.toWeb converts it
       const stream = Readable.toWeb(s3Response.Body as any);

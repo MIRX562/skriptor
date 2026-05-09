@@ -43,4 +43,4 @@ COPY "audio_dataset/1762320200795-hari-minggoean" "./audio_dataset/1762320200795
 COPY "audio_dataset/1763685862325-homostoria" "./audio_dataset/1763685862325-homostoria/"
 
 # Jalankan benchmark, lalu jalankan dashboard agar container tetap hidup
-CMD ["sh", "-c", "python3 benchmark/benchmark.py && streamlit run benchmark/dashboard.py --server.port 8501 --server.address 0.0.0.0"]
+CMD ["sh", "-c", "python3 benchmark/benchmark.py && streamlit run benchmark/dashboard.py --server.port 8501 --server.address 0.0.0.0 --server.enableCORS false --server.enableXsrfProtection false"]

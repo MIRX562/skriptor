@@ -466,6 +466,16 @@ export function DownloadOptions({
               <LayoutList className="mr-2 h-4 w-4 text-green-700" />
               Excel (.xlsx)
             </Button>
+            <Button 
+              variant="outline" 
+              className="justify-start h-11 border-teal-200 dark:border-teal-900/50 bg-teal-50/30 dark:bg-teal-950/20" 
+              asChild
+            >
+              <a href={`/api/transcription/${metadata.id}/audio?download=true`} download>
+                <Download className="mr-2 h-4 w-4 text-teal-600" />
+                {dict.view.download.originalAudio || "Original Audio"}
+              </a>
+            </Button>
           </div>
           
           <Button 
