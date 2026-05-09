@@ -12,29 +12,45 @@ export async function POST(req: NextRequest) {
     const model = formData.get("model");
     const isSpeakerDiarized = formData.get("isSpeakerDiarized");
     const numberOfSpeaker = formData.get("numberOfSpeaker");
-    const fileSize = formData.get("fileSize");
-    const fileType = formData.get("fileType");
 
-    // Basic validation
-    if (!file && !storageKey) {
+    // If it's a direct file upload (proxying), validate using schema
+    if (file && typeof file === "object" && "arrayBuffer" in file) {
+      const parsed = transcriptionUploadSchema.safeParse({
+        file,
+        title,
+        language,
+        model,
+        isSpeakerDiarized: isSpeakerDiarized === "true",
+        numberOfSpeaker: Number(numberOfSpeaker),
+      });
+
+      if (!parsed.success) {
+        return NextResponse.json(
+          { success: false, error: parsed.error.flatten() },
+          { status: 400 }
+        );
+      }
+
+      await initiateJob({
+        ...parsed.data,
+        file,
+      });
+    } else if (storageKey) {
+      // Fallback for storageKey (presigned upload)
+      await initiateJob({
+        title: title as string,
+        language: language as string,
+        model: model as string,
+        isSpeakerDiarized: isSpeakerDiarized === "true",
+        numberOfSpeaker: Number(numberOfSpeaker),
+        storageKey: storageKey as string,
+      });
+    } else {
       return NextResponse.json(
         { success: false, error: "No file or storage key provided." },
         { status: 400 }
       );
     }
-
-    // Call initiateJob with validated data
-    await initiateJob({
-      title: title as string,
-      language: language as string,
-      model: model as string,
-      isSpeakerDiarized: isSpeakerDiarized === "true",
-      numberOfSpeaker: Number(numberOfSpeaker),
-      storageKey: storageKey as string,
-      file,
-      fileSize: Number(fileSize),
-      fileType: fileType as string,
-    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

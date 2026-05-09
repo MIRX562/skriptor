@@ -86,64 +86,21 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
     },
   });
 
-  async function onSubmit(values: TranscriptionUploadValues) {
-    // Trigger the mutation which will handle validation and notifications
-    mutation.mutate(values);
-  }
-
   // keep toast id to update the loading toast
   const loadingToastId = useRef<number | string | null>(null);
 
-  const uploadFn = async (
-    values: TranscriptionUploadValues
-  ) => {
+  const uploadFn = async (values: TranscriptionUploadValues) => {
     if (!file) {
       throw new Error(dict.transcribe.messages.noFile);
     }
 
-    // 1. Get presigned URL
-    const presignedResponse = await fetch("/api/transcribe-upload/presigned-url", {
-      method: "POST",
-      body: JSON.stringify({
-        filename: file.name,
-        contentType: file.type,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!presignedResponse.ok) {
-      throw new Error("Failed to get upload URL");
-    }
-
-    const { uploadUrl, storageKey } = await presignedResponse.json();
-
-    // 2. Upload directly to S3
-    const s3Response = await fetch(uploadUrl, {
-      method: "PUT",
-      body: file,
-      mode: "cors",
-      credentials: "omit",
-      headers: {
-        "Content-Type": file.type,
-      },
-    });
-
-    if (!s3Response.ok) {
-      throw new Error("Failed to upload file to storage");
-    }
-
-    // 3. Initiate transcription job
     const formData = new FormData();
-    formData.append("storageKey", storageKey);
+    formData.append("file", file);
     formData.append("title", values.title);
     formData.append("language", values.language);
     formData.append("model", values.model);
     formData.append("isSpeakerDiarized", values.isSpeakerDiarized.toString());
     formData.append("numberOfSpeaker", values.numberOfSpeaker.toString());
-    formData.append("fileSize", file.size.toString());
-    formData.append("fileType", file.type);
 
     const response = await fetch("/api/transcribe-upload", {
       method: "POST",
@@ -180,6 +137,11 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
       router.push("/dashboard/manage");
     },
   });
+
+  async function onSubmit(values: TranscriptionUploadValues) {
+    // Trigger the mutation which will handle validation and notifications
+    mutation.mutate(values);
+  }
 
   const speakerEnabled = form.watch("isSpeakerDiarized");
 

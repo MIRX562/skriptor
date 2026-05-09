@@ -1,0 +1,5 @@
+FROM dxflrs/garage:v2.3.0
+
+# Copy the config file directly into the image
+# In minimal/distroless images, COPY is the only reliable way to inject files
+COPY garage.toml /etc/garage.toml
