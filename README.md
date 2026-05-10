@@ -1,109 +1,131 @@
 # 🎙️ Skriptor — High-Performance Audio Transcription SaaS
 
-**Skriptor** is a modern, full-stack audio transcription service designed for speed, accuracy, and scalability. It leverages the latest features of **Next.js 16**, a distributed **Python AI worker** (WhisperX), and a real-time streaming architecture.
-
-> [!NOTE]
-> **Open Source & Community Focused**: This project is 100% open source. You are free to use, modify, and host it yourself for personal or commercial use. Contributions are welcome!
+**Skriptor** is a modern, full-stack audio transcription service designed for speed, accuracy, and scalability. It leverages **Next.js 16**, a distributed **Python AI worker** (WhisperX), and a real-time streaming architecture.
 
 ---
 
-## ✨ Key Features
+## 🔑 1. Setup API Keys
 
--   **⚡ Real-Time Progress**: Watch your transcriptions happen in real-time via Server-Sent Events (SSE) and Redis Pub/Sub.
--   **🤖 Distributed AI Processing**: Transcription is handled by an asynchronous Python worker using **WhisperX**, supporting alignment, diarization (speaker identification), and multiple model sizes (including the new `turbo`).
--   **💎 Premium UI/UX**: Built with **Tailwind CSS v4**, **Framer Motion**, and **shadcn/ui** for a world-class user experience.
--   **🚀 Next.js 16 Native**: Utilizes **Partial Prerendering (PPR)** for instant page loads and **Cache Components** for granular data caching.
--   **🔐 Secure & Flexible Auth**: Powered by **Better-Auth** with support for Email/Password and Google OAuth.
--   **📦 S3-Compatible Storage**: Works with any S3-compatible provider (MinIO, Garage, AWS S3).
--   **📊 Benchmarking Suite**: Includes built-in tools to evaluate model accuracy (WER/CER) and speed (RTF).
+Before running the app, you need to collect several API keys. Follow this guide to get them:
+
+### 🔐 Better-Auth Secret
+This is used for encrypting session cookies.
+- **How to get**: Generate a random 32-character hex string.
+- **Command**: `openssl rand -hex 32`
+
+### 📧 Resend (Email Delivery)
+Used for sending verification emails and password resets.
+- **How to get**: Sign up at [Resend.com](https://resend.com), create an API key, and verify your domain.
+- **Variable**: `RESEND_API_KEY`
+
+### 🤖 HuggingFace (Transcription Diarization)
+Required by the worker for speaker identification (diarization).
+- **How to get**:
+  1. Create an account at [huggingface.co](https://huggingface.co).
+  2. Go to **Settings > Access Tokens** and create a "Read" token.
+  3. **Crucial**: You MUST visit the model pages and "Accept Terms" for:
+     - [pyannote/segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0)
+     - [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1)
+- **Variable**: `HUGGING_FACE_TOKEN`
+
+### 🌐 Google OAuth (Optional)
+If you want to enable "Sign in with Google".
+- **How to get**:
+  1. Go to [Google Cloud Console](https://console.cloud.google.com/).
+  2. Create a new project -> APIs & Services -> Credentials.
+  3. Create "OAuth 2.0 Client IDs".
+  4. Set Authorized Redirect URI to: `http://localhost:3000/api/auth/callback/google`
+- **Variables**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+
+### 📦 S3 Storage
+Used for storing audio files. By default, the app uses **Garage** (self-hosted) via Docker.
+- If using local Docker: The default values in `.env` will work.
+- If using AWS S3/MinIO: Get your Access Key and Secret Key from your provider's dashboard.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 2. Method A: Direct Run (Development)
 
--   **Framework**: Next.js 16 (App Router, PPR, Cache Components)
--   **Runtime**: Bun (Primary) / Node.js
--   **Language**: TypeScript
--   **ORM**: Drizzle ORM (PostgreSQL)
--   **Real-time**: Redis Pub/Sub & SSE
--   **Queue**: BullMQ
--   **Styling**: Tailwind CSS v4
--   **Storage**: S3 API (AWS SDK v3)
--   **Worker**: Python 3.10+, WhisperX, PyTorch
+Best for developers who want to modify the code with Hot Module Replacement (HMR).
 
----
+### Prerequisites
+- **Bun**: [Install Bun](https://bun.sh/)
+- **Docker**: For running infrastructure (Postgres, Redis, Garage).
+- **Python 3.10+**: For running the worker locally.
 
-## 🚀 Deployment Guide
-
-### 1. Direct Deployment (Local Development)
-
-#### Prerequisites
--   [Bun](https://bun.sh/)
--   [Docker](https://www.docker.com/) (for Redis/Postgres/Garage)
--   [Python 3.10+](https://www.python.org/) (for local worker development)
-
-#### Step-by-Step
-1.  **Clone the repository**:
+### Steps
+1.  **Clone & Install**:
     ```bash
     git clone https://github.com/mirxtreme/skriptor.git
     cd skriptor
-    ```
-2.  **Install dependencies**:
-    ```bash
     bun install
     ```
-3.  **Setup Environment**:
+2.  **Environment Setup**:
     ```bash
     cp .example.env .env
+    # Fill in the keys you collected in Step 1
     ```
-    *Fill in the variables listed in the [Environment Variables](#environment-variables) section.*
+3.  **Start Infrastructure**:
+    ```bash
+    docker compose up -d # Starts Postgres, Redis, and Garage
+    ```
 4.  **Database Migration**:
     ```bash
     bunx drizzle-kit generate
     bunx drizzle-kit migrate
     ```
-5.  **Start Services**:
+5.  **Run Web App**:
     ```bash
-    docker compose up -d  # Starts Redis, Postgres, and Garage
-    bun run dev           # Starts the Next.js app
+    bun run dev
     ```
-
-### 2. Docker Deployment (Production)
-
-You can run the entire stack using Docker. We provide separate images for the web app and the worker.
-
-1.  **Configure `.env`**: Ensure all variables are correctly set.
-2.  **Run with Docker Compose**:
+6.  **Run Worker** (Open a new terminal):
     ```bash
-    docker compose -f docker-compose.prod.yml up -d
+    cd worker
+    # We recommend using 'uv' for python dependency management
+    uv sync
+    # Or using standard pip
+    pip install .
+    python3 -m worker.main
     ```
-
-> [!TIP]
-> Refer to [worker/README.md](worker/README.md) for detailed instructions on deploying the transcription worker to GPU-enabled environments like **RunPod**.
 
 ---
 
-## 🔑 Environment Variables
+## 🐳 3. Method B: Docker Run (Production-ready)
 
-| Variable | Description |
-| :--- | :--- |
-| `DATABASE_URL` | PostgreSQL connection string. |
-| `REDIS_URL` | Redis URL (e.g., `redis://:pass@localhost:6379`). |
-| `S3_ENDPOINT` | Your S3-compatible API endpoint. |
-| `S3_ACCESS_KEY` | S3 Access Key. |
-| `S3_SECRET_KEY` | S3 Secret Key. |
-| `S3_BUCKET` | The name of your S3 bucket. |
-| `S3_REGION` | S3 Region (e.g., `us-east-1`). |
-| `BETTER_AUTH_SECRET` | Secret key for Better-Auth encryption. |
-| `BETTER_AUTH_URL` | The base URL of your application. |
-| `GOOGLE_CLIENT_ID` | (Optional) Google OAuth Client ID. |
-| `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth Secret. |
-| `RESEND_API_KEY` | API key for Resend email delivery. |
-| `HUGGING_FACE_TOKEN` | Required for speaker diarization. |
-| `WORKER_SHARED_SECRET` | Shared secret for HMAC-signed worker callbacks. |
+Best for a quick start or production deployment. This runs the entire stack (including Web and Worker) in containers.
+
+### Prerequisites
+- **Docker** and **Docker Compose**.
+- **NVIDIA Container Toolkit** (if running the worker with GPU/CUDA).
+
+### Steps
+1.  **Configure `.env`**:
+    Ensure your `.env` file is filled with all required API keys.
+2.  **Start the Stack**:
+    ```bash
+    docker compose -f docker-compose.prod.yml up -d --build
+    ```
+3.  **Access the App**:
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 📊 Benchmarking
+
+Skriptor includes a benchmarking suite to test Whisper model performance (WER, CER, RTF).
+
+1.  **Run Benchmark**:
+    ```bash
+    cd worker
+    python3 benchmark/benchmark.py
+    ```
+2.  **Visualize Results**:
+    ```bash
+    streamlit run benchmark/dashboard.py
+    ```
 
 ---
 
 ## 📜 License
 
-Skriptor is released under the **MIT License**. You are encouraged to fork, modify, and build upon this project!
+Skriptor is released under the **MIT License**.

@@ -24,6 +24,7 @@ import {
   LayoutList,
   Type,
   Users,
+  RefreshCcw,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import {
@@ -319,16 +320,47 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
             </div>
           </div>
 
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8 sm:h-9 shrink-0 text-destructive hover:bg-destructive/10 bg-white dark:bg-slate-950 border-destructive/20 px-2 sm:px-3" 
-            onClick={handleDelete} 
-            disabled={deleteMutation.isPending}
-          >
-            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
-            <span className="hidden md:inline">{dict.view.actions.delete || "Delete"}</span>
-          </Button>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 sm:h-9 shrink-0 bg-white dark:bg-slate-950 px-2 sm:px-3" 
+              asChild
+            >
+              <a href={`/api/transcription/${id}/audio?download=true`} download title={dict.view.download?.originalAudio || "Download Audio"}>
+                <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2 text-teal-600" />
+                <span className="hidden md:inline">{dict.view.download?.originalAudio || "Audio"}</span>
+              </a>
+            </Button>
+
+            <RetranscribeDialog 
+              id={id} 
+              dict={dict} 
+              currentSettings={{
+                language: transcriptionData?.language || "en",
+                model: transcriptionData?.model || "turbo",
+                isSpeakerDiarized: transcriptionData?.isSpeakerDiarized || false,
+                numberOfSpeaker: transcriptionData?.numberOfSpeaker || 1,
+              }}
+              trigger={
+                <Button variant="outline" size="sm" className="h-8 sm:h-9 shrink-0 bg-white dark:bg-slate-950 px-2 sm:px-3">
+                  <RefreshCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2 text-teal-600" />
+                  <span className="hidden md:inline">{dict.view.actions?.retranscribe || "Re-transcribe"}</span>
+                </Button>
+              }
+            />
+
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 sm:h-9 shrink-0 text-destructive hover:bg-destructive/10 bg-white dark:bg-slate-950 border-destructive/20 px-2 sm:px-3" 
+              onClick={handleDelete} 
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+              <span className="hidden md:inline">{dict.view.actions.delete || "Delete"}</span>
+            </Button>
+          </div>
         </CardHeader>
 
         {currentStatus === "in_progress" && (
@@ -491,16 +523,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                     </Dialog>
                   )}
 
-                  <RetranscribeDialog 
-                    id={id} 
-                    dict={dict} 
-                    currentSettings={{
-                      language: transcriptionData?.language || "en",
-                      model: transcriptionData?.model || "turbo",
-                      isSpeakerDiarized: transcriptionData?.isSpeakerDiarized || false,
-                      numberOfSpeaker: transcriptionData?.numberOfSpeaker || 1,
-                    }}
-                  />
+                  {/* Re-transcribe moved to header */}
 
                   <Button variant="ghost" size="sm" className="h-8 hover:bg-white dark:hover:bg-slate-950" onClick={() => setIsEditing(true)}>
                     <Pencil className="h-4 w-4 md:mr-2" />
