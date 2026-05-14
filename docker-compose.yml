@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: skriptor
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./.docker/db:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -20,12 +20,10 @@ services:
 
   # 2. Redis (Used for BullMQ and SSE)
   redis:
-    image: redis:8-alpine
+    image: redis:7-alpine
     container_name: skriptor-redis
     restart: always
     command: redis-server --requirepass password
-    volumes:
-      - redis_data:/data
     ports:
       - "6379:6379"
     healthcheck:
@@ -42,15 +40,9 @@ services:
     container_name: skriptor-garage
     restart: unless-stopped
     volumes:
-      - garage_data:/var/lib/garage/data:z
-      - garage_meta:/var/lib/garage/meta:z
+      - ./.docker/garage/data:/var/lib/garage/data:z
+      - ./.docker/garage/meta:/var/lib/garage/meta:z
     ports:
       - "3900:3900" # S3 API
       - "3903:3903" # Admin API
       - "3901:3901" # RPC Port
-
-volumes:
-  postgres_data:
-  redis_data:
-  garage_data:
-  garage_meta:

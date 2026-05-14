@@ -1,4 +1,6 @@
 import { ArchitectureDiagram } from "@/features/architecture/ui/architecture-diagram";
+import { BenchmarkFlow } from "@/features/architecture/ui/benchmark-flow";
+import { WhisperXFlow } from "@/features/architecture/ui/whisperx-flow";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, Share2, Info } from "lucide-react";
@@ -58,29 +60,94 @@ export default function ArchitecturePage() {
         </header>
 
         {/* Diagram Section */}
-        <section className="space-y-6">
+        <section className="space-y-12">
           <ArchitectureDiagram />
           
           {/* Legend / Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
-              <h4 className="text-sm font-bold text-teal-400 mb-2 uppercase tracking-widest">Next.js 16 Edge</h4>
-              <p className="text-xs text-white/50 leading-relaxed">
-                Leveraging Partial Prerendering (PPR) and React 19 Server Components for instant load times and efficient data streaming via SSE.
-              </p>
+              <h4 className="text-sm font-bold text-teal-400 mb-4 uppercase tracking-widest">Next.js Stack</h4>
+              <ul className="space-y-3 text-xs">
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">Next.js 16 + React 19</span>
+                  <p className="text-white/40 leading-relaxed">Core framework leveraging PPR and Server Components for instant load times.</p>
+                </li>
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">Better-Auth v1</span>
+                  <p className="text-white/40 leading-relaxed">Secure ownership-based authentication and multi-provider session management.</p>
+                </li>
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">Drizzle ORM + Zod</span>
+                  <p className="text-white/40 leading-relaxed">Type-safe database interactions and runtime schema validation.</p>
+                </li>
+              </ul>
             </div>
+            
             <div className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
-              <h4 className="text-sm font-bold text-purple-400 mb-2 uppercase tracking-widest">WhisperX Worker</h4>
-              <p className="text-xs text-white/50 leading-relaxed">
-                Distributed Python workers handle heavy lifting: transcription, forced alignment, and diarization using optimized Whisper models.
-              </p>
+              <h4 className="text-sm font-bold text-purple-400 mb-4 uppercase tracking-widest">Memory & Storage</h4>
+              <ul className="space-y-3 text-xs">
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">PostgreSQL</span>
+                  <p className="text-white/40 leading-relaxed">Primary relational storage for user data, transcriptions, and segments.</p>
+                </li>
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">Garage (S3 Compatible)</span>
+                  <p className="text-white/40 leading-relaxed">Distributed object storage for audio files, ensuring high availability.</p>
+                </li>
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">Redis + BullMQ</span>
+                  <p className="text-white/40 leading-relaxed">Low-latency job queuing and real-time Pub/Sub for SSE progress streaming.</p>
+                </li>
+              </ul>
             </div>
+
             <div className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
-              <h4 className="text-sm font-bold text-orange-400 mb-2 uppercase tracking-widest">Real-time Pipeline</h4>
-              <p className="text-xs text-white/50 leading-relaxed">
-                BullMQ manages the job lifecycle, while Redis Pub/Sub ensures low-latency progress updates are streamed back to the user interface.
-              </p>
+              <h4 className="text-sm font-bold text-orange-400 mb-4 uppercase tracking-widest">Python Worker Stack</h4>
+              <ul className="space-y-3 text-xs">
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">WhisperX AI Engine</span>
+                  <p className="text-white/40 leading-relaxed">Distributed inference engine for transcription, alignment, and diarization.</p>
+                </li>
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">PyTorch + CUDA</span>
+                  <p className="text-white/40 leading-relaxed">GPU-accelerated tensor computations for high-throughput AI processing.</p>
+                </li>
+                <li className="flex flex-col gap-1">
+                  <span className="text-white/80 font-bold">BullMQ + UV</span>
+                  <p className="text-white/40 leading-relaxed">Fast Python job workers with optimized dependency management.</p>
+                </li>
+              </ul>
             </div>
+          </div>
+
+          <div className="space-y-4 pt-12">
+             <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-black tracking-tighter">
+                  WhisperX <span className="text-blue-400">AI Pipeline</span>
+                </h2>
+                <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 px-3 py-1 font-mono text-[10px] uppercase tracking-widest">
+                  Internal Processing
+                </Badge>
+              </div>
+              <p className="text-sm text-white/40 max-w-2xl font-medium leading-relaxed">
+                The internal modular stages of the WhisperX engine. This pipeline ensures word-level timestamp accuracy and speaker identification through a multi-stage neural network workflow.
+              </p>
+              <WhisperXFlow />
+          </div>
+
+          <div className="space-y-4 pt-12">
+             <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-black tracking-tighter">
+                  Benchmarking <span className="text-purple-400">Pipeline</span>
+                </h2>
+                <Badge variant="outline" className="bg-purple-500/10 text-purple-400 border-purple-500/20 px-3 py-1 font-mono text-[10px] uppercase tracking-widest">
+                  Performance Metrics
+                </Badge>
+              </div>
+              <p className="text-sm text-white/40 max-w-2xl font-medium leading-relaxed">
+                A specialized flow for performance testing, where distributed workers pull reference datasets to measure accuracy (WER/CER) and latency across different Whisper models.
+              </p>
+              <BenchmarkFlow />
           </div>
         </section>
 

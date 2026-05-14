@@ -54,7 +54,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
       <LandingHeader locale={locale} dict={dict} />
-      <WorkInProgressBanner />
+      {/* <WorkInProgressBanner /> */}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-6 md:py-12 min-h-[700px] flex items-center bg-white dark:bg-slate-950 transition-colors duration-500">

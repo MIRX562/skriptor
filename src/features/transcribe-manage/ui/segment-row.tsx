@@ -23,6 +23,7 @@ interface SegmentRowProps {
   isActive: boolean;
   isSearchMatch: boolean;
   isCurrentSearchMatch: boolean;
+  isSpeakerDiarized: boolean;
   searchTerm?: string;
   showSearch?: boolean;
   onSegmentClick: (index: number) => void;
@@ -64,6 +65,7 @@ export const SegmentRow = memo(function SegmentRow({
   isActive,
   isSearchMatch,
   isCurrentSearchMatch,
+  isSpeakerDiarized,
   searchTerm,
   showSearch,
   onSegmentClick,
@@ -121,47 +123,62 @@ export const SegmentRow = memo(function SegmentRow({
             {formatTimeMMSS(segment.start)}
           </span>
 
-          {isEditing ? (
-            <Select
-              value={segment.speakerIndex?.toString() ?? "none"}
-              onValueChange={(val) => {
-                if (val === "add-new") {
-                  const newIndex = addSpeaker();
-                  onSpeakerChange(index, newIndex);
-                } else {
-                  onSpeakerChange(index, val === "none" ? null : Number(val));
-                }
-              }}
-            >
-              <SelectTrigger className="h-6 sm:h-5 text-[10px] border-0 bg-slate-100/50 dark:bg-slate-800/50 sm:bg-transparent hover:bg-slate-200/50 dark:hover:bg-slate-700/50 shadow-none px-2 sm:px-0 py-0 focus:ring-0 w-full sm:w-auto gap-1.5 font-bold text-muted-foreground hover:text-foreground uppercase tracking-wider transition-colors rounded-md sm:rounded-none">
-                <div className="flex items-center gap-1.5 truncate">
-                  <UserPlus className="h-3 w-3 sm:hidden" />
-                  <SelectValue placeholder="No speaker" />
-                </div>
-              </SelectTrigger>
-              <SelectContent align="start" className="min-w-[140px]">
-                <SelectItem value="none" className="text-[11px]">No speaker</SelectItem>
-                {speakers.map((s) => (
-                  <SelectItem key={s.index} value={s.index.toString()} className="text-[11px]">
-                    {s.label}
-                  </SelectItem>
-                ))}
-                <Separator className="my-1" />
-                <SelectItem value="add-new" className="text-[11px] text-teal-600 dark:text-teal-400 font-bold focus:text-teal-600 focus:bg-teal-50 dark:focus:bg-teal-900/30">
-                  <div className="flex items-center gap-2">
-                    <Plus className="h-3 w-3" />
-                    <span>Add Speaker</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          ) : (
-            speakerLabel && (
-              <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider truncate w-full flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500/50 shrink-0" />
-                {speakerLabel}
-              </span>
-            )
+          {isSpeakerDiarized && (
+            <div className="h-6 sm:h-5 mt-1 flex items-center">
+              {isEditing ? (
+                <Select
+                  value={segment.speakerIndex?.toString() ?? "none"}
+                  onValueChange={(val) => {
+                    if (val === "add-new") {
+                      const newIndex = addSpeaker();
+                      onSpeakerChange(index, newIndex);
+                    } else {
+                      onSpeakerChange(index, val === "none" ? null : Number(val));
+                    }
+                  }}
+                >
+                  <SelectTrigger className={cn(
+                    "h-5 text-[10px] border-0 bg-transparent shadow-none p-0 focus:ring-0 w-full sm:w-auto gap-1.5 font-bold uppercase tracking-wider transition-colors",
+                    segment.speakerIndex === null ? "text-muted-foreground/40 hover:text-muted-foreground/60" : "text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300"
+                  )}>
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className={cn(
+                        "w-1.5 h-1.5 rounded-full shrink-0",
+                        segment.speakerIndex === null ? "bg-muted-foreground/20" : "bg-teal-500/50"
+                      )} />
+                      <SelectValue placeholder="No speaker" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent align="start" className="min-w-[140px]">
+                    <SelectItem value="none" className="text-[11px]">No speaker</SelectItem>
+                    {speakers.map((s) => (
+                      <SelectItem key={s.index} value={s.index.toString()} className="text-[11px]">
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                    <Separator className="my-1" />
+                    <SelectItem value="add-new" className="text-[11px] text-teal-600 dark:text-teal-400 font-bold focus:text-teal-600 focus:bg-teal-50 dark:focus:bg-teal-900/30">
+                      <div className="flex items-center gap-2">
+                        <Plus className="h-3 w-3" />
+                        <span>Add Speaker</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                speakerLabel ? (
+                  <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider truncate w-full flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-500/50 shrink-0" />
+                    {speakerLabel}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-wider truncate w-full flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 shrink-0" />
+                    No Speaker
+                  </span>
+                )
+              )}
+            </div>
           )}
         </div>
 
@@ -172,7 +189,7 @@ export const SegmentRow = memo(function SegmentRow({
               value={segment.text}
               onChange={(e) => onTextChange(index, e.target.value)}
               rows={Math.max(1, Math.ceil(segment.text.length / 80))}
-              className="w-full text-sm sm:text-base bg-transparent border-0 outline-none resize-none focus:ring-0 leading-relaxed p-0 text-foreground placeholder:text-muted-foreground"
+              className="w-full text-sm sm:text-base bg-transparent border-0 outline-none resize-none focus:ring-0 leading-relaxed p-0 text-foreground placeholder:text-muted-foreground -mt-[1px]"
               placeholder="Enter segment text..."
             />
           ) : (

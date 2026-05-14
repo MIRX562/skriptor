@@ -118,10 +118,17 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     }
   }, [transcriptionData, initializeFromData]);
 
-  // Use proxy audio URL to bypass CORS
+  // Fetch presigned URL for playback
   useEffect(() => {
     if (!id) return;
-    setAudioUrl(`/api/transcription/${id}/audio`);
+    fetch(`/api/transcription/${id}/audio`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.url) {
+          setAudioUrl(data.url);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch audio url", err));
   }, [id]);
 
   const findActiveSegment = useCallback(
@@ -525,7 +532,15 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
 
                   {/* Re-transcribe moved to header */}
 
-                  <Button variant="ghost" size="sm" className="h-8 hover:bg-white dark:hover:bg-slate-950" onClick={() => setIsEditing(true)}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 hover:bg-white dark:hover:bg-slate-950" 
+                    onClick={() => {
+                      setIsEditing(true);
+                      setViewMode("segments");
+                    }}
+                  >
                     <Pencil className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">{dict.view.actions.edit}</span>
                   </Button>
@@ -571,6 +586,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                         isCurrentSearchMatch={searchResults[currentResultIndex] === virtualRow.index}
                         searchTerm={searchTerm}
                         showSearch={showSearch}
+                        isSpeakerDiarized={transcriptionData?.isSpeakerDiarized ?? false}
                         onSegmentClick={handleSegmentClick}
                         onTextChange={(idx, val) => updateSegment(idx, "text", val)}
                         onSpeakerChange={(idx, val) => updateSegment(idx, "speakerIndex", val)}

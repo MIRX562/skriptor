@@ -34,11 +34,15 @@ class Transcriber:
                 print(f"Loading Whisper model {model_size} into memory (device={self.device}, compute={self.compute_type})...")
                 # Clear other models if we change size to save VRAM
                 if Transcriber._model_cache:
-                    print("Clearing model cache to make room...")
+                    print(f"Current cache contains: {list(Transcriber._model_cache.keys())}. Clearing...")
                     Transcriber._model_cache.clear()
+                    print("Cache cleared. Running garbage collector...")
                     gc.collect()
-                    if self.device == "cuda": torch.cuda.empty_cache()
+                    if self.device == "cuda": 
+                        print("Emptying CUDA cache...")
+                        torch.cuda.empty_cache()
                 
+                print(f"Calling whisperx.load_model('{model_size}', device='{self.device}', compute_type='{self.compute_type}')...")
                 Transcriber._model_cache[model_key] = whisperx.load_model(model_size, self.device, compute_type=self.compute_type)
                 print("Model loaded successfully.")
             
@@ -92,13 +96,67 @@ class Transcriber:
             # Format segments for Skriptor
             print("Formatting segments...")
             segments = []
+            # Added comma, semicolon and colon to prioritize punctuation-based splitting
+            punctuation_marks = {'.', '?', '!', ',', ';', ':', '。', '！', '？', '，', '；', '：'}
+            
+            MAX_WORDS = 20
+            MAX_DURATION_SEC = 8.0
+            
             for s in result["segments"]:
-                segments.append({
-                    "speaker": s.get("speaker"),
-                    "text": s.get("text", "").strip(),
-                    "startTimeMs": int(s["start"] * 1000),
-                    "endTimeMs": int(s["end"] * 1000)
-                })
+                if "words" in s and len(s["words"]) > 0:
+                    current_sub_segment = []
+                    
+                    for word_obj in s["words"]:
+                        current_sub_segment.append(word_obj)
+                        word_text = word_obj.get("word", "").strip()
+                        
+                        # Calculate current duration and word count
+                        starts = [w["start"] for w in current_sub_segment if "start" in w]
+                        ends = [w["end"] for w in current_sub_segment if "end" in w]
+                        start_time = starts[0] if starts else s["start"]
+                        end_time = ends[-1] if ends else s["end"]
+                        
+                        duration = end_time - start_time
+                        word_count = len(current_sub_segment)
+                        
+                        # Break segment if word ends with sentence-ending punctuation, 
+                        # or if word limit reached, or duration limit reached.
+                        has_punctuation = word_text and word_text[-1] in punctuation_marks
+                        
+                        if has_punctuation or word_count >= MAX_WORDS or duration >= MAX_DURATION_SEC:
+                            text = " ".join([w.get("word", "").strip() for w in current_sub_segment])
+                            
+                            segments.append({
+                                "speaker": s.get("speaker"),
+                                "text": text.strip(),
+                                "startTimeMs": int(start_time * 1000),
+                                "endTimeMs": int(end_time * 1000)
+                            })
+                            current_sub_segment = []
+                            
+                    # Add any remaining words in the segment
+                    if current_sub_segment:
+                        text = " ".join([w.get("word", "").strip() for w in current_sub_segment])
+                        starts = [w["start"] for w in current_sub_segment if "start" in w]
+                        ends = [w["end"] for w in current_sub_segment if "end" in w]
+                        
+                        start_time = starts[0] if starts else s["start"]
+                        end_time = ends[-1] if ends else s["end"]
+                        
+                        segments.append({
+                            "speaker": s.get("speaker"),
+                            "text": text.strip(),
+                            "startTimeMs": int(start_time * 1000),
+                            "endTimeMs": int(end_time * 1000)
+                        })
+                else:
+                    # Fallback if no word-level timestamps are available
+                    segments.append({
+                        "speaker": s.get("speaker"),
+                        "text": s.get("text", "").strip(),
+                        "startTimeMs": int(s["start"] * 1000),
+                        "endTimeMs": int(s["end"] * 1000)
+                    })
 
             # Cleanup to help memory management
             print("Cleaning up resources...")

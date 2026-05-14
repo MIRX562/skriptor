@@ -37,6 +37,8 @@ export async function POST(req: NextRequest) {
       });
     } else if (storageKey) {
       // Fallback for storageKey (presigned upload)
+      const fileSize = formData.get("fileSize");
+      const fileType = formData.get("fileType");
       await initiateJob({
         title: title as string,
         language: language as string,
@@ -44,6 +46,8 @@ export async function POST(req: NextRequest) {
         isSpeakerDiarized: isSpeakerDiarized === "true",
         numberOfSpeaker: Number(numberOfSpeaker),
         storageKey: storageKey as string,
+        fileSize: Number(fileSize) || 0,
+        fileType: fileType as string || "audio/mpeg",
       });
     } else {
       return NextResponse.json(

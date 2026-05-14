@@ -94,13 +94,43 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
       throw new Error(dict.transcribe.messages.noFile);
     }
 
+    // 1. Get presigned URL
+    const presignRes = await fetch("/api/transcribe-upload/presigned-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename: file.name, contentType: file.type }),
+    });
+    
+    const presignData = await presignRes.json();
+    if (!presignRes.ok || !presignData.success) {
+      throw new Error(presignData.error || dict.transcribe.messages.uploadFailed);
+    }
+
+    const { uploadUrl, storageKey } = presignData;
+
+    // 2. Upload file directly to S3
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      body: file,
+      headers: {
+        "Content-Type": file.type,
+      },
+    });
+    
+    if (!uploadRes.ok) {
+      throw new Error(dict.transcribe.messages.uploadFailed);
+    }
+
+    // 3. Notify backend
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("storageKey", storageKey);
     formData.append("title", values.title);
     formData.append("language", values.language);
     formData.append("model", values.model);
     formData.append("isSpeakerDiarized", values.isSpeakerDiarized.toString());
     formData.append("numberOfSpeaker", values.numberOfSpeaker.toString());
+    formData.append("fileSize", file.size.toString());
+    formData.append("fileType", file.type);
 
     const response = await fetch("/api/transcribe-upload", {
       method: "POST",

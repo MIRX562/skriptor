@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ReactFlow,
   Background,
@@ -15,19 +15,23 @@ import { PacketEdge } from "./packet-edge";
 import { 
   INITIAL_NODES, 
   ALL_EDGES, 
-  NODE_TYPES, 
-  EDGE_TYPES,
   FLOWS 
 } from "../const/flow-data";
-import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, Layers, Settings2, Play, Pause, FastForward } from "lucide-react";
+import { LayoutGrid, Settings2, Play, Pause, FastForward, PlayCircle, Layout } from "lucide-react";
 
-export function ArchitectureDiagram() {
-  const [activeFlowId, setActiveFlowId] = useState(FLOWS[0].id);
-  const [activeStepIndex, setActiveStepIndex] = useState<number | null>(0);
+export function ArchitectureDiagram({ 
+  defaultFlowId = FLOWS[0].id,
+  defaultStepIndex = 0 
+}: { 
+  defaultFlowId?: string;
+  defaultStepIndex?: number | null;
+}) {
+  const [activeFlowId, setActiveFlowId] = useState(defaultFlowId);
+  const [activeStepIndex, setActiveStepIndex] = useState(defaultStepIndex);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
   const activeFlow = useMemo(() => 
     FLOWS.find(f => f.id === activeFlowId) || FLOWS[0], 
@@ -35,18 +39,14 @@ export function ArchitectureDiagram() {
 
   // Auto-cycle logic
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || showAll) return;
 
     const interval = setInterval(() => {
-      setActiveStepIndex((prev) => {
-        if (prev === null) return 0;
-        const next = prev + 1;
-        return next >= activeFlow.steps.length ? 0 : next;
-      });
+      setActiveStepIndex((prev) => ((prev ?? 0) + 1) % activeFlow.steps.length);
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, activeFlow.steps.length]);
+  }, [isAutoPlaying, activeFlow.steps.length, showAll]);
 
   const nodeTypes = useMemo(() => ({
     custom: CustomNode,
@@ -57,14 +57,15 @@ export function ArchitectureDiagram() {
     packet: PacketEdge,
   }), []);
 
-  const edges = useMemo(() => {
-    const activeStepEdges = activeStepIndex !== null 
-      ? activeFlow.steps[activeStepIndex].edges 
-      : [];
+  const activeStepEdges = useMemo(() => {
+    if (showAll) return ALL_EDGES.map(e => e.id);
+    return (activeStepIndex !== null ? activeFlow.steps[activeStepIndex]?.edges : []) || [];
+  }, [activeFlow, activeStepIndex, showAll]);
 
+  const edges = useMemo(() => {
     return ALL_EDGES.map((edge) => {
       const isActive = activeStepEdges.includes(edge.id);
-      const isPartOfFlow = activeFlow.steps.some(s => s.edges.includes(edge.id));
+      const isPartOfFlow = showAll || activeFlow.steps.some(s => s.edges.includes(edge.id));
       
       return {
         ...edge,
@@ -72,13 +73,47 @@ export function ArchitectureDiagram() {
         hidden: !isPartOfFlow && !isActive,
         data: {
           ...edge.data,
+          isActive,
           color: edge.data?.color || activeFlow.color
         }
       };
     });
-  }, [activeFlow, activeStepIndex]);
+  }, [activeFlow, activeStepEdges, showAll]);
 
-  const nodes = useMemo(() => INITIAL_NODES, []);
+  const nodes = useMemo(() => {
+    const activeNodeIds = new Set<string>();
+    ALL_EDGES.forEach(e => {
+      if (activeStepEdges.includes(e.id)) {
+        activeNodeIds.add(e.source);
+        activeNodeIds.add(e.target);
+      }
+    });
+
+    return INITIAL_NODES.map((node) => {
+      const isNodeActive = showAll || node.type === 'group' || activeNodeIds.has(node.id);
+      
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          isActive: isNodeActive
+        }
+      };
+    });
+  }, [activeStepEdges, showAll]);
+
+  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => (e.key === "Control" || e.key === "Meta") && setIsCtrlPressed(true);
+    const up = (e: KeyboardEvent) => (e.key === "Control" || e.key === "Meta") && setIsCtrlPressed(false);
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, []);
 
   return (
     <div className="w-full h-[850px] flex gap-4">
@@ -149,7 +184,8 @@ export function ArchitectureDiagram() {
       </aside>
 
       {/* Center: Main Flow Area */}
-      <div className="flex-1 rounded-3xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-3xl relative">
+      <div className="flex-1 rounded-3xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-3xl relative group">
+        <div className="absolute inset-0 z-0">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -161,7 +197,90 @@ export function ArchitectureDiagram() {
           minZoom={0.1}
           maxZoom={1.5}
           defaultEdgeOptions={{ type: "packet" }}
+          zoomOnScroll={isCtrlPressed}
+          panOnScroll={false}
+          preventScrolling={isCtrlPressed}
         >
+          <Panel position="top-center" className="w-full flex justify-center pt-6 pointer-events-none">
+             <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl shadow-2xl pointer-events-auto max-w-[90%] overflow-x-auto no-scrollbar">
+                <div className="flex items-center gap-2 px-3 py-1.5 border-r border-white/10 shrink-0">
+                  <PlayCircle className="w-4 h-4 text-teal-400" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/50">System Sequence</span>
+                  <button 
+                    onClick={() => {
+                      setIsAutoPlaying(!isAutoPlaying);
+                      if (!isAutoPlaying) setShowAll(false);
+                    }}
+                    className={cn(
+                      "ml-2 p-1 rounded-md transition-colors",
+                      isAutoPlaying ? "text-teal-400 bg-teal-500/10" : "text-white/20 hover:text-white/40"
+                    )}
+                  >
+                    {isAutoPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1.5 px-2 py-1">
+                  {activeFlow.steps.map((step, index) => {
+                    const isActive = !showAll && activeStepIndex === index;
+                    
+                    return (
+                      <button
+                        key={step.id}
+                        onClick={() => {
+                          setActiveStepIndex(index);
+                          setIsAutoPlaying(false);
+                          setShowAll(false);
+                        }}
+                        className={cn(
+                          "relative px-4 py-2 rounded-xl transition-all duration-300 flex flex-col items-start gap-0.5 min-w-[140px]",
+                          isActive 
+                            ? "bg-white/10 text-white" 
+                            : "text-white/30 hover:bg-white/5 hover:text-white/50"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] font-mono opacity-50">0{index + 1}</span>
+                          <span className="text-[11px] font-bold tracking-tight whitespace-nowrap">{step.title}</span>
+                        </div>
+                        {isActive && (
+                          <motion.div 
+                            layoutId="step-indicator-sys"
+                            className="absolute bottom-1.5 left-4 right-4 h-[2px] bg-teal-500/20 rounded-full"
+                          />
+                        )}
+                        {isActive && isAutoPlaying && (
+                          <motion.div 
+                            key={`progress-sys-${activeStepIndex}`}
+                            initial={{ scaleX: 0 }}
+                            animate={{ scaleX: 1 }}
+                            transition={{ duration: 4, ease: "linear" }}
+                            className="absolute bottom-1.5 left-4 right-4 h-[2px] bg-teal-500 rounded-full origin-left"
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="h-10 w-[1px] bg-white/10 mx-1" />
+
+                <button 
+                  onClick={() => {
+                    setShowAll(!showAll);
+                    if (!showAll) setIsAutoPlaying(false);
+                  }}
+                  className={cn(
+                    "p-3 rounded-xl border transition-all flex flex-col items-center justify-center gap-1 min-w-[80px]",
+                    showAll ? "bg-teal-500/20 border-teal-500/40 text-teal-400" : "bg-white/5 border-white/10 text-white/30"
+                  )}
+                >
+                  <Layout className="w-4 h-4" />
+                  <span className="text-[8px] font-bold uppercase tracking-tighter">Show All</span>
+                </button>
+             </div>
+          </Panel>
+
           <Background color="#333" variant={BackgroundVariant.Dots} />
           <Controls className="!bg-white/5 !border-white/10 !fill-white" />
           
@@ -172,76 +291,7 @@ export function ArchitectureDiagram() {
           </Panel>
         </ReactFlow>
       </div>
-
-      {/* Right Sidebar: Execution Steps */}
-      <aside className="w-80 flex flex-col p-4 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-3xl overflow-y-auto shrink-0">
-        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2 px-2">
-          <Layers className="w-4 h-4 text-teal-400" />
-          Execution Steps
-        </h3>
-        
-        <div className="space-y-3">
-          {activeFlow.steps.map((step, index) => {
-            const isActive = activeStepIndex === index;
-            
-            return (
-              <button
-                key={step.id}
-                onClick={() => {
-                  setActiveStepIndex(index);
-                  setIsAutoPlaying(false);
-                }}
-                className={cn(
-                  "w-full text-left p-4 rounded-xl border transition-all duration-500 relative overflow-hidden",
-                  isActive 
-                    ? "bg-white/10 border-white/30 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]" 
-                    : "bg-white/5 border-white/5 text-white/30 hover:bg-white/5 hover:border-white/10"
-                )}
-              >
-                {isActive && (
-                  <motion.div 
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500"
-                    layoutId="active-step-bar"
-                  />
-                )}
-                
-                {isActive && isAutoPlaying && (
-                  <motion.div 
-                    initial={{ width: "0%" }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 4, ease: "linear" }}
-                    className="absolute bottom-0 left-0 h-0.5 bg-teal-500/30"
-                  />
-                )}
-
-                <div className="text-xs font-black uppercase tracking-widest mb-1 opacity-50">Step 0{index + 1}</div>
-                <div className="text-sm font-bold leading-none mb-2">{step.title}</div>
-                <AnimatePresence>
-                  {isActive && (
-                    <motion.p
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="text-[11px] opacity-70 leading-relaxed overflow-hidden"
-                    >
-                      {step.description}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </button>
-            );
-          })}
-        </div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsAutoPlaying(true)}
-          className="w-full mt-4 text-[10px] font-bold uppercase tracking-widest h-8 text-white/30 hover:text-white hover:bg-white/5"
-        >
-          Resume Auto-cycle
-        </Button>
-      </aside>
     </div>
+  </div>
   );
 }

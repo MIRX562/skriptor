@@ -29,10 +29,11 @@ export async function uploadAudio(buffer: Buffer, key: string, contentType: stri
   );
 }
 
-export async function getPresignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
+export async function getPresignedUrl(key: string, expiresIn: number = 3600, downloadFilename?: string): Promise<string> {
   const command = new GetObjectCommand({
     Bucket: S3_BUCKET,
     Key: key,
+    ...(downloadFilename && { ResponseContentDisposition: `attachment; filename="${downloadFilename}"` })
   });
   return await getSignedUrl(s3, command, { expiresIn });
 }

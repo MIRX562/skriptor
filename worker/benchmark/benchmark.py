@@ -146,6 +146,7 @@ def load_ground_truth(dataset_dir):
                 dataset_stats[dataset_name] = {
                     "total_files": len(df['Audio file'].unique()),
                     "total_segments": len(df),
+                    "total_duration_sec": 0
                 }
                 
                 # Group by 'Audio file' and join text
@@ -168,6 +169,8 @@ def load_ground_truth(dataset_dir):
                     ref_duration = 0
                     if 'Start' in group.columns and 'End' in group.columns:
                         ref_duration = parse_time(group['End'].iloc[-1]) - parse_time(group['Start'].iloc[0])
+                    
+                    dataset_stats[dataset_name]["total_duration_sec"] += ref_duration
                     
                     wpm = (word_count / ref_duration) * 60 if ref_duration > 0 else 0
                     
@@ -213,6 +216,7 @@ def run_benchmark(limit=None, selected_models=None):
     print(f"Found {len(audio_files)} valid audio files with ground truth.")
 
     results = []
+    transcription_comparison = []
     transcriber = Transcriber()
     import jiwer
 
@@ -326,6 +330,14 @@ def run_benchmark(limit=None, selected_models=None):
                     'timestamp': datetime.now().isoformat()
                 })
                 
+                # Collect transcription comparison data
+                transcription_comparison.append({
+                    'model': model_size,
+                    'audio_file': audio['name'],
+                    'source_text': ref_text,
+                    'generated_text': hyp_text
+                })
+                
                 print(f"DONE: WER={wer_val:.4f}, RTF={rtf:.4f}, VRAM={stats.get('peak_vram', 0):.0f}MB")
                 
             except Exception as e:
@@ -355,6 +367,10 @@ def run_benchmark(limit=None, selected_models=None):
     
     with open(individual_file, 'w') as f:
         json.dump(output_data, f, indent=2)
+    
+    # Save transcription comparison to TSV
+    tsv_file = os.path.join(os.path.dirname(__file__), 'benchmark-transcription-result.tsv')
+    pd.DataFrame(transcription_comparison).to_csv(tsv_file, sep='\t', index=False)
     
     print(f"\nBenchmark complete!")
     print(f"Results saved to {main_output_file}")

@@ -11,6 +11,7 @@ interface CustomNodeProps {
     icon?: LucideIcon;
     description?: string;
     type?: "client" | "server" | "db" | "queue" | "storage" | "worker" | "group";
+    isActive?: boolean;
   };
   selected?: boolean;
 }
@@ -33,10 +34,14 @@ export function CustomNode({ data, selected, type }: CustomNodeProps & { type: s
   if (isGroup) {
     return (
       <div className={cn(
-        "w-full h-full rounded-3xl border-2 border-teal-500/40 bg-teal-500/5 backdrop-blur-xl transition-all duration-500",
-        selected ? "border-teal-500/60 bg-teal-500/10 shadow-[0_0_30px_rgba(20,184,166,0.1)]" : ""
+        "w-full h-full rounded-3xl border-2 border-teal-500/40 bg-transparent transition-all duration-500",
+        selected ? "border-teal-500/60 bg-transparent shadow-[0_0_30px_rgba(20,184,166,0.1)]" : "",
+        data.isActive === false ? "opacity-20 grayscale" : "opacity-100"
       )}>
-        <div className="absolute top-6 left-8 text-xs font-black uppercase tracking-[0.2em] text-teal-400">
+        <div className={cn(
+          "absolute top-6 left-8 text-xs font-black uppercase tracking-[0.2em] transition-colors duration-500",
+          data.isActive === false ? "text-white/20" : "text-teal-400"
+        )}>
           {data.label}
         </div>
       </div>
@@ -46,9 +51,14 @@ export function CustomNode({ data, selected, type }: CustomNodeProps & { type: s
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
+      animate={{ 
+        scale: data.isActive === false ? 0.95 : 1, 
+        opacity: data.isActive === false ? 0.2 : 1,
+        filter: data.isActive === false ? "grayscale(100%)" : "grayscale(0%)"
+      }}
+      transition={{ duration: 0.5 }}
       className={cn(
-        "relative px-4 py-2.5 rounded-2xl border-2 backdrop-blur-xl shadow-2xl w-[200px] transition-all duration-300",
+        "relative px-4 py-2.5 rounded-2xl border-2 backdrop-blur-xl shadow-2xl w-[200px] transition-all duration-500",
         style,
         selected ? "ring-2 ring-white/50 border-white/50" : ""
       )}
