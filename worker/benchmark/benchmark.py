@@ -10,6 +10,10 @@ from jiwer import wer, cer
 import threading
 import argparse
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Add parent directory to sys.path to import worker modules
 # Assuming this script is in worker/benchmark/benchmark.py
@@ -375,6 +379,98 @@ def run_benchmark(limit=None, selected_models=None):
     print(f"\nBenchmark complete!")
     print(f"Results saved to {main_output_file}")
     print(f"Individual run saved to {individual_file}")
+
+    # Automatically generate markdown and excel reports using exporter
+    try:
+        print("\n📊 Generating benchmark reports...")
+        try:
+            from exporter import generate_report
+        except ImportError:
+            from benchmark.exporter import generate_report
+        generate_report()
+    except Exception as e:
+        print(f"⚠️ Failed to generate reports: {e}")
+
+    # Upload results to S3 if configured
+    upload_results_to_s3()
+
+def upload_results_to_s3():
+    endpoint = os.getenv("S3_ENDPOINT")
+    access_key = os.getenv("S3_ACCESS_KEY")
+    secret_key = os.getenv("S3_SECRET_KEY")
+    bucket = os.getenv("S3_BUCKET")
+    region = os.getenv("S3_REGION", "us-east-1")
+    force_path_style = os.getenv("S3_FORCE_PATH_STYLE", "true").lower() == "true"
+    prefix = os.getenv("S3_BENCHMARK_PREFIX", "benchmarks/")
+
+    if not all([endpoint, access_key, secret_key, bucket]):
+        print("\nS3 environment variables not fully configured. Skipping S3 upload.")
+        print("To enable automatic S3 uploads, configure the following environment variables:")
+        print("  - S3_ENDPOINT")
+        print("  - S3_ACCESS_KEY")
+        print("  - S3_SECRET_KEY")
+        print("  - S3_BUCKET")
+        return
+
+    print(f"\n🚀 Initializing S3 client to upload results to bucket '{bucket}' under prefix '{prefix}'...")
+    try:
+        import boto3
+        from botocore.client import Config as BotoConfig
+        
+        s3_client = boto3.client(
+            's3',
+            endpoint_url=endpoint,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name=region,
+            config=BotoConfig(signature_version='s3v4', s3={'addressing_style': 'path'} if force_path_style else {})
+        )
+        
+        benchmark_dir = os.path.dirname(__file__)
+        files_to_upload = []
+        
+        # Look for the generated files in the benchmark directory
+        for f in os.listdir(benchmark_dir):
+            if f.endswith('.json') and (f.startswith('results_') or f == 'benchmark_results.json'):
+                files_to_upload.append(f)
+            elif f == 'benchmark-transcription-result.tsv':
+                files_to_upload.append(f)
+            elif f == 'benchmarking_report.md':
+                files_to_upload.append(f)
+            elif f == 'benchmarking_raw.xlsx':
+                files_to_upload.append(f)
+                
+        print(f"Found {len(files_to_upload)} files to upload to S3: {files_to_upload}")
+        
+        for filename in files_to_upload:
+            file_path = os.path.join(benchmark_dir, filename)
+            s3_key = f"{prefix.rstrip('/')}/{filename}"
+            
+            # Determine content type
+            content_type = 'application/octet-stream'
+            if filename.endswith('.json'):
+                content_type = 'application/json'
+            elif filename.endswith('.tsv'):
+                content_type = 'text/tab-separated-values'
+            elif filename.endswith('.md'):
+                content_type = 'text/markdown'
+            elif filename.endswith('.xlsx'):
+                content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                
+            print(f"Uploading {filename} to {s3_key} ({content_type})...")
+            s3_client.upload_file(
+                file_path,
+                bucket,
+                s3_key,
+                ExtraArgs={'ContentType': content_type}
+            )
+            print(f"Uploaded {filename} successfully!")
+            
+        print("🎉 S3 upload complete!")
+    except Exception as e:
+        print(f"❌ Error uploading to S3: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Benchmark Whisper models")

@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: skriptor
     volumes:
-      - ./.docker/db:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -32,17 +32,39 @@ services:
       timeout: 5s
       retries: 5
 
-  # 3. Garage (S3 Compatible Storage)
-  garage:
-    build:
-      context: .
-      dockerfile: Dockerfile.garage
-    container_name: skriptor-garage
-    restart: unless-stopped
+  # 3. MinIO (S3 Compatible Storage)
+  minio:
+    image: minio/minio:latest
+    container_name: skriptor-minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: mirx
+      MINIO_ROOT_PASSWORD: asemjowo
     volumes:
-      - ./.docker/garage/data:/var/lib/garage/data:z
-      - ./.docker/garage/meta:/var/lib/garage/meta:z
+      - minio_data:/data
     ports:
-      - "3900:3900" # S3 API
-      - "3903:3903" # Admin API
-      - "3901:3901" # RPC Port
+      - "9000:9000" # S3 API Port
+      - "9001:9001" # Console Port
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 4. MinIO Bucket Creator
+  minio-create-bucket:
+    image: minio/mc:latest
+    container_name: skriptor-minio-mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set localminio http://minio:9000 mirx asemjowo); do echo 'Waiting for MinIO...'; sleep 1; done;
+      /usr/bin/mc mb --ignore-existing localminio/skriptor-bucket;
+      exit 0;
+      "
+
+volumes:
+  minio_data:
+  db_data:

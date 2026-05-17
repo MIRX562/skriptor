@@ -1,2 +1,0 @@
-FROM dxflrs/garage:v2.3.0
-COPY --chmod=644 garage.toml /etc/garage.toml

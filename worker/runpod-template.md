@@ -51,6 +51,13 @@ Gunakan template ini untuk menjalankan pengujian akurasi (WER/CER) dan kecepatan
 | Variable | Value | Description |
 |:---|:---|:---|
 | `HUGGING_FACE_TOKEN` | `hf_xxxxxx` | Diperlukan jika Anda mengaktifkan pengujian Diarization |
+| `S3_ENDPOINT` | `https://s3.your-storage.com` | Endpoint MinIO/Garage (Opsional, untuk mengunggah hasil benchmark secara otomatis) |
+| `S3_ACCESS_KEY` | `your-access-key` | Access key untuk penyimpanan S3 (Opsional) |
+| `S3_SECRET_KEY` | `your-secret-key` | Secret key untuk penyimpanan S3 (Opsional) |
+| `S3_BUCKET` | `skriptor` | Nama bucket S3 target (Opsional) |
+| `S3_REGION` | `us-east-1` | Wilayah regional S3 (Opsional, default: `us-east-1`) |
+| `S3_BENCHMARK_PREFIX` | `benchmarks/` | Folder / prefix penyimpanan di S3 (Opsional, default: `benchmarks/`) |
+
 
 ### Port Settings
 | Port | Protocol | Description |
