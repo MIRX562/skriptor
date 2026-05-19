@@ -376,6 +376,10 @@ def run_benchmark(limit=None, selected_models=None):
     tsv_file = os.path.join(os.path.dirname(__file__), 'benchmark-transcription-result.tsv')
     pd.DataFrame(transcription_comparison).to_csv(tsv_file, sep='\t', index=False)
     
+    # Save individual run TSV to allow environment comparison
+    individual_tsv = os.path.join(os.path.dirname(__file__), f'benchmark-transcription-result-{device_name_slug}.tsv')
+    pd.DataFrame(transcription_comparison).to_csv(individual_tsv, sep='\t', index=False)
+    
     print(f"\nBenchmark complete!")
     print(f"Results saved to {main_output_file}")
     print(f"Individual run saved to {individual_file}")

@@ -228,7 +228,7 @@ with tab_summary:
                         'Acc/Speed Ratio': '{:.2f}',
                         'Acc/VRAM Ratio': '{:.4f}'
                     }),
-        use_container_width=True,
+        width='stretch',
         hide_index=True
     )
     
@@ -262,23 +262,23 @@ with tab_summary:
         hovermode="x unified"
     )
     
-    st.plotly_chart(fig_summary, use_container_width=True)
+    st.plotly_chart(fig_summary, width='stretch')
 
 with tab_overview:
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Accuracy (WER) vs Model")
-        st.plotly_chart(plot_metric(filtered_df, "wer", "Word Error Rate (%)", is_pct=True), use_container_width=True)
+        st.plotly_chart(plot_metric(filtered_df, "wer", "Word Error Rate (%)", is_pct=True), width='stretch')
     with col2:
         st.subheader("Efficiency (Speed) vs Model")
-        st.plotly_chart(plot_metric(filtered_df, "speed_x", "Speed Multiplier (x)"), use_container_width=True)
+        st.plotly_chart(plot_metric(filtered_df, "speed_x", "Speed Multiplier (x)"), width='stretch')
     
     st.divider()
     
     col_cer1, col_cer2 = st.columns(2)
     with col_cer1:
         st.subheader("Character Error Rate (CER)")
-        st.plotly_chart(plot_metric(filtered_df, "cer", "Character Error Rate (%)", is_pct=True), use_container_width=True)
+        st.plotly_chart(plot_metric(filtered_df, "cer", "Character Error Rate (%)", is_pct=True), width='stretch')
     with col_cer2:
         st.subheader("WER vs CER Correlation")
         fig_corr = px.scatter(filtered_df, x="wer_pct", y="cer_pct", color="model", 
@@ -286,7 +286,7 @@ with tab_overview:
                             labels={'wer_pct': 'WER (%)', 'cer_pct': 'CER (%)'},
                             title="Word Error Rate vs Character Error Rate")
         fig_corr.update_layout(xaxis_ticksuffix="%", yaxis_ticksuffix="%")
-        st.plotly_chart(fig_corr, use_container_width=True)
+        st.plotly_chart(fig_corr, width='stretch')
 
 with tab_linguistic:
     col_ling1, col_ling2 = st.columns(2)
@@ -300,7 +300,7 @@ with tab_linguistic:
                                  labels={'wer_pct': 'WER (%)'},
                                  title="WER vs. Words Per Minute")
             fig_wpm.update_layout(yaxis_ticksuffix="%")
-            st.plotly_chart(fig_wpm, use_container_width=True)
+            st.plotly_chart(fig_wpm, width='stretch')
         else:
             st.info("WPM data not available.")
             
@@ -312,7 +312,7 @@ with tab_linguistic:
                                  labels={'wer_pct': 'WER (%)'},
                                  title="WER vs. Lexical Density")
             fig_lex.update_layout(yaxis_ticksuffix="%")
-            st.plotly_chart(fig_lex, use_container_width=True)
+            st.plotly_chart(fig_lex, width='stretch')
         else:
             st.info("Lexical data not available.")
 
@@ -327,7 +327,7 @@ with tab_linguistic:
                                     labels={'wer_pct': 'WER (%)'},
                                     title="WER vs. Avg Word Length")
             fig_wordlen.update_layout(yaxis_ticksuffix="%")
-            st.plotly_chart(fig_wordlen, use_container_width=True)
+            st.plotly_chart(fig_wordlen, width='stretch')
         else:
             st.info("Word length data not available.")
 
@@ -339,7 +339,7 @@ with tab_linguistic:
                                labels={'wer_pct': 'WER (%)'},
                                title="WER vs. Code-Switching Score")
             fig_cs.update_layout(yaxis_ticksuffix="%")
-            st.plotly_chart(fig_cs, use_container_width=True)
+            st.plotly_chart(fig_cs, width='stretch')
         else:
             st.info("Code-switching data not available.")
     st.divider()
@@ -390,7 +390,7 @@ with tab_linguistic:
                 "Word Len": "{:.2f}",
                 "CS Score": "{:.4f}"
             }).background_gradient(subset=["WER (%)"], cmap="RdYlGn_r"),
-            use_container_width=True,
+            width='stretch',
             hide_index=True
         )
 
@@ -403,7 +403,7 @@ with tab_efficiency:
             vram_compare = filtered_df.groupby('model', observed=True)['peak_vram_mb'].max().reset_index()
             fig_vram = px.bar(vram_compare, x="model", y="peak_vram_mb", color="model",
                               title="Peak VRAM Consumption (MB)")
-            st.plotly_chart(fig_vram, use_container_width=True)
+            st.plotly_chart(fig_vram, width='stretch')
         
     with col_eff2:
         st.subheader("Accuracy vs Speed Trade-off")
@@ -413,7 +413,7 @@ with tab_efficiency:
                                  title="WER vs Speed (Higher Right is Better)")
         fig_scatter.update_layout(yaxis_ticksuffix="%")
         fig_scatter.update_traces(textposition='top center')
-        st.plotly_chart(fig_scatter, use_container_width=True)
+        st.plotly_chart(fig_scatter, width='stretch')
 
 with tab_files:
     st.subheader("🏆 Hardest Files to Transcribe")
@@ -428,11 +428,36 @@ with tab_files:
 with tab_comparison:
     st.subheader("🔎 Source vs. Generated Transcription")
     
-    tsv_path = os.path.join(os.path.dirname(__file__), 'benchmark-transcription-result.tsv')
+    # Scan for available comparison TSV files
+    results_dir = os.path.dirname(__file__)
+    tsv_files = sorted([f for f in os.listdir(results_dir) if f.endswith('.tsv') and f.startswith('benchmark-transcription-result')], reverse=True)
     
-    if not os.path.exists(tsv_path):
-        st.warning("⚠️ No transcription comparison data found. Run benchmark.py to generate 'benchmark-transcription-result.tsv'.")
+    if not tsv_files:
+        st.warning("⚠️ No transcription comparison (.tsv) files found in the benchmark folder.")
     else:
+        # Match selected JSON file to select a default TSV file if possible
+        default_index = 0
+        if selected_file:
+            # Check for common environment sub-strings like '4090', '2000', 'a2000', 'a5000'
+            for i, tsv_file in enumerate(tsv_files):
+                matched = False
+                for kw in ["4090", "2000", "a2000", "a5000", "a3000", "a4000", "a6000"]:
+                    if kw in selected_file.lower() and kw in tsv_file.lower():
+                        default_index = i
+                        matched = True
+                        break
+                if matched:
+                    break
+        
+        selected_tsv = st.selectbox(
+            "📂 Select Transcription Result File (TSV)",
+            options=tsv_files,
+            index=default_index,
+            help="Switch between transcription output files from different runs/environments."
+        )
+        
+        tsv_path = os.path.join(results_dir, selected_tsv)
+        
         try:
             comp_df = pd.read_csv(tsv_path, sep='\t')
             
@@ -468,40 +493,65 @@ with tab_comparison:
                         
                         st.caption(f"Model: **{selected_model}** | Audio: **{selected_audio}** | WER: **{wer_display}**")
                         
-                        # 3. Side-by-side view
-                        col_src, col_gen = st.columns(2)
+                        # Create nested sub-tabs
+                        subtab_sidebyside, subtab_diff = st.tabs(["📄 Side-by-Side View", "🔎 Word-Level Highlighted Diff"])
                         
-                        with col_src:
-                            st.markdown("### 📄 Source Transcript")
-                            st.info(source_text if pd.notna(source_text) else "Empty source text")
+                        with subtab_sidebyside:
+                            col_src, col_gen = st.columns(2)
                             
-                        with col_gen:
-                            st.markdown("### 🤖 Generated Transcript")
-                            st.success(gen_text if pd.notna(gen_text) else "Empty generated text")
-                            
-                        # Show Diff if possible (optional but cool)
-                        if st.checkbox("Show word differences"):
-                            import difflib
-                            
-                            def color_diff(ref, hyp):
-                                ref_words = ref.split()
-                                hyp_words = hyp.split()
-                                d = difflib.Differ()
-                                diff = list(d.compare(ref_words, hyp_words))
+                            with col_src:
+                                st.markdown("### 📄 Source Transcript")
+                                src_display = source_text if pd.notna(source_text) else "Empty source text"
+                                st.markdown(
+                                    f"""
+                                    <div style="background-color: #000000; color: #ffffff; padding: 1.25rem; border-radius: 8px; font-family: monospace; font-size: 0.95rem; line-height: 1.6; border: 1px solid #333333; min-height: 250px; max-height: 450px; overflow-y: auto; white-space: pre-wrap;">{src_display}</div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
                                 
-                                result = []
-                                for word in diff:
-                                    if word.startswith('  '):
-                                        result.append(word[2:])
-                                    elif word.startswith('- '):
-                                        result.append(f"~~{word[2:]}~~")
-                                    elif word.startswith('+ '):
-                                        result.append(f"**{word[2:]}**")
-                                return " ".join(result)
-                            
+                            with col_gen:
+                                st.markdown("### 🤖 Generated Transcript")
+                                gen_display = gen_text if pd.notna(gen_text) else "Empty generated text"
+                                st.markdown(
+                                    f"""
+                                    <div style="background-color: #000000; color: #ffffff; padding: 1.25rem; border-radius: 8px; font-family: monospace; font-size: 0.95rem; line-height: 1.6; border: 1px solid #333333; min-height: 250px; max-height: 450px; overflow-y: auto; white-space: pre-wrap;">{gen_display}</div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+                                
+                        with subtab_diff:
                             if pd.notna(source_text) and pd.notna(gen_text):
-                                st.markdown("#### Comparison Detail (~~Removed~~, **Added**)")
-                                st.write(color_diff(str(source_text), str(gen_text)))
+                                import difflib
+                                
+                                def color_diff_html(ref, hyp):
+                                    ref_words = str(ref).split()
+                                    hyp_words = str(hyp).split()
+                                    
+                                    d = difflib.Differ()
+                                    diff = list(d.compare(ref_words, hyp_words))
+                                    
+                                    result = []
+                                    for word in diff:
+                                        if word.startswith('  '):
+                                            result.append(f"<span style='color: #ffffff;'>{word[2:]}</span>")
+                                        elif word.startswith('- '):
+                                            result.append(f"<span style='color: #ff5252; background-color: rgba(255, 82, 82, 0.15); text-decoration: line-through; padding: 1px 3px; border-radius: 3px;'>{word[2:]}</span>")
+                                        elif word.startswith('+ '):
+                                            result.append(f"<span style='color: #69f0ae; background-color: rgba(105, 240, 174, 0.15); font-weight: bold; padding: 1px 3px; border-radius: 3px;'>{word[2:]}</span>")
+                                    return " ".join(result)
+                                
+                                diff_html = color_diff_html(source_text, gen_text)
+                                st.markdown(
+                                    f"""
+                                    <div style="background-color: #000000; color: #ffffff; padding: 1.5rem; border-radius: 8px; font-family: monospace; font-size: 0.95rem; line-height: 1.8; border: 1px solid #333333; max-height: 500px; overflow-y: auto;">
+                                        {diff_html}
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+                                st.caption("Legend: <span style='color: #ff5252; text-decoration: line-through;'>Removed words</span> | <span style='color: #69f0ae; font-weight: bold;'>Added words</span>", unsafe_allow_html=True)
+                            else:
+                                st.info("Transcription text not available for diffing.")
         
         except Exception as e:
             st.error(f"Error loading transcription comparison: {e}")
@@ -545,7 +595,7 @@ with tab_raw:
     
     st.dataframe(
         display_df,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
         column_config={
             "WER (%)": st.column_config.NumberColumn(format="%.2f%%"),
@@ -564,7 +614,7 @@ st.sidebar.header("📥 Export")
 if st.sidebar.button("Prepare Exports"):
     # CSV
     csv = filtered_df.to_csv(index=False).encode('utf-8')
-    st.sidebar.download_button("Download CSV", csv, "benchmark_results.csv", "text/csv", use_container_width=True)
+    st.sidebar.download_button("Download CSV", csv, "benchmark_results.csv", "text/csv", width='stretch')
     
     # Excel
     buffer = io.BytesIO()
@@ -594,7 +644,7 @@ if st.sidebar.button("Prepare Exports"):
         data=buffer.getvalue(),
         file_name=f"benchmark_results_{datetime.now().strftime('%Y%m%d')}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        use_container_width=True
+        width='stretch'
     )
     
     # Markdown
@@ -605,5 +655,5 @@ if st.sidebar.button("Prepare Exports"):
         data=md_output,
         file_name=f"benchmark_results_{datetime.now().strftime('%Y%m%d')}.md",
         mime="text/markdown",
-        use_container_width=True
+        width='stretch'
     )
