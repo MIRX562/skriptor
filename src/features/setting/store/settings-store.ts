@@ -1,99 +1,124 @@
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { devtools } from "zustand/middleware";
 
-interface NotificationSettings {
-  email: {
-    transcriptionComplete: boolean;
-    weeklyDigest: boolean;
-    productUpdates: boolean;
-    securityAlerts: boolean;
-  };
-  push: {
-    transcriptionComplete: boolean;
-    weeklyDigest: boolean;
-    productUpdates: boolean;
-    securityAlerts: boolean;
+export interface UserSettingsData {
+  theme: "light" | "dark" | "system";
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  defaultLanguage: string;
+  defaultSpeakerIdentification: boolean;
+  defaultTranscriptionMode: string;
+  preferences: {
+    completedTours?: {
+      dashboard?: boolean;
+      editor?: boolean;
+    };
+    [key: string]: any;
   };
 }
 
-interface SettingsState {
-  notifications: NotificationSettings;
+interface SettingsState extends UserSettingsData {
   isLoading: boolean;
   error: string | null;
+  hasLoaded: boolean;
 
-  // Actions
-  updateNotificationSetting: (
-    category: "email" | "push",
-    setting: string,
-    value: boolean
-  ) => void;
-  saveNotificationSettings: () => Promise<void>;
-  resetNotificationSettings: () => void;
+  fetchSettings: () => Promise<void>;
+  updateSetting: (key: keyof UserSettingsData, value: any) => Promise<void>;
+  updatePreference: (key: string, value: any) => Promise<void>;
+  saveSettings: (data: Partial<UserSettingsData>) => Promise<void>;
 }
 
-const defaultNotifications: NotificationSettings = {
-  email: {
-    transcriptionComplete: true,
-    weeklyDigest: true,
-    productUpdates: true,
-    securityAlerts: true,
-  },
-  push: {
-    transcriptionComplete: true,
-    weeklyDigest: false,
-    productUpdates: false,
-    securityAlerts: true,
-  },
+const defaultSettings: UserSettingsData = {
+  theme: "system",
+  emailNotifications: true,
+  pushNotifications: true,
+  defaultLanguage: "en",
+  defaultSpeakerIdentification: true,
+  defaultTranscriptionMode: "standard",
+  preferences: {},
 };
 
 export const useSettingsStore = create<SettingsState>()(
   devtools(
-    persist(
-      (set) => ({
-        notifications: defaultNotifications,
-        isLoading: false,
-        error: null,
+    (set, get) => ({
+      ...defaultSettings,
+      isLoading: false,
+      error: null,
+      hasLoaded: false,
 
-        updateNotificationSetting: (category, setting, value) => {
-          set((state) => ({
-            notifications: {
-              ...state.notifications,
-              [category]: {
-                ...state.notifications[category],
-                [setting]: value,
-              },
-            },
-          }));
-        },
-
-        saveNotificationSettings: async () => {
-          set({ isLoading: true, error: null });
-
-          try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
-            set({ isLoading: false });
-          } catch (error) {
+      fetchSettings: async () => {
+        if (get().hasLoaded) return;
+        set({ isLoading: true, error: null });
+        try {
+          const res = await fetch("/api/settings");
+          if (!res.ok) throw new Error("Failed to fetch settings");
+          const result = await res.json();
+          if (result.success && result.data) {
             set({
-              error:
-                "Failed to update notification settings. Please try again.",
-              isLoading: false,
+              theme: result.data.theme || "system",
+              emailNotifications: result.data.emailNotifications ?? true,
+              pushNotifications: result.data.pushNotifications ?? true,
+              defaultLanguage: result.data.defaultLanguage || "en",
+              defaultSpeakerIdentification: result.data.defaultSpeakerIdentification ?? true,
+              defaultTranscriptionMode: result.data.defaultTranscriptionMode || "standard",
+              preferences: result.data.preferences || {},
+              hasLoaded: true,
             });
-            throw error;
           }
-        },
+        } catch (error) {
+          console.error("Error fetching settings:", error);
+          set({ error: "Failed to load settings from server" });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
-        resetNotificationSettings: () => {
-          set({ notifications: defaultNotifications });
-        },
-      }),
-      {
-        name: "settings-storage",
-        partialize: (state) => ({
-          notifications: state.notifications,
-        }),
-      }
-    )
+      updateSetting: async (key, value) => {
+        set({ [key]: value });
+        await get().saveSettings({ [key]: value });
+      },
+
+      updatePreference: async (key, value) => {
+        const currentPrefs = get().preferences;
+        const newPrefs = {
+          ...currentPrefs,
+          [key]: value,
+        };
+        set({ preferences: newPrefs });
+        await get().saveSettings({ preferences: newPrefs });
+      },
+
+      saveSettings: async (data) => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await fetch("/api/settings", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+          if (!res.ok) throw new Error("Failed to save settings");
+          const result = await res.json();
+          if (result.success && result.data) {
+            set({
+              theme: result.data.theme,
+              emailNotifications: result.data.emailNotifications,
+              pushNotifications: result.data.pushNotifications,
+              defaultLanguage: result.data.defaultLanguage,
+              defaultSpeakerIdentification: result.data.defaultSpeakerIdentification,
+              defaultTranscriptionMode: result.data.defaultTranscriptionMode,
+              preferences: result.data.preferences,
+            });
+          }
+        } catch (error) {
+          console.error("Error saving settings:", error);
+          set({ error: "Failed to save settings to server" });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+    }),
+    { name: "settings-store" }
   )
 );

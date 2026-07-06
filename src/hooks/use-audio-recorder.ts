@@ -39,11 +39,11 @@ export function useAudioRecorder() {
   // Clean up on unmount
   useEffect(() => cleanup, [cleanup]);
 
-  // Handle recording timer
   useEffect(() => {
     if (isRecording) {
       timerRef.current = setInterval(() => {
-        setRecordingTime(recordingTime + 1);
+        const currentTime = useTranscriptionUploadStore.getState().recordingTime;
+        setRecordingTime(currentTime + 1);
       }, 1000);
     } else if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -54,7 +54,7 @@ export function useAudioRecorder() {
         clearInterval(timerRef.current);
       }
     };
-  }, [isRecording, setRecordingTime, recordingTime]);
+  }, [isRecording, setRecordingTime]);
 
   const startRecording = useCallback(async () => {
     try {
@@ -90,6 +90,7 @@ export function useAudioRecorder() {
       };
       mediaRecorder.start();
     } catch {
+      setIsRecording(false);
       setError(
         "Could not access microphone. Please check your browser permissions."
       );

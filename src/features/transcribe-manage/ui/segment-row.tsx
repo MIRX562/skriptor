@@ -14,6 +14,7 @@ import { cn, formatTimeMMSS } from "@/lib/utils";
 import type { Speaker } from "../model/use-transcription";
 import type { TranscriptionSegment } from "../store/transcription-view-store";
 import { useTranscriptionStore } from "../store/transcription-view-store";
+import { SpellcheckHighlighter } from "./spellcheck-highlighter";
 
 interface SegmentRowProps {
   segment: TranscriptionSegment;
@@ -191,15 +192,21 @@ export const SegmentRow = memo(function SegmentRow({
               rows={Math.max(1, Math.ceil(segment.text.length / 80))}
               className="w-full text-sm sm:text-base bg-transparent border-0 outline-none resize-none focus:ring-0 leading-relaxed p-0 text-foreground placeholder:text-muted-foreground -mt-[1px]"
               placeholder="Enter segment text..."
+              spellCheck={true}
             />
           ) : (
             <p className={cn(
               "text-sm sm:text-base leading-relaxed text-foreground transition-colors",
               isActive ? "text-foreground font-medium" : "text-foreground/90"
             )}>
-              {showSearch && searchTerm
-                ? highlightText(segment.text, searchTerm, isCurrentSearchMatch)
-                : segment.text}
+              <SpellcheckHighlighter
+                text={segment.text}
+                segmentIndex={index}
+                searchTerm={searchTerm}
+                isCurrentSearchMatch={isCurrentSearchMatch}
+                showSearch={showSearch}
+                isActive={isActive}
+              />
             </p>
           )}
         </div>

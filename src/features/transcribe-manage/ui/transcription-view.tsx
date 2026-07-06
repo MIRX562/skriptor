@@ -25,6 +25,8 @@ import {
   Type,
   Users,
   RefreshCcw,
+  SpellCheck,
+  AlertCircle,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import {
@@ -57,6 +59,10 @@ import { SearchControls } from "./search-controls";
 import { FloatingToolbar } from "./floating-toolbar";
 import { RetranscribeDialog } from "./RetranscribeDialog";
 import { type Dictionary } from "@/i18n/dictionaries";
+import { useSettingsStore } from "@/features/setting/store/settings-store";
+import { useSpellcheckStore } from "../store/spellcheck-store";
+import { SpellcheckHighlighter } from "./spellcheck-highlighter";
+import { SpellcheckReview } from "./spellcheck-review";
 
 interface TranscriptionViewProps {
   id: string;
@@ -69,6 +75,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isSpellcheckReviewOpen, setIsSpellcheckReviewOpen] = useState(false);
   const parentRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const audioPlayerRef = useRef<WaveformPlayerRef | null>(null);
@@ -105,11 +112,31 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     clearSearch
   } = useTranscriptionStore();
 
+  const fetchSettings = useSettingsStore((state) => state.fetchSettings);
+  const {
+    isEnabled: isSpellcheckEnabled,
+    toggleEnabled: toggleSpellcheck,
+    isLoading: isSpellcheckLoading,
+    setLanguage: setSpellcheckLanguage
+  } = useSpellcheckStore();
+
   const [isSpeakerDialogOpen, setIsSpeakerDialogOpen] = useState(false);
 
   const handleBack = () => {
     router.push("/dashboard/manage", { scroll: false });
   };
+
+  // Fetch settings on mount
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  // Set spellcheck language when transcriptionData is loaded
+  useEffect(() => {
+    if (transcriptionData?.language) {
+      setSpellcheckLanguage(transcriptionData.language);
+    }
+  }, [transcriptionData?.language, setSpellcheckLanguage]);
 
   // Hydrate Zustand store when TanStack Query resolves
   useEffect(() => {
@@ -237,6 +264,22 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
       }
     }
   };
+
+  const handleGoToSegment = useCallback((index: number) => {
+    const segment = segments[index];
+    if (segment && audioPlayerRef.current) {
+      audioPlayerRef.current.jumpToTime(segment.start / 1000);
+      if (viewMode === "segments") {
+        rowVirtualizer.scrollToIndex(index, { align: "center", behavior: "smooth" });
+      } else if (viewMode === "fulltext") {
+        const element = document.getElementById(`read-segment-${index}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+      setActiveSegmentIndex(index);
+    }
+  }, [segments, viewMode, rowVirtualizer]);
 
 
   const handleCopyToClipboard = () => {
@@ -381,7 +424,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
         )}
 
         <CardContent className="space-y-4 p-4 sm:p-6">
-          <div className="p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 shadow-inner">
+          <div id="waveform-player" className="p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 shadow-inner">
             {audioUrl ? (
               <MemoizedWaveformPlayer 
                 ref={audioPlayerRef} 
@@ -428,7 +471,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                 dict={dict} 
                 onCopy={handleCopyToClipboard}
                 trigger={
-                  <Button variant="ghost" size="sm" className="h-8 shrink-0 hover:bg-white dark:hover:bg-slate-950">
+                  <Button id="download-btn" variant="ghost" size="sm" className="h-8 shrink-0 hover:bg-white dark:hover:bg-slate-950">
                     <Download className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">{dict.view.actions.download}</span>
                     <ChevronDown className="h-3 w-3 ml-1" />
@@ -437,6 +480,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
               />
 
               <Button 
+                id="search-btn"
                 variant="ghost" 
                 size="sm" 
                 className={cn(
@@ -453,6 +497,36 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                 <Search className="h-4 w-4 md:mr-2" />
                 <span className="hidden md:inline">{dict.view.actions.search}</span>
               </Button>
+
+              <div className="w-[1px] h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
+
+              <Button 
+                id="spellcheck-btn"
+                variant="ghost" 
+                size="sm" 
+                className={cn(
+                  "h-8 shrink-0 hover:bg-white dark:hover:bg-slate-950",
+                  isSpellcheckEnabled && "bg-white text-teal-600 dark:bg-slate-950 dark:text-teal-400 shadow-sm"
+                )}
+                onClick={toggleSpellcheck}
+                disabled={isSpellcheckLoading}
+              >
+                <SpellCheck className={cn("h-4 w-4 md:mr-2", isSpellcheckLoading && "animate-pulse")} />
+                <span className="hidden md:inline">Spellcheck</span>
+              </Button>
+
+              {isSpellcheckEnabled && (
+                <Button 
+                  id="review-errors-btn"
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 shrink-0 hover:bg-white dark:hover:bg-slate-950 text-teal-600 dark:text-teal-400 font-medium"
+                  onClick={() => setIsSpellcheckReviewOpen(true)}
+                >
+                  <AlertCircle className="h-4 w-4 md:mr-2" />
+                  <span className="hidden md:inline">Review Errors</span>
+                </Button>
+              )}
 
               <div className="w-[1px] h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
 
@@ -533,6 +607,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                   {/* Re-transcribe moved to header */}
 
                   <Button 
+                    id="edit-btn"
                     variant="ghost" 
                     size="sm" 
                     className="h-8 hover:bg-white dark:hover:bg-slate-950" 
@@ -560,7 +635,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
 
           <div ref={contentRef} className="relative">
             {viewMode === "segments" ? (
-              <div ref={parentRef} className="h-[400px] sm:h-[600px] overflow-auto border border-slate-200 dark:border-slate-800 rounded-xl relative bg-white dark:bg-slate-950/50 shadow-inner">
+              <div id="segments-container" ref={parentRef} className="h-[400px] sm:h-[600px] overflow-auto border border-slate-200 dark:border-slate-800 rounded-xl relative bg-white dark:bg-slate-950/50 shadow-inner">
                 <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}>
                   {rowVirtualizer.getVirtualItems().map((virtualRow) => (
                     <div
@@ -636,7 +711,14 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                                       : "hover:bg-slate-100 dark:hover:bg-slate-800 text-foreground/80 hover:text-foreground"
                                   )}
                                 >
-                                  {s.text}
+                                  <SpellcheckHighlighter
+                                    text={s.text}
+                                    segmentIndex={s.index}
+                                    searchTerm={searchTerm}
+                                    isCurrentSearchMatch={searchResults[currentResultIndex] === s.index}
+                                    showSearch={showSearch}
+                                    isActive={activeSegmentIndex === s.index}
+                                  />
                                 </span>
                                 {" "}
                               </span>
@@ -654,6 +736,13 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
       </Card>
 
       <FloatingToolbar containerRef={contentRef} dict={dict} />
+
+      <SpellcheckReview
+        isOpen={isSpellcheckReviewOpen}
+        onClose={() => setIsSpellcheckReviewOpen(false)}
+        onGoToSegment={handleGoToSegment}
+        dict={dict}
+      />
     </div>
   );
 }

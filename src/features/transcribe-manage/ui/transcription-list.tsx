@@ -263,7 +263,7 @@ export function TranscriptionList({ dict }: TranscriptionListProps) {
   };
 
   return (
-    <Card className="md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
+    <Card id="transcriptions-list" className="md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
       <CardHeader className="pb-3">
         <CardTitle className="text-xl sm:text-2xl">{dict.manage.title}</CardTitle>
         <CardDescription>

@@ -163,13 +163,14 @@ def plot_metric(df, metric, title, is_pct=False):
     return fig
 
 # Tabs
-tab_summary, tab_overview, tab_linguistic, tab_efficiency, tab_files, tab_comparison, tab_raw = st.tabs([
+tab_summary, tab_overview, tab_linguistic, tab_efficiency, tab_files, tab_comparison, tab_multi, tab_raw = st.tabs([
     "📊 Performance Summary",
     "📈 General Overview", 
     "🗣️ Linguistic Deep Dive",
     "⚡ Efficiency & Resources",
     "🏆 Hardest Files",
     "🔎 Transcription Comparison",
+    "⚔️ Multi-Source Comparison",
     "📄 Detailed Data"
 ])
 
@@ -608,6 +609,284 @@ with tab_raw:
             "VRAM (MB)": st.column_config.NumberColumn(format="%d"),
         }
     )
+
+with tab_multi:
+    st.subheader("⚔️ Multi-Source Benchmark Comparison")
+    st.markdown("Compare accuracy, speed, and resource metrics across different hardware environments and benchmark runs.")
+    
+    # 1. Multi-file selector
+    selected_compare_files = st.multiselect(
+        "Select Result Files to Compare",
+        options=result_files,
+        default=result_files[:3] if len(result_files) >= 3 else result_files,
+        help="Select two or more benchmark JSON files to compare."
+    )
+    
+    if len(selected_compare_files) < 1:
+        st.warning("Please select at least one benchmark result file to compare.")
+    else:
+        # Load and combine all selected data
+        all_comp_dfs = []
+        for f in selected_compare_files:
+            f_path = os.path.join(results_dir, f)
+            try:
+                temp_df, temp_dev_info, temp_ds_stats = load_benchmark_data(f_path)
+                if not temp_df.empty:
+                    gpu_name = temp_dev_info.get('gpu', 'Unknown GPU')
+                    # Format GPU name: strip NVIDIA and GeForce brand prefixes to make it compact
+                    clean_gpu = gpu_name.replace("NVIDIA ", "").replace("GeForce ", "")
+                    # Extract date suffix for a shorter label
+                    date_suffix = ""
+                    parts = f.replace(".json", "").split("_")
+                    if len(parts) >= 2:
+                        for p in parts:
+                            if p.isdigit() and len(p) == 8:
+                                date_suffix = f" ({p[4:6]}/{p[6:8]})"
+                                break
+                    source_label = f"{clean_gpu}{date_suffix}"
+                    
+                    temp_df['source'] = source_label
+                    temp_df['gpu'] = gpu_name
+                    all_comp_dfs.append(temp_df)
+            except Exception as e:
+                st.error(f"Error loading {f}: {e}")
+                
+        if not all_comp_dfs:
+            st.error("No valid data loaded from the selected files.")
+        else:
+            comp_df = pd.concat(all_comp_dfs, ignore_index=True)
+            
+            # Apply same model categorical order for plotting consistency
+            model_order = ["tiny", "base", "small", "medium", "large-v2", "large-v3", "turbo", "turbo_v3"]
+            comp_df['model'] = pd.Categorical(comp_df['model'], categories=[m for m in model_order if m in comp_df['model'].unique()] + [m for m in comp_df['model'].unique() if m not in model_order], ordered=True)
+            
+            st.write("---")
+            col_sel1, col_sel2 = st.columns(2)
+            with col_sel1:
+                comp_models = st.multiselect("Select Models to Compare", options=sorted(comp_df['model'].unique()), default=list(comp_df['model'].unique()), key="comp_models_sel")
+            with col_sel2:
+                comp_datasets = st.multiselect("Select Datasets to Compare", options=sorted(comp_df['dataset'].unique()), default=list(comp_df['dataset'].unique()), key="comp_datasets_sel")
+                
+            filtered_comp_df = comp_df[comp_df['model'].isin(comp_models) & comp_df['dataset'].isin(comp_datasets)]
+            
+            if filtered_comp_df.empty:
+                st.warning("No data matches the selected filters.")
+            else:
+                # 2. Comparative Matrix Table
+                st.subheader("📊 Comparative Metrics Matrix")
+                
+                matrix_df = filtered_comp_df.groupby(['model', 'source'], observed=True).agg({
+                    'wer_pct': 'mean',
+                    'cer_pct': 'mean',
+                    'speed_x': 'mean',
+                    'peak_vram_mb': 'max',
+                    'peak_cpu_percent': 'mean',
+                    'peak_ram_mb': 'mean'
+                }).reset_index()
+                
+                matrix_df.columns = ['Model', 'Source Environment', 'Avg WER (%)', 'Avg CER (%)', 'Avg Speed (x)', 'Peak VRAM (MB)', 'Avg CPU (%)', 'Avg RAM (MB)']
+                
+                st.dataframe(
+                    matrix_df.style.background_gradient(subset=['Avg WER (%)'], cmap="RdYlGn_r")
+                                .background_gradient(subset=['Avg Speed (x)'], cmap="RdYlGn")
+                                .background_gradient(subset=['Peak VRAM (MB)'], cmap="Oranges")
+                                .format({
+                                    'Avg WER (%)': '{:.2f}%',
+                                    'Avg CER (%)': '{:.2f}%',
+                                    'Avg Speed (x)': '{:.1f}x',
+                                    'Peak VRAM (MB)': '{:d}',
+                                    'Avg CPU (%)': '{:.1f}%',
+                                    'Avg RAM (MB)': '{:.1f}'
+                                }),
+                    use_container_width=True,
+                    hide_index=True
+                )
+                
+                st.write("---")
+                
+                # 3. Comparative Charts
+                col_chart1, col_chart2 = st.columns(2)
+                
+                with col_chart1:
+                    st.subheader("🎯 Word Error Rate (WER) Comparison")
+                    fig_wer_comp = px.bar(
+                        matrix_df, 
+                        x="Model", 
+                        y="Avg WER (%)", 
+                        color="Source Environment",
+                        barmode="group",
+                        title="Average Word Error Rate (lower is better)",
+                        labels={"Avg WER (%)": "WER (%)"}
+                    )
+                    fig_wer_comp.update_layout(
+                        yaxis_ticksuffix="%",
+                        legend=dict(
+                            orientation="h",
+                            yanchor="top",
+                            y=-0.25,
+                            xanchor="center",
+                            x=0.5
+                        )
+                    )
+                    st.plotly_chart(fig_wer_comp, use_container_width=True)
+                    
+                with col_chart2:
+                    st.subheader("📈 Character Error Rate (CER) Comparison")
+                    fig_cer_comp = px.bar(
+                        matrix_df,
+                        x="Model",
+                        y="Avg CER (%)",
+                        color="Source Environment",
+                        barmode="group",
+                        title="Average Character Error Rate (lower is better)",
+                        labels={"Avg CER (%)": "CER (%)"}
+                    )
+                    fig_cer_comp.update_layout(
+                        yaxis_ticksuffix="%",
+                        legend=dict(
+                            orientation="h",
+                            yanchor="top",
+                            y=-0.25,
+                            xanchor="center",
+                            x=0.5
+                        )
+                    )
+                    st.plotly_chart(fig_cer_comp, use_container_width=True)
+                    
+                st.write("---")
+                
+                col_chart3, col_chart4 = st.columns(2)
+                
+                with col_chart3:
+                    st.subheader("⚡ Transcription Speed Comparison")
+                    fig_speed_comp = px.bar(
+                        matrix_df,
+                        x="Model",
+                        y="Avg Speed (x)",
+                        color="Source Environment",
+                        barmode="group",
+                        title="Average Speed Multiplier (higher is better)",
+                        labels={"Avg Speed (x)": "Speed (x)"}
+                    )
+                    fig_speed_comp.update_layout(
+                        yaxis_ticksuffix="x",
+                        legend=dict(
+                            orientation="h",
+                            yanchor="top",
+                            y=-0.25,
+                            xanchor="center",
+                            x=0.5
+                        )
+                    )
+                    st.plotly_chart(fig_speed_comp, use_container_width=True)
+                    
+                with col_chart4:
+                    st.subheader("💎 Peak VRAM Consumption")
+                    fig_vram_comp = px.bar(
+                        matrix_df,
+                        x="Model",
+                        y="Peak VRAM (MB)",
+                        color="Source Environment",
+                        barmode="group",
+                        title="Peak VRAM Usage by Model (lower is better)",
+                        labels={"Peak VRAM (MB)": "VRAM (MB)"}
+                    )
+                    fig_vram_comp.update_layout(
+                        legend=dict(
+                            orientation="h",
+                            yanchor="top",
+                            y=-0.25,
+                            xanchor="center",
+                            x=0.5
+                        )
+                    )
+                    st.plotly_chart(fig_vram_comp, use_container_width=True)
+                    
+                st.write("---")
+                
+                col_chart5, col_chart6 = st.columns(2)
+                
+                with col_chart5:
+                    st.subheader("💻 Peak CPU Utilization")
+                    fig_cpu_comp = px.bar(
+                        matrix_df,
+                        x="Model",
+                        y="Avg CPU (%)",
+                        color="Source Environment",
+                        barmode="group",
+                        title="Average Peak CPU Usage (%)",
+                        labels={"Avg CPU (%)": "CPU (%)"}
+                    )
+                    fig_cpu_comp.update_layout(
+                        yaxis_ticksuffix="%",
+                        legend=dict(
+                            orientation="h",
+                            yanchor="top",
+                            y=-0.25,
+                            xanchor="center",
+                            x=0.5
+                        )
+                    )
+                    st.plotly_chart(fig_cpu_comp, use_container_width=True)
+                    
+                with col_chart6:
+                    st.subheader("🐏 Peak RAM Consumption")
+                    fig_ram_comp = px.bar(
+                        matrix_df,
+                        x="Model",
+                        y="Avg RAM (MB)",
+                        color="Source Environment",
+                        barmode="group",
+                        title="Average Peak RAM Usage (MB)",
+                        labels={"Avg RAM (MB)": "RAM (MB)"}
+                    )
+                    fig_ram_comp.update_layout(
+                        legend=dict(
+                            orientation="h",
+                            yanchor="top",
+                            y=-0.25,
+                            xanchor="center",
+                            x=0.5
+                        )
+                    )
+                    st.plotly_chart(fig_ram_comp, use_container_width=True)
+                    
+                st.write("---")
+                
+                # 4. Pareto correlation Accuracy vs Speed
+                st.subheader("⚖️ Overall Platform Efficiency (Accuracy vs Speed)")
+                st.markdown("Ideally, models should be in the **upper-right quadrant** (high speed, low error).")
+                
+                pareto_comp_df = filtered_comp_df.groupby(['model', 'source'], observed=True).agg({
+                    'wer_pct': 'mean',
+                    'speed_x': 'mean'
+                }).reset_index()
+                pareto_comp_df['Accuracy (%)'] = 100 - pareto_comp_df['wer_pct']
+                pareto_comp_df.columns = ['Model', 'Source Environment', 'Avg WER (%)', 'Avg Speed (x)', 'Accuracy (%)']
+                
+                fig_pareto_comp = px.scatter(
+                    pareto_comp_df,
+                    x="Avg Speed (x)",
+                    y="Accuracy (%)",
+                    color="Source Environment",
+                    symbol="Model",
+                    size_max=15,
+                    labels={"Avg Speed (x)": "Avg Speed (x)", "Accuracy (%)": "Accuracy (100 - WER %)"},
+                    title="Platform Trade-offs: Accuracy vs Speed",
+                    hover_data=["Model", "Avg WER (%)"]
+                )
+                fig_pareto_comp.update_traces(marker=dict(size=12, line=dict(width=1, color='DarkSlateGrey')))
+                fig_pareto_comp.update_layout(
+                    yaxis_ticksuffix="%",
+                    legend=dict(
+                        orientation="h",
+                        yanchor="top",
+                        y=-0.2,
+                        xanchor="center",
+                        x=0.5
+                    )
+                )
+                st.plotly_chart(fig_pareto_comp, use_container_width=True)
 
 st.sidebar.divider()
 st.sidebar.header("📥 Export")

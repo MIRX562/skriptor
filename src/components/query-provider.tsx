@@ -2,6 +2,13 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import dynamic from "next/dynamic";
+
+const OnboardingTour = dynamic(
+  () => import("@/components/onboarding/onboarding-tour"),
+  { ssr: false }
+);
+
 type Props = {
   children: React.ReactNode;
 };
@@ -9,7 +16,10 @@ type Props = {
 function QueryProvider({ children }: Props) {
   const [queryClient] = useState(() => new QueryClient());
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <OnboardingTour />
+      {children}
+    </QueryClientProvider>
   );
 }
 
