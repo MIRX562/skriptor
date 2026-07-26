@@ -25,8 +25,9 @@ import {
 import Link from "next/link";
 import { signUpEmailSchema } from "../model/schema";
 import { signUpEmail } from "../model/query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signInGoogle } from "@/features/sign-in/model/query";
+import { AlertCircle } from "lucide-react";
 
 interface SignUpPageProps {
   dict: any;
@@ -38,6 +39,8 @@ export default function SignUpPage({ dict }: SignUpPageProps) {
   });
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isPendingUpload = searchParams.get("pending") === "1";
 
   function onSubmit(values: z.infer<typeof signUpEmailSchema>) {
     try {
@@ -61,6 +64,17 @@ export default function SignUpPage({ dict }: SignUpPageProps) {
           <CardDescription>{dict.auth.signUp.description}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 w-full">
+          {isPendingUpload && (
+            <div className="flex items-start gap-2 rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-900/40 dark:bg-teal-900/20 dark:text-teal-300">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium">
+                  {dict.auth.signIn.pendingUpload.title}
+                </p>
+                <p>{dict.auth.signIn.pendingUpload.description}</p>
+              </div>
+            </div>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -70,9 +84,14 @@ export default function SignUpPage({ dict }: SignUpPageProps) {
                   <FormItem>
                     <FormLabel>{dict.auth.signUp.name.label}</FormLabel>
                     <FormControl>
-                      <Input placeholder={dict.auth.signUp.name.placeholder} {...field} />
+                      <Input
+                        placeholder={dict.auth.signUp.name.placeholder}
+                        {...field}
+                      />
                     </FormControl>
-                    <FormDescription>{dict.auth.signUp.name.description}</FormDescription>
+                    <FormDescription>
+                      {dict.auth.signUp.name.description}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -91,7 +110,9 @@ export default function SignUpPage({ dict }: SignUpPageProps) {
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>{dict.auth.signUp.email.description}</FormDescription>
+                    <FormDescription>
+                      {dict.auth.signUp.email.description}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -104,9 +125,14 @@ export default function SignUpPage({ dict }: SignUpPageProps) {
                   <FormItem>
                     <FormLabel>{dict.auth.signUp.password.label}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder={dict.auth.signUp.password.placeholder} {...field} />
+                      <PasswordInput
+                        placeholder={dict.auth.signUp.password.placeholder}
+                        {...field}
+                      />
                     </FormControl>
-                    <FormDescription>{dict.auth.signUp.password.description}</FormDescription>
+                    <FormDescription>
+                      {dict.auth.signUp.password.description}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -142,13 +168,16 @@ export default function SignUpPage({ dict }: SignUpPageProps) {
           </Button>
           <div className="text-center text-sm">
             {dict.auth.signUp.hasAccount}{" "}
-            <Link href="/sign-in" className="underline underline-offset-4">
+            <Link
+              href={isPendingUpload ? "/sign-in?pending=1" : "/sign-in"}
+              className="underline underline-offset-4"
+            >
               {dict.auth.signUp.signIn}
             </Link>
           </div>
           <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
-            {dict.auth.signIn.tosPrefix}{" "}
-            <a href="#">{dict.auth.signIn.tos}</a> {dict.auth.signIn.and}{" "}
+            {dict.auth.signIn.tosPrefix} <a href="#">{dict.auth.signIn.tos}</a>{" "}
+            {dict.auth.signIn.and}{" "}
             <a href="#">{dict.auth.signIn.privacyPolicy}</a>.
           </div>
         </CardContent>

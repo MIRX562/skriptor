@@ -95,8 +95,8 @@ services:
   # 5. Transcription Worker
   worker:
     build:
-      context: .
-      dockerfile: worker/Dockerfile
+      context: ./worker
+      dockerfile: Dockerfile
     container_name: skriptor-worker
     restart: always
     deploy:

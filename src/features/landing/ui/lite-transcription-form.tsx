@@ -7,10 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { CloudUpload, Loader2, Upload, Paperclip } from "lucide-react";
-import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-input";
+import {
+  FileInput,
+  FileUploader,
+  FileUploaderContent,
+  FileUploaderItem,
+} from "@/components/ui/file-input";
 import AudioInput from "@/components/ui/audio-input";
 import { authClient } from "@/lib/auth-client";
-import { savePendingJob } from "@/lib/pending-job";
+import { savePendingJob, DEFAULT_TRANSCRIPTION_TITLE } from "@/lib/pending-job";
 import { motion } from "framer-motion";
 import { WaveformPlayer } from "@/features/transcribe-manage/ui/waveform-player";
 import { Label } from "@/components/ui/label";
@@ -23,7 +28,11 @@ interface LiteTranscriptionFormProps {
   fullDict: any;
 }
 
-export function LiteTranscriptionForm({ dict, common, fullDict }: LiteTranscriptionFormProps) {
+export function LiteTranscriptionForm({
+  dict,
+  common,
+  fullDict,
+}: LiteTranscriptionFormProps) {
   const [activeTab, setActiveTab] = useState("upload");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -65,14 +74,14 @@ export function LiteTranscriptionForm({ dict, common, fullDict }: LiteTranscript
         // Logged out: Save state and redirect to signup
         await savePendingJob(file);
         toast.info(dict.messages.authRequired);
-        router.push("/sign-up");
+        router.push("/sign-up?pending=1");
         return;
       }
 
       // Logged in: Submit with default config
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("title", common.untitled);
+      formData.append("title", DEFAULT_TRANSCRIPTION_TITLE);
       formData.append("language", "default");
       formData.append("model", "turbo");
       formData.append("isSpeakerDiarized", "false");
@@ -85,54 +94,79 @@ export function LiteTranscriptionForm({ dict, common, fullDict }: LiteTranscript
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.error ? JSON.stringify(data.error) : dict.messages.uploadFailed);
+        throw new Error(
+          data.error ? JSON.stringify(data.error) : dict.messages.uploadFailed,
+        );
       }
 
       toast.success(dict.messages.started);
       router.push("/dashboard");
-
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof Error ? error.message : dict.messages.uploadFailed);
+      toast.error(
+        error instanceof Error ? error.message : dict.messages.uploadFailed,
+      );
       setIsSubmitting(false);
     }
   };
 
   return (
-    <SpotlightCard 
+    <SpotlightCard
       className="w-full max-w-xl mx-auto border-teal-500/30 shadow-[0_0_20px_rgba(20,184,166,0.15)] bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl"
       spotlightColor="rgba(20, 184, 166, 0.15)"
     >
       <CardContent className="p-0">
         <div className="mb-6 text-center">
-          <ShinyText 
-            text={dict.title} 
-            className="text-2xl font-bold mb-1" 
-            color="#0d9488" 
-            shineColor="#5eead4" 
+          <ShinyText
+            text={dict.title}
+            className="text-2xl font-bold mb-1"
+            color="#0d9488"
+            shineColor="#5eead4"
           />
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{dict.description}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+            {dict.description}
+          </p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="upload" className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400">{dict.tabs.upload}</TabsTrigger>
-            <TabsTrigger value="record" className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400">{dict.tabs.record}</TabsTrigger>
+            <TabsTrigger
+              value="upload"
+              className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
+            >
+              {dict.tabs.upload}
+            </TabsTrigger>
+            <TabsTrigger
+              value="record"
+              className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 dark:data-[state=active]:bg-teal-900/20 dark:data-[state=active]:text-teal-400"
+            >
+              {dict.tabs.record}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload">
             <FileUploader
               value={file ? [file] : []}
-              onValueChange={(files) => setFile(files && files.length > 0 ? files[0] : null)}
+              onValueChange={(files) =>
+                setFile(files && files.length > 0 ? files[0] : null)
+              }
               dropzoneOptions={dropZoneConfig}
               className="relative rounded-lg p-2"
             >
-              <FileInput id="liteFileInput" className="outline-dashed outline-2 outline-slate-300 dark:outline-slate-700 hover:outline-teal-600 dark:hover:outline-teal-500 transition-colors">
+              <FileInput
+                id="liteFileInput"
+                className="outline-dashed outline-2 outline-slate-300 dark:outline-slate-700 hover:outline-teal-600 dark:hover:outline-teal-500 transition-colors"
+              >
                 <div className="flex items-center justify-center flex-col p-8 w-full">
                   <CloudUpload className="text-slate-400 w-10 h-10" />
                   <p className="mb-1 text-sm text-slate-500 dark:text-slate-400 mt-4">
-                    <span className="font-semibold text-slate-700 dark:text-slate-300">{dict.uploadArea.clickToUpload}</span> {dict.uploadArea.orDragAndDrop}
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                      {dict.uploadArea.clickToUpload}
+                    </span>{" "}
+                    {dict.uploadArea.orDragAndDrop}
                   </p>
-                  <p className="text-xs text-slate-400">{dict.uploadArea.hint}</p>
+                  <p className="text-xs text-slate-400">
+                    {dict.uploadArea.hint}
+                  </p>
                 </div>
               </FileInput>
               <FileUploaderContent>
@@ -146,7 +180,9 @@ export function LiteTranscriptionForm({ dict, common, fullDict }: LiteTranscript
             </FileUploader>
             {previewUrl && (
               <div className="w-full mt-4">
-                <Label className="mb-2 block text-sm">{dict.audioPreview}</Label>
+                <Label className="mb-2 block text-sm">
+                  {dict.audioPreview}
+                </Label>
                 <WaveformPlayer audioUrl={previewUrl} dict={fullDict} />
               </div>
             )}

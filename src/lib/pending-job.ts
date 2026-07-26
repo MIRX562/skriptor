@@ -1,6 +1,8 @@
-const DB_NAME = 'skriptor_db';
-const STORE_NAME = 'pending_jobs';
+const DB_NAME = "skriptor_db";
+const STORE_NAME = "pending_jobs";
 const DB_VERSION = 1;
+
+export const DEFAULT_TRANSCRIPTION_TITLE = "Untitled Transcription";
 
 function getDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -19,9 +21,9 @@ function getDB(): Promise<IDBDatabase> {
 export async function savePendingJob(file: File) {
   const db = await getDB();
   return new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
-    const request = store.put(file, 'pending_audio');
+    const request = store.put(file, "pending_audio");
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });
@@ -30,9 +32,9 @@ export async function savePendingJob(file: File) {
 export async function getPendingJob(): Promise<File | null> {
   const db = await getDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
+    const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
-    const request = store.get('pending_audio');
+    const request = store.get("pending_audio");
     request.onsuccess = () => resolve((request.result as File | null) || null);
     request.onerror = () => reject(request.error);
   });
@@ -41,9 +43,9 @@ export async function getPendingJob(): Promise<File | null> {
 export async function clearPendingJob() {
   const db = await getDB();
   return new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
-    const request = store.delete('pending_audio');
+    const request = store.delete("pending_audio");
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });

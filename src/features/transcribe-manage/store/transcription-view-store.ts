@@ -5,13 +5,17 @@ import { devtools } from "zustand/middleware";
 import { formatTime } from "@/lib/utils";
 import type { TranscriptionData, Speaker } from "../model/use-transcription";
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // UI-local segment shape — speakerIndex links to the speakers list
 export interface TranscriptionSegment {
   id: string;
   speakerIndex: number | null;
   text: string;
   start: number; // milliseconds
-  end: number;   // milliseconds
+  end: number; // milliseconds
 }
 
 // Derived UI metadata for display purposes.
@@ -55,7 +59,7 @@ interface TranscriptionViewState {
   updateSegment: (
     index: number,
     field: keyof Pick<TranscriptionSegment, "text" | "speakerIndex">,
-    value: string | number | null
+    value: string | number | null,
   ) => void;
 
   // Speaker label editing
@@ -104,7 +108,11 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
       currentResultIndex: -1,
 
       initializeFromData: (data: TranscriptionData) => {
-        const md = (data.metadata as { originalFilename?: string; durationSeconds?: number }) ?? {};
+        const md =
+          (data.metadata as {
+            originalFilename?: string;
+            durationSeconds?: number;
+          }) ?? {};
 
         const metadata: TranscriptionMetadata = {
           id: data.id,
@@ -113,7 +121,11 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
             ? new Date(data.createdAt).toLocaleDateString()
             : new Date().toLocaleDateString(),
           duration: md.durationSeconds
-            ? `${Math.floor(md.durationSeconds / 60)}:${Math.floor(md.durationSeconds % 60).toString().padStart(2, "0")}`
+            ? `${Math.floor(md.durationSeconds / 60)}:${Math.floor(
+                md.durationSeconds % 60,
+              )
+                .toString()
+                .padStart(2, "0")}`
             : "00:00",
           summary: data.summary ?? "",
           status:
@@ -139,7 +151,7 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
             text: s.text ?? "",
             start: s.startTime ?? 0,
             end: s.endTime ?? 0,
-          })
+          }),
         );
 
         set({ metadata, segments, speakers });
@@ -152,29 +164,33 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
         if (field === "text") {
           segments[index] = { ...segments[index], text: value as string };
         } else if (field === "speakerIndex") {
-          segments[index] = { ...segments[index], speakerIndex: value as number | null };
+          segments[index] = {
+            ...segments[index],
+            speakerIndex: value as number | null,
+          };
         }
         set({ segments });
       },
 
       updateSpeakerLabel: (speakerIndex, label) => {
         const speakers = get().speakers.map((s) =>
-          s.index === speakerIndex ? { ...s, label } : s
+          s.index === speakerIndex ? { ...s, label } : s,
         );
         set({ speakers });
       },
 
       addSpeaker: () => {
         const { speakers } = get();
-        const nextIndex = speakers.length > 0 
-          ? Math.max(...speakers.map((s) => s.index)) + 1 
-          : 1;
-        
+        const nextIndex =
+          speakers.length > 0
+            ? Math.max(...speakers.map((s) => s.index)) + 1
+            : 1;
+
         const newSpeaker: Speaker = {
           index: nextIndex,
           label: `Speaker ${nextIndex}`,
         };
-        
+
         set({ speakers: [...speakers, newSpeaker] });
         return nextIndex;
       },
@@ -211,7 +227,9 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
         return segments
           .map((segment) => {
             const label = getSpeakerLabel(segment.speakerIndex);
-            const prefix = label ? `${label} (${formatTime(segment.start)}):\n` : `(${formatTime(segment.start)}):\n`;
+            const prefix = label
+              ? `${label} (${formatTime(segment.start)}):\n`
+              : `(${formatTime(segment.start)}):\n`;
             return `${prefix}${segment.text}\n`;
           })
           .join("\n");
@@ -250,12 +268,14 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
         } = get();
 
         if (currentResultIndex === -1 || searchResults.length === 0) return;
+        if (!searchTerm.trim()) return;
 
         const segmentIndex = searchResults[currentResultIndex];
         const segment = segments[segmentIndex];
+        const escaped = escapeRegExp(searchTerm);
         const newText = segment.text.replace(
-          new RegExp(searchTerm, "gi"),
-          replaceTerm
+          new RegExp(escaped, "gi"),
+          replaceTerm,
         );
 
         get().updateSegment(segmentIndex, "text", newText);
@@ -266,10 +286,12 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
         const { searchResults, segments, searchTerm, replaceTerm } = get();
 
         if (searchResults.length === 0) return;
+        if (!searchTerm.trim()) return;
 
+        const escaped = escapeRegExp(searchTerm);
         const newSegments = segments.map((segment) => ({
           ...segment,
-          text: segment.text.replace(new RegExp(searchTerm, "gi"), replaceTerm),
+          text: segment.text.replace(new RegExp(escaped, "gi"), replaceTerm),
         }));
 
         set({
@@ -296,6 +318,6 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
         set({ currentResultIndex: newIndex });
       },
     }),
-    { name: "transcription-view-store" }
-  )
+    { name: "transcription-view-store" },
+  ),
 );

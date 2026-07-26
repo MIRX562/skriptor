@@ -107,27 +107,6 @@
     "history": "Riwayat",
     "settings": "Pengaturan"
   },
-  "manage": {
-    "title": "Transkripsi Anda",
-    "search": "Cari transkripsi...",
-    "noResults": "Transkripsi tidak ditemukan.",
-    "empty": "Anda belum mengunggah audio apa pun.",
-    "uploadFirst": "Unggah file pertama Anda untuk memulai.",
-    "table": {
-      "name": "Nama",
-      "status": "Status",
-      "date": "Tanggal",
-      "duration": "Durasi",
-      "actions": "Aksi"
-    }
-  },
-  "view": {
-    "deleteConfirm": "Apakah Anda yakin ingin menghapus transkripsi ini?",
-    "deleteDescription": "Tindakan ini tidak dapat dibatalkan.",
-    "deleteSuccess": "Transkripsi berhasil dihapus.",
-    "saveSuccess": "Perubahan berhasil disimpan.",
-    "saveError": "Gagal menyimpan perubahan."
-  },
   "landing": {
     "header": {
       "features": "Fitur",
@@ -559,6 +538,10 @@
         "loading": "Sedang masuk....",
         "success": "Selamat Datang Kembali, {name}",
         "error": "Gagal mengirim formulir. Silakan coba lagi."
+      },
+      "pendingUpload": {
+        "title": "Unggahan tertunda terdeteksi",
+        "description": "Audio Anda tersimpan. Setelah Anda masuk, kami akan melanjutkan transkripsi secara otomatis."
       }
     },
     "signUp": {

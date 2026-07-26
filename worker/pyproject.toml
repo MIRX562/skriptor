@@ -9,9 +9,10 @@ dependencies = [
     "redis>=5.0.1",
     "requests>=2.31.0",
     "python-dotenv>=1.0.1",
-    "torch>=2.6.0",
-    "torchaudio>=2.6.0",
-    "numpy<2.0.0",
+    "whisperx @ git+https://github.com/m-bain/whisperX.git",
+    "torch>=2.8.0,<2.9.dev0",
+    "torchaudio>=2.8.0,<2.9.dev0",
+    "numpy>=2.1.0",
     "statsmodels>=0.14.6",
     "boto3>=1.34.0",
 ]

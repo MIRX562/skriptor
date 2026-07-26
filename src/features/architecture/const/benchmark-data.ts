@@ -1,168 +1,243 @@
 import { Node, Edge } from "@xyflow/react";
-import { 
-  Database, 
-  FileJson, 
-  Activity, 
-  BarChart3, 
-  ClipboardCheck, 
-  Search,
-  LayoutDashboard,
-  Zap,
+import {
   Gauge,
-  FileCode
+  FolderSearch,
+  Cpu,
+  BarChart3,
+  Activity,
+  FileJson,
+  LayoutDashboard,
+  Repeat,
 } from "lucide-react";
 
 export const BENCHMARK_NODES: Node[] = [
-  // Column 1: Initialization
-  { 
-    id: "bn-profiler", 
-    type: "custom", 
-    position: { x: 50, y: 150 }, 
-    data: { label: "System Profiler", icon: Gauge, type: "client", description: "Hardware Discovery" } 
+  {
+    id: "b-system",
+    type: "custom",
+    position: { x: 40, y: 220 },
+    data: {
+      label: "Device Probe",
+      icon: Gauge,
+      type: "client",
+      description: "CPU/RAM/GPU discovery",
+    },
   },
-  { 
-    id: "bn-loader", 
-    type: "custom", 
-    position: { x: 50, y: 320 }, 
-    data: { label: "Dataset Loader", icon: ClipboardCheck, type: "storage", description: "GT Mapping" } 
+  {
+    id: "b-dataset",
+    type: "custom",
+    position: { x: 320, y: 220 },
+    data: {
+      label: "Dataset Loader",
+      icon: FolderSearch,
+      type: "storage",
+      description: "audio + TSV ground truth",
+    },
   },
-  
-  // Column 2: Model Evaluation Pool (Tight Spacing)
-  { 
-    id: "bp-models", 
-    type: "group", 
-    position: { x: 350, y: 50 }, 
-    data: { label: "Whisper Model Pool" }, 
-    style: { width: 280, height: 480, backgroundColor: "transparent", border: "none" } 
+  {
+    id: "b-loop",
+    type: "custom",
+    position: { x: 600, y: 220 },
+    data: {
+      label: "Model Loop",
+      icon: Repeat,
+      type: "worker",
+      description: "tiny → base → ... → turbo",
+    },
   },
-  { id: "bn-m-tiny", parentId: "bp-models", type: "custom", position: { x: 40, y: 50 }, data: { label: "Whisper Tiny", icon: Zap, type: "worker", description: "Fastest" } },
-  { id: "bn-m-base", parentId: "bp-models", type: "custom", position: { x: 40, y: 105 }, data: { label: "Whisper Base", icon: Zap, type: "worker", description: "Standard" } },
-  { id: "bn-m-small", parentId: "bp-models", type: "custom", position: { x: 40, y: 160 }, data: { label: "Whisper Small", icon: Zap, type: "worker", description: "Efficient" } },
-  { id: "bn-m-medium", parentId: "bp-models", type: "custom", position: { x: 40, y: 215 }, data: { label: "Whisper Medium", icon: Zap, type: "worker", description: "Balanced" } },
-  { id: "bn-m-large-v2", parentId: "bp-models", type: "custom", position: { x: 40, y: 270 }, data: { label: "Whisper Large V2", icon: Zap, type: "worker", description: "Legacy High" } },
-  { id: "bn-m-turbo", parentId: "bp-models", type: "custom", position: { x: 40, y: 325 }, data: { label: "Whisper Turbo", icon: Zap, type: "worker", description: "Optimized High" } },
-  { id: "bn-m-large", parentId: "bp-models", type: "custom", position: { x: 40, y: 380 }, data: { label: "Whisper Large V3", icon: Zap, type: "worker", description: "Ultimate" } },
-
-  // Column 3: Metrics & Analysis
-  { 
-    id: "bn-jiwer", 
-    type: "custom", 
-    position: { x: 800, y: 100 }, 
-    data: { label: "jiwer Evaluator", icon: BarChart3, type: "server", description: "Accuracy (WER/CER)" } 
+  {
+    id: "b-transcriber",
+    type: "custom",
+    position: { x: 880, y: 220 },
+    data: {
+      label: "Transcriber",
+      icon: Cpu,
+      type: "worker",
+      description: "worker.transcriber.process()",
+    },
   },
-  { 
-    id: "bn-analyzer", 
-    type: "custom", 
-    position: { x: 800, y: 270 }, 
-    data: { label: "Linguistic Prep", icon: Search, type: "server", description: "Complexity / WPM" } 
+  {
+    id: "b-accuracy",
+    type: "custom",
+    position: { x: 1160, y: 120 },
+    data: {
+      label: "Accuracy Metrics",
+      icon: BarChart3,
+      type: "server",
+      description: "WER/CER via jiwer",
+    },
   },
-  { 
-    id: "bn-monitor", 
-    type: "custom", 
-    position: { x: 800, y: 440 }, 
-    data: { label: "Resource Monitor", icon: Activity, type: "server", description: "VRAM / CPU / RSS" } 
+  {
+    id: "b-resource",
+    type: "custom",
+    position: { x: 1160, y: 320 },
+    data: {
+      label: "Resource Monitor",
+      icon: Activity,
+      type: "server",
+      description: "peak CPU/RAM/VRAM + RTF",
+    },
   },
-
-  // Column 4: Storage
-  { 
-    id: "bn-exporter", 
-    type: "custom", 
-    position: { x: 1100, y: 150 }, 
-    data: { label: "JSON Exporter", icon: FileJson, type: "db", description: "Metric Archiving" } 
+  {
+    id: "b-json",
+    type: "custom",
+    position: { x: 1440, y: 220 },
+    data: {
+      label: "benchmark_results.json",
+      icon: FileJson,
+      type: "storage",
+      description: "device_info + results[]",
+    },
   },
-  { 
-    id: "bn-result-file", 
-    type: "custom", 
-    position: { x: 1100, y: 250 }, 
-    data: { label: "results.json", icon: FileCode, type: "storage", description: "Benchmark Report" } 
+  {
+    id: "b-dashboard",
+    type: "custom",
+    position: { x: 1720, y: 220 },
+    data: {
+      label: "Streamlit Dashboard",
+      icon: LayoutDashboard,
+      type: "client",
+      description: "visual analysis",
+    },
   },
-  { 
-    id: "bn-dashboard", 
-    type: "custom", 
-    position: { x: 1100, y: 350 }, 
-    data: { label: "Streamlit UI", icon: LayoutDashboard, type: "client", description: "Performance Dash" } 
-  }
 ];
 
 export const BENCHMARK_EDGES: Edge[] = [
-  // Init
-  { id: "be-1", source: "bn-profiler", target: "bn-loader", type: "packet", sourceHandle: "bottom-out", targetHandle: "top-in", label: "Sys Info", data: { color: "#3b82f6" } },
-  
-  // Loader -> Models
-  { id: "be-l-tiny", source: "bn-loader", target: "bn-m-tiny", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", label: "Dataset", data: { color: "#14b8a6" } },
-  { id: "be-l-base", source: "bn-loader", target: "bn-m-base", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", label: "Dataset", data: { color: "#14b8a6" } },
-  { id: "be-l-small", source: "bn-loader", target: "bn-m-small", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", label: "Dataset", data: { color: "#14b8a6" } },
-  { id: "be-l-medium", source: "bn-loader", target: "bn-m-medium", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", label: "Dataset", data: { color: "#14b8a6" } },
-  { id: "be-l-v2", source: "bn-loader", target: "bn-m-large-v2", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", label: "Dataset", data: { color: "#14b8a6" } },
-  { id: "be-l-turbo", source: "bn-loader", target: "bn-m-turbo", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", label: "Dataset", data: { color: "#14b8a6" } },
-  { id: "be-l-v3", source: "bn-loader", target: "bn-m-large", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", label: "Dataset", data: { color: "#14b8a6" } },
-
-  // Models -> Metrics
-  { id: "be-m-tiny-j", source: "bn-m-tiny", target: "bn-jiwer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-tiny-a", source: "bn-m-tiny", target: "bn-analyzer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-tiny-m", source: "bn-m-tiny", target: "bn-monitor", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-
-  { id: "be-m-base-j", source: "bn-m-base", target: "bn-jiwer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-base-a", source: "bn-m-base", target: "bn-analyzer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-base-m", source: "bn-m-base", target: "bn-monitor", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-
-  { id: "be-m-small-j", source: "bn-m-small", target: "bn-jiwer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-small-a", source: "bn-m-small", target: "bn-analyzer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-small-m", source: "bn-m-small", target: "bn-monitor", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-
-  { id: "be-m-medium-j", source: "bn-m-medium", target: "bn-jiwer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-medium-a", source: "bn-m-medium", target: "bn-analyzer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-medium-m", source: "bn-m-medium", target: "bn-monitor", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-
-  { id: "be-m-v2-j", source: "bn-m-large-v2", target: "bn-jiwer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-v2-a", source: "bn-m-large-v2", target: "bn-analyzer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-v2-m", source: "bn-m-large-v2", target: "bn-monitor", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-
-  { id: "be-m-turbo-j", source: "bn-m-turbo", target: "bn-jiwer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-turbo-a", source: "bn-m-turbo", target: "bn-analyzer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-turbo-m", source: "bn-m-turbo", target: "bn-monitor", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-
-  { id: "be-m-v3-j", source: "bn-m-large", target: "bn-jiwer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-v3-a", source: "bn-m-large", target: "bn-analyzer", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-  { id: "be-m-v3-m", source: "bn-m-large", target: "bn-monitor", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#ec4899" } },
-
-  // Metrics -> Exporter
-  { id: "be-j-exp", source: "bn-jiwer", target: "bn-exporter", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#14b8a6" } },
-  { id: "be-a-exp", source: "bn-analyzer", target: "bn-exporter", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#14b8a6" } },
-  { id: "be-m-exp", source: "bn-monitor", target: "bn-exporter", sourceHandle: "right-out", targetHandle: "left-in", type: "packet", data: { color: "#14b8a6" } },
-
-  // Exporter -> Result File
-  { id: "be-exp-file", source: "bn-exporter", target: "bn-result-file", sourceHandle: "bottom-out", targetHandle: "top-in", type: "packet", label: "Write", data: { color: "#a855f7" } },
-
-  // Result File -> Dashboard
-  { id: "be-file-dash", source: "bn-result-file", target: "bn-dashboard", sourceHandle: "bottom-out", targetHandle: "top-in", type: "packet", label: "Render", data: { color: "#f97316" } },
+  {
+    id: "be-1",
+    source: "b-system",
+    target: "b-dataset",
+    type: "packet",
+    sourceHandle: "right-out",
+    targetHandle: "left-in",
+    label: "env + runtime",
+    data: { color: "#3b82f6" },
+  },
+  {
+    id: "be-2",
+    source: "b-dataset",
+    target: "b-loop",
+    type: "packet",
+    sourceHandle: "right-out",
+    targetHandle: "left-in",
+    label: "audio/ground-truth map",
+    data: { color: "#14b8a6" },
+  },
+  {
+    id: "be-3",
+    source: "b-loop",
+    target: "b-transcriber",
+    type: "packet",
+    sourceHandle: "right-out",
+    targetHandle: "left-in",
+    label: "run current model",
+    data: { color: "#f97316" },
+  },
+  {
+    id: "be-4",
+    source: "b-transcriber",
+    target: "b-accuracy",
+    type: "packet",
+    sourceHandle: "right-out",
+    targetHandle: "left-in",
+    label: "hypothesis text",
+    data: { color: "#ec4899" },
+  },
+  {
+    id: "be-5",
+    source: "b-transcriber",
+    target: "b-resource",
+    type: "packet",
+    sourceHandle: "right-out",
+    targetHandle: "left-in",
+    label: "timing + memory",
+    data: { color: "#ec4899" },
+  },
+  {
+    id: "be-6",
+    source: "b-accuracy",
+    target: "b-json",
+    type: "packet",
+    sourceHandle: "right-out",
+    targetHandle: "left-in",
+    label: "WER/CER stats",
+    data: { color: "#8b5cf6" },
+  },
+  {
+    id: "be-7",
+    source: "b-resource",
+    target: "b-json",
+    type: "packet",
+    sourceHandle: "right-out",
+    targetHandle: "left-in",
+    label: "RTF/CPU/RAM/VRAM",
+    data: { color: "#8b5cf6" },
+  },
+  {
+    id: "be-8",
+    source: "b-json",
+    target: "b-dashboard",
+    type: "packet",
+    sourceHandle: "right-out",
+    targetHandle: "left-in",
+    label: "load & visualize",
+    data: { color: "#a855f7" },
+  },
 ];
 
 export const BENCHMARK_STEPS = [
-  { 
-    id: "bs-init", 
-    title: "Device Discovery", 
-    description: "Hardware profiling and system state verification", 
-    edges: ["be-1"] 
+  {
+    id: "bs-1",
+    title: "Initialize",
+    description: "Collect host/GPU metadata and load dataset + references.",
+    edges: ["be-1", "be-2"],
   },
-  { 
-    id: "bs-bench", 
-    title: "Benchmarking", 
-    description: "Sequential evaluation and result generation", 
+  {
+    id: "bs-2",
+    title: "Model iteration",
+    description:
+      "Run each selected Whisper model against each benchmark audio sample.",
     subSteps: [
-      { id: "tiny", title: "Whisper Tiny", edges: ["be-l-tiny", "be-m-tiny-j", "be-m-tiny-a", "be-m-tiny-m", "be-j-exp", "be-a-exp", "be-m-exp", "be-exp-file"] },
-      { id: "base", title: "Whisper Base", edges: ["be-l-base", "be-m-base-j", "be-m-base-a", "be-m-base-m", "be-j-exp", "be-a-exp", "be-m-exp", "be-exp-file"] },
-      { id: "small", title: "Whisper Small", edges: ["be-l-small", "be-m-small-j", "be-m-small-a", "be-m-small-m", "be-j-exp", "be-a-exp", "be-m-exp", "be-exp-file"] },
-      { id: "medium", title: "Whisper Medium", edges: ["be-l-medium", "be-m-medium-j", "be-m-medium-a", "be-m-medium-m", "be-j-exp", "be-a-exp", "be-m-exp", "be-exp-file"] },
-      { id: "v2", title: "Whisper Large V2", edges: ["be-l-v2", "be-m-v2-j", "be-m-v2-a", "be-m-v2-m", "be-j-exp", "be-a-exp", "be-m-exp", "be-exp-file"] },
-      { id: "turbo", title: "Whisper Turbo", edges: ["be-l-turbo", "be-m-turbo-j", "be-m-turbo-a", "be-m-turbo-m", "be-j-exp", "be-a-exp", "be-m-exp", "be-exp-file"] },
-      { id: "v3", title: "Whisper Large V3", edges: ["be-l-v3", "be-m-v3-j", "be-m-v3-a", "be-m-v3-m", "be-j-exp", "be-a-exp", "be-m-exp", "be-exp-file"] },
-    ]
+      {
+        id: "tiny",
+        title: "tiny",
+        edges: ["be-3", "be-4", "be-5", "be-6", "be-7"],
+      },
+      {
+        id: "base",
+        title: "base",
+        edges: ["be-3", "be-4", "be-5", "be-6", "be-7"],
+      },
+      {
+        id: "small",
+        title: "small",
+        edges: ["be-3", "be-4", "be-5", "be-6", "be-7"],
+      },
+      {
+        id: "medium",
+        title: "medium",
+        edges: ["be-3", "be-4", "be-5", "be-6", "be-7"],
+      },
+      {
+        id: "large-v2",
+        title: "large-v2",
+        edges: ["be-3", "be-4", "be-5", "be-6", "be-7"],
+      },
+      {
+        id: "large-v3",
+        title: "large-v3",
+        edges: ["be-3", "be-4", "be-5", "be-6", "be-7"],
+      },
+      {
+        id: "turbo",
+        title: "turbo",
+        edges: ["be-3", "be-4", "be-5", "be-6", "be-7"],
+      },
+    ],
   },
-  { 
-    id: "bs-save", 
-    title: "Result Presentation", 
-    description: "Final data visualization and performance dashboard", 
-    edges: ["be-file-dash"] 
+  {
+    id: "bs-3",
+    title: "Publish",
+    description: "Write JSON output and render comparative dashboard.",
+    edges: ["be-8"],
   },
 ];

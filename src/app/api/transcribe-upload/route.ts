@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       if (!parsed.success) {
         return NextResponse.json(
           { success: false, error: parsed.error.flatten() },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -47,21 +47,29 @@ export async function POST(req: NextRequest) {
         numberOfSpeaker: Number(numberOfSpeaker),
         storageKey: storageKey as string,
         fileSize: Number(fileSize) || 0,
-        fileType: fileType as string || "audio/mpeg",
+        fileType: (fileType as string) || "audio/mpeg",
       });
     } else {
       return NextResponse.json(
         { success: false, error: "No file or storage key provided." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("API error:", error);
+
+    if (error instanceof Error && error.message === "Not authenticated") {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
+      );
+    }
+
     return NextResponse.json(
       { success: false, error: "Internal server error." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

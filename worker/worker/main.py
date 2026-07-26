@@ -1,28 +1,31 @@
 import asyncio
 import os
-from bullmq import Worker, Job
-from .config import config
-from .transcriber import Transcriber
-from .progress import ProgressManager
+
+from bullmq import Job, Worker
+
 from .callback import CallbackManager
+from .config import config
+from .progress import ProgressManager
+from .transcriber import Transcriber
+
 
 async def process_job(job: Job, token: str):
     print(f"Processing job {job.id}")
     data = job.data
     transcription_id = data.get("transcriptionId")
-    
+
     progress = ProgressManager(transcription_id)
     transcriber = Transcriber()
-    
+
     try:
         # Update status to processing
         progress.update("processing", 0, "Initializing...")
-        
+
         # Run transcription in a separate thread to avoid blocking the event loop
         # This allows BullMQ to renew the lock for long-running jobs
         job_language = data.get("language")
         print(f"Job {job.id} requested language: {job_language}")
-        
+
         result = await asyncio.to_thread(
             transcriber.process,
             audio_url=data.get("audioUrl"),
@@ -30,17 +33,17 @@ async def process_job(job: Job, token: str):
             language=job_language or "default",
             is_diarized=data.get("isSpeakerDiarized", False),
             num_speakers=data.get("numberOfSpeaker"),
-            progress_cb=progress.update
+            progress_cb=progress.update,
         )
-        
+
         # Send callback
         callback_payload = {
             "transcriptionId": transcription_id,
             "status": "completed",
             "segments": result["segments"],
-            "metadata": result["metadata"]
+            "metadata": result["metadata"],
         }
-        
+
         if CallbackManager.send_callback(callback_payload):
             progress.complete()
             print(f"Job {job.id} completed successfully")
@@ -50,30 +53,30 @@ async def process_job(job: Job, token: str):
     except Exception as e:
         print(f"Error processing job {job.id}: {e}")
         progress.error(str(e))
-        
+
         # Send failure callback
-        CallbackManager.send_callback({
-            "transcriptionId": transcription_id,
-            "status": "failed"
-        })
+        CallbackManager.send_callback(
+            {"transcriptionId": transcription_id, "status": "failed"}
+        )
+
 
 async def main():
     config.validate()
     print("Starting Skriptor Worker...")
-    
+
     # Initialize BullMQ Worker
     worker = Worker(
-        "transcription", 
-        process_job, 
+        "transcription",
+        process_job,
         {
             "connection": config.REDIS_URL,
             "concurrency": 1,
-            "lockDuration": 300000, # 5 minutes (prevents timeout for long audio)
-        }
+            "lockDuration": 300000,  # 5 minutes (prevents timeout for long audio)
+        },
     )
-    
+
     print(f"Worker listening on queue 'transcription' (Redis: {config.REDIS_URL})")
-    
+
     try:
         # Keep the worker running
         while True:
@@ -82,6 +85,7 @@ async def main():
         print("Worker stopping...")
     finally:
         await worker.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

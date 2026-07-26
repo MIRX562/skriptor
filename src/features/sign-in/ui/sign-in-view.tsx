@@ -24,6 +24,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { AlertCircle } from "lucide-react";
 import { signInEmail, signInGoogle } from "../model/query";
 
 interface SignInPageProps {
@@ -34,13 +36,19 @@ export default function SignInPage({ dict }: SignInPageProps) {
   const form = useForm<z.infer<typeof signInEmailSchema>>({
     resolver: zodResolver(signInEmailSchema),
   });
+  const searchParams = useSearchParams();
+  const isPendingUpload = searchParams.get("pending") === "1";
 
   function onSubmit(values: z.infer<typeof signInEmailSchema>) {
     try {
       toast.promise(signInEmail(values), {
         loading: dict.auth.signIn.messages.loading,
         error: (err) => err.message,
-        success: (ctx) => dict.auth.signIn.messages.success.replace("{name}", ctx?.user.name || ""),
+        success: (ctx) =>
+          dict.auth.signIn.messages.success.replace(
+            "{name}",
+            ctx?.user.name || "",
+          ),
       });
     } catch (error) {
       console.error("Form submission error", error);
@@ -56,6 +64,17 @@ export default function SignInPage({ dict }: SignInPageProps) {
           <CardDescription>{dict.auth.signIn.description}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 w-full">
+          {isPendingUpload && (
+            <div className="flex items-start gap-2 rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-900/40 dark:bg-teal-900/20 dark:text-teal-300">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium">
+                  {dict.auth.signIn.pendingUpload.title}
+                </p>
+                <p>{dict.auth.signIn.pendingUpload.description}</p>
+              </div>
+            </div>
+          )}
           <Button
             variant="outline"
             className="w-full bg-teal-500 dark:bg-teal-400 text-primary-foreground"
@@ -89,7 +108,9 @@ export default function SignInPage({ dict }: SignInPageProps) {
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>{dict.auth.signIn.email.description}</FormDescription>
+                    <FormDescription>
+                      {dict.auth.signIn.email.description}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -102,9 +123,14 @@ export default function SignInPage({ dict }: SignInPageProps) {
                   <FormItem>
                     <FormLabel>{dict.auth.signIn.password.label}</FormLabel>
                     <FormControl>
-                      <PasswordInput placeholder={dict.auth.signIn.password.placeholder} {...field} />
+                      <PasswordInput
+                        placeholder={dict.auth.signIn.password.placeholder}
+                        {...field}
+                      />
                     </FormControl>
-                    <FormDescription>{dict.auth.signIn.password.description}</FormDescription>
+                    <FormDescription>
+                      {dict.auth.signIn.password.description}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -121,13 +147,16 @@ export default function SignInPage({ dict }: SignInPageProps) {
           </Form>
           <div className="text-center text-sm">
             {dict.auth.signIn.noAccount}{" "}
-            <Link href="/sign-up" className="underline underline-offset-4">
+            <Link
+              href={isPendingUpload ? "/sign-up?pending=1" : "/sign-up"}
+              className="underline underline-offset-4"
+            >
               {dict.auth.signIn.signUp}
             </Link>
           </div>
           <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
-            {dict.auth.signIn.tosPrefix}{" "}
-            <a href="#">{dict.auth.signIn.tos}</a> {dict.auth.signIn.and}{" "}
+            {dict.auth.signIn.tosPrefix} <a href="#">{dict.auth.signIn.tos}</a>{" "}
+            {dict.auth.signIn.and}{" "}
             <a href="#">{dict.auth.signIn.privacyPolicy}</a>.
           </div>
         </CardContent>

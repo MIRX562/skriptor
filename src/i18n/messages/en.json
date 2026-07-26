@@ -538,6 +538,10 @@
         "loading": "Logging in....",
         "success": "Welcome Back, {name}",
         "error": "Failed to submit the form. Please try again."
+      },
+      "pendingUpload": {
+        "title": "Pending upload detected",
+        "description": "Your audio is saved. After you sign in, we’ll continue your transcription automatically."
       }
     },
     "signUp": {

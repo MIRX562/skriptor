@@ -49,16 +49,29 @@ echo "🚀 Starting build and push for Skriptor images..."
 # 1. Build and Push Web Image
 if [ "$BUILD_WEB" = true ]; then
     echo "🌐 Building Web App..."
-    docker build -t $DOCKER_USER/$WEB_IMAGE:$TAG -f Dockerfile .
+    docker build --network=host -t $DOCKER_USER/$WEB_IMAGE:$TAG -f Dockerfile .
     echo "📤 Pushing Web App..."
     docker push $DOCKER_USER/$WEB_IMAGE:$TAG
 fi
+
+# Optional model pre-bake settings (override via env when running this script)
+# Example:
+# PRELOAD_MODELS=small,turbo,large PRELOAD_ALIGN_LANGS=en,id ./push_images.sh --worker
+PRELOAD_MODELS="${PRELOAD_MODELS:-small,turbo,large}"
+PRELOAD_ALIGN_LANGS="${PRELOAD_ALIGN_LANGS:-en,id}"
+PRELOAD_DIARIZATION="${PRELOAD_DIARIZATION:-false}"
+HUGGING_FACE_TOKEN="${HUGGING_FACE_TOKEN:-}"
 
 # 2. Build and Push Production Worker
 if [ "$BUILD_WORKER" = true ]; then
     echo "📦 Building Production Worker..."
     # Worker Dockerfile is in the worker directory
-    docker build -t $DOCKER_USER/$WORKER_IMAGE:$TAG -f worker/Dockerfile worker/
+    docker build --network=host \
+      --build-arg PRELOAD_MODELS="$PRELOAD_MODELS" \
+      --build-arg PRELOAD_ALIGN_LANGS="$PRELOAD_ALIGN_LANGS" \
+      --build-arg PRELOAD_DIARIZATION="$PRELOAD_DIARIZATION" \
+      --build-arg HUGGING_FACE_TOKEN="$HUGGING_FACE_TOKEN" \
+      -t $DOCKER_USER/$WORKER_IMAGE:$TAG -f worker/Dockerfile worker/
     echo "📤 Pushing Production Worker..."
     docker push $DOCKER_USER/$WORKER_IMAGE:$TAG
 fi
@@ -67,7 +80,12 @@ fi
 if [ "$BUILD_BENCHMARK" = true ]; then
     echo "📊 Building Benchmark Image..."
     # Benchmark Dockerfile is in the worker directory
-    docker build -t $DOCKER_USER/$BENCHMARK_IMAGE:$TAG -f worker/Dockerfile.benchmark worker/
+    docker build --network=host \
+      --build-arg PRELOAD_MODELS="$PRELOAD_MODELS" \
+      --build-arg PRELOAD_ALIGN_LANGS="$PRELOAD_ALIGN_LANGS" \
+      --build-arg PRELOAD_DIARIZATION="$PRELOAD_DIARIZATION" \
+      --build-arg HUGGING_FACE_TOKEN="$HUGGING_FACE_TOKEN" \
+      -t $DOCKER_USER/$BENCHMARK_IMAGE:$TAG -f worker/Dockerfile.benchmark worker/
     echo "📤 Pushing Benchmark Image..."
     docker push $DOCKER_USER/$BENCHMARK_IMAGE:$TAG
 fi
