@@ -22,7 +22,7 @@ export function mapLanguageCode(lang: string): string {
   
   // Supported Hunspell language dictionary codes on jsDelivr
   const supportedLangs = [
-    "en", "id", "es", "fr", "de", "it", "pt", "ru", "nl", "pl", "uk", "tr", 
+    "en", "es", "fr", "de", "it", "pt", "ru", "nl", "pl", "uk", "tr",
     "sv", "cs", "hu", "el", "bg", "sr", "da", "fi", "sk", "he", "ro", "hr",
     "is", "no", "et", "lt", "lv", "vi"
   ];
@@ -32,6 +32,20 @@ export function mapLanguageCode(lang: string): string {
   }
   
   return "en"; // Default fallback
+}
+
+// Note: Indonesian (`id`) is intentionally excluded because there is no stable
+// `dictionary-id` package available via jsDelivr for the nspell dictionary.
+export const supportedSpellcheckLanguages = [
+  "en", "es", "fr", "de", "it", "pt", "ru", "nl", "pl", "uk", "tr",
+  "sv", "cs", "hu", "el", "bg", "sr", "da", "fi", "sk", "he", "ro", "hr",
+  "is", "no", "et", "lt", "lv", "vi"
+] as const;
+
+export function isSpellcheckerSupported(lang?: string | null) {
+  if (!lang) return false;
+  const code = lang.toLowerCase().split("-")[0];
+  return supportedSpellcheckLanguages.includes(code as typeof supportedSpellcheckLanguages[number]);
 }
 
 /**

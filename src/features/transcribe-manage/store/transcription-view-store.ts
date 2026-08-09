@@ -65,6 +65,7 @@ interface TranscriptionViewState {
   // Speaker label editing
   updateSpeakerLabel: (speakerIndex: number, label: string) => void;
   addSpeaker: () => number;
+  setSpeakers: (speakers: Speaker[]) => void;
 
   setMetadata: (metadata: TranscriptionMetadata) => void;
   setViewMode: (mode: "segments" | "fulltext") => void;
@@ -178,6 +179,8 @@ export const useTranscriptionStore = create<TranscriptionViewState>()(
         );
         set({ speakers });
       },
+
+      setSpeakers: (speakers) => set({ speakers }),
 
       addSpeaker: () => {
         const { speakers } = get();

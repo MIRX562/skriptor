@@ -9,8 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Plus, UserPlus } from "lucide-react";
+import { DirectionProvider } from "@/components/ui/direction";
+import { Plus } from "lucide-react";
 import { cn, formatTimeMMSS } from "@/lib/utils";
+import { isRtlLanguage } from "@/features/transcibe-upload/const/supported-languages";
 import type { Speaker } from "../model/use-transcription";
 import type { TranscriptionSegment } from "../store/transcription-view-store";
 import { useTranscriptionStore } from "../store/transcription-view-store";
@@ -20,6 +22,7 @@ interface SegmentRowProps {
   segment: TranscriptionSegment;
   index: number;
   speakers: Speaker[];
+  language?: string;
   isEditing: boolean;
   isActive: boolean;
   isSearchMatch: boolean;
@@ -62,6 +65,7 @@ export const SegmentRow = memo(function SegmentRow({
   segment,
   index,
   speakers,
+  language,
   isEditing,
   isActive,
   isSearchMatch,
@@ -74,13 +78,14 @@ export const SegmentRow = memo(function SegmentRow({
   onSpeakerChange,
 }: SegmentRowProps) {
   const addSpeaker = useTranscriptionStore((state) => state.addSpeaker);
+  const direction = isRtlLanguage(language) ? "rtl" : "ltr";
 
   const speakerLabel =
     segment.speakerIndex !== null
       ? (speakers.find((s) => s.index === segment.speakerIndex)?.label ?? `Speaker ${segment.speakerIndex}`)
       : null;
 
-  const rowClass = [
+  const rowClass = cn(
     "group px-2 py-1.5 rounded-md transition-colors duration-150",
     isActive
       ? "bg-teal-50 dark:bg-teal-900/25 ring-1 ring-teal-200 dark:ring-teal-800"
@@ -88,23 +93,26 @@ export const SegmentRow = memo(function SegmentRow({
         ? "bg-yellow-50 dark:bg-yellow-900/20 ring-1 ring-yellow-200 dark:ring-yellow-800"
         : isSearchMatch
           ? "bg-slate-50 dark:bg-slate-800/30"
-          : "hover:bg-slate-50 dark:hover:bg-slate-800/10",
-  ].join(" ");
+          : "hover:bg-slate-50 dark:hover:bg-slate-800/10"
+  );
 
   return (
-    <div
-      id={`segment-${index}`}
-      className={cn(
-        "group rounded-xl transition-all duration-300 border-2 relative overflow-hidden",
-        isActive
-          ? "bg-teal-50/70 dark:bg-teal-900/30 border-teal-500/40 dark:border-teal-400/30 shadow-md ring-1 ring-teal-500/10"
-          : isCurrentSearchMatch
-          ? "bg-yellow-50/80 dark:bg-yellow-900/30 border-yellow-500/50 dark:border-yellow-400/40 shadow-sm"
-          : "bg-transparent border-transparent hover:bg-slate-50/80 dark:hover:bg-slate-800/40 hover:border-slate-200/50 dark:hover:border-slate-700/50",
-        !isEditing && "cursor-pointer active:scale-[0.995]"
-      )}
-      onClick={() => !isEditing && onSegmentClick(index)}
-    >
+    <DirectionProvider dir={direction}>
+      <div
+        id={`segment-${index}`}
+        dir={direction}
+        className={cn(
+          "group rounded-xl transition-all duration-300 border-2 relative overflow-hidden",
+          rowClass,
+          isActive
+            ? "bg-teal-50/70 dark:bg-teal-900/30 border-teal-500/40 dark:border-teal-400/30 shadow-md ring-1 ring-teal-500/10"
+            : isCurrentSearchMatch
+            ? "bg-yellow-50/80 dark:bg-yellow-900/30 border-yellow-500/50 dark:border-yellow-400/40 shadow-sm"
+            : "bg-transparent border-transparent hover:bg-slate-50/80 dark:hover:bg-slate-800/40 hover:border-slate-200/50 dark:hover:border-slate-700/50",
+          !isEditing && "cursor-pointer active:scale-[0.995]"
+        )}
+        onClick={() => !isEditing && onSegmentClick(index)}
+      >
       {/* Active Accent Bar */}
       {isActive && (
         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-teal-600 dark:bg-teal-500 shadow-[0_0_10px_rgba(13,148,136,0.5)]" />
@@ -212,5 +220,6 @@ export const SegmentRow = memo(function SegmentRow({
         </div>
       </div>
     </div>
+    </DirectionProvider>
   );
 });

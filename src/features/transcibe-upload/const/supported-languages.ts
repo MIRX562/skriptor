@@ -58,3 +58,11 @@ export const languages = [
   { label: "Tamil", value: "ta", wer: 51.5 },
   { label: "Albanian", value: "sq", wer: 55.7 },
 ];
+
+export const rtlLanguages = ["ar", "he", "fa", "ur"] as const;
+
+export function isRtlLanguage(language?: string | null) {
+  if (!language) return false;
+  const code = language.toLowerCase().split(/[_-]/)[0];
+  return rtlLanguages.includes(code as typeof rtlLanguages[number]);
+}

@@ -483,6 +483,8 @@
       "replacedAll": "Mengganti {count} kejadian \"{search}\" dengan \"{replace}\"",
       "saveSuccess": "Perubahan berhasil disimpan",
       "saveError": "Gagal menyimpan perubahan",
+      "spellcheckLanguageUnsupported": "{language} belum didukung untuk pemeriksaan ejaan.",
+      "spellcheckUnsupported": "Pemeriksaan ejaan tidak didukung untuk bahasa saat ini.",
       "confirmDelete": "Apakah Anda yakin ingin menghapus transkripsi ini?",
       "confirmDeleteDescription": "Tindakan ini tidak dapat dibatalkan. Semua audio dan segmen akan dihapus secara permanen.",
       "deleteSuccess": "Transkripsi dihapus"

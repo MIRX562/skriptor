@@ -45,6 +45,7 @@ import { useTranscription } from "../model/use-transcription";
 import { useDeleteTranscription } from "../model/use-delete-transcription";
 import { useRetryTranscription } from "../model/use-retry-transcription";
 import { useSaveSegments } from "../model/use-save-segments";
+import { isRtlLanguage, languages as supportedLanguages } from "@/features/transcibe-upload/const/supported-languages";
 import { cn } from "@/lib/utils";
 import { WaveformPlayer, type WaveformPlayerRef } from "./waveform-player";
 import { useTranscriptionProgress } from "../model/use-transcription-progress";
@@ -56,6 +57,8 @@ import { RetranscribeDialog } from "./RetranscribeDialog";
 import { type Dictionary } from "@/i18n/dictionaries";
 import { useSettingsStore } from "@/features/setting/store/settings-store";
 import { useSpellcheckStore } from "../store/spellcheck-store";
+import type { TranscriptionSegment } from "../store/transcription-view-store";
+import type { Speaker } from "../model/use-transcription";
 import { SpellcheckHighlighter } from "./spellcheck-highlighter";
 import { SpellcheckReview } from "./spellcheck-review";
 
@@ -73,6 +76,10 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isSpellcheckReviewOpen, setIsSpellcheckReviewOpen] = useState(false);
+  const [pendingEditState, setPendingEditState] = useState<{
+    segments: TranscriptionSegment[];
+    speakers: Speaker[];
+  } | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const audioPlayerRef = useRef<WaveformPlayerRef | null>(null);
@@ -111,8 +118,10 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
     setShowSearch,
     setViewMode,
 
+    setSegments,
     updateSegment,
     updateSpeakerLabel,
+    setSpeakers,
     getSpeakerLabel,
     getFullTranscript,
     clearSearch,
@@ -121,6 +130,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
   const fetchSettings = useSettingsStore((state) => state.fetchSettings);
   const {
     isEnabled: isSpellcheckEnabled,
+    isSupported: isSpellcheckSupported,
     toggleEnabled: toggleSpellcheck,
     isLoading: isSpellcheckLoading,
     setLanguage: setSpellcheckLanguage,
@@ -128,8 +138,45 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
 
   const [isSpeakerDialogOpen, setIsSpeakerDialogOpen] = useState(false);
 
+  const transcriptionLanguageLabel = transcriptionData?.language
+    ? supportedLanguages.find(
+        (language) => language.value.toLowerCase() === transcriptionData.language.toLowerCase(),
+      )?.label ?? transcriptionData.language
+    : null;
+
   const handleBack = () => {
     router.push("/dashboard/manage", { scroll: false });
+  };
+
+  const handleStartEditing = () => {
+    setPendingEditState({
+      segments: segments.map((segment) => ({ ...segment })),
+      speakers: speakers.map((speaker) => ({ ...speaker })),
+    });
+    setIsEditing(true);
+  };
+
+  const handleCancelEditing = () => {
+    if (pendingEditState) {
+      setSegments(pendingEditState.segments);
+      setSpeakers(pendingEditState.speakers);
+    }
+    setIsEditing(false);
+    setPendingEditState(null);
+  };
+
+  const handleToggleSpellcheck = () => {
+    if (!isSpellcheckSupported) {
+      const message = transcriptionLanguageLabel
+        ? dict.view.messages.spellcheckLanguageUnsupported.replace(
+            "{language}",
+            transcriptionLanguageLabel,
+          )
+        : dict.view.messages.spellcheckUnsupported;
+      toast.error(message);
+      return;
+    }
+    toggleSpellcheck();
   };
 
   // Fetch settings on mount
@@ -343,6 +390,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
         onSuccess: () => {
           toast.success(dict.view.messages.saveSuccess);
           setIsEditing(false);
+          setPendingEditState(null);
         },
         onError: (err) => {
           toast.error(
@@ -446,6 +494,10 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
 
   const currentProgress = isCompletedInDb ? 100 : (liveProgress?.progress ?? 0);
 
+  const currentDirection = isRtlLanguage(transcriptionData?.language)
+    ? "rtl"
+    : "ltr";
+
   return (
     <div className="space-y-4">
       <Card className="overflow-hidden pt-0 md:border-slate-200 md:dark:border-slate-800 md:shadow-md md:rounded-xl rounded-none border-0 shadow-none bg-slate-50/50 dark:bg-slate-900/50 md:bg-card">
@@ -468,6 +520,12 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                 <span>{metadata.date}</span>
                 <span className="opacity-30">•</span>
                 <span>{metadata.duration}</span>
+                {transcriptionLanguageLabel && (
+                  <>
+                    <span className="opacity-30">•</span>
+                    <span>{transcriptionLanguageLabel}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -667,7 +725,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                   isSpellcheckEnabled &&
                     "bg-white text-teal-600 dark:bg-slate-950 dark:text-teal-400 shadow-sm",
                 )}
-                onClick={toggleSpellcheck}
+                onClick={handleToggleSpellcheck}
                 disabled={isSpellcheckLoading}
               >
                 <SpellCheck
@@ -700,7 +758,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                     variant="ghost"
                     size="sm"
                     className="h-8"
-                    onClick={() => setIsEditing(false)}
+                    onClick={handleCancelEditing}
                   >
                     {dict.view.actions.cancel}
                   </Button>
@@ -818,7 +876,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                     size="sm"
                     className="h-8 hover:bg-white dark:hover:bg-slate-950"
                     onClick={() => {
-                      setIsEditing(true);
+                      handleStartEditing();
                       setViewMode("segments");
                     }}
                   >
@@ -834,7 +892,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
 
           <AnimatePresence>
             {showSearch && (
-              <SearchControls dict={dict} onClose={handleSearchClose} />
+              <SearchControls dict={dict} language={transcriptionData?.language} onClose={handleSearchClose} />
             )}
           </AnimatePresence>
 
@@ -870,6 +928,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                         index={virtualRow.index}
                         segment={segments[virtualRow.index]}
                         speakers={speakers}
+                        language={transcriptionData?.language}
                         isEditing={isEditing}
                         isActive={activeSegmentIndex === virtualRow.index}
                         isSearchMatch={searchResults.includes(virtualRow.index)}

@@ -483,6 +483,8 @@
       "replacedAll": "Replaced {count} occurrences of \"{search}\" with \"{replace}\"",
       "saveSuccess": "Changes saved successfully",
       "saveError": "Failed to save changes",
+      "spellcheckLanguageUnsupported": "{language} is not supported for spellcheck yet.",
+      "spellcheckUnsupported": "Spellcheck is not supported for the current language.",
       "confirmDelete": "Are you sure you want to delete this transcription?",
       "confirmDeleteDescription": "This action cannot be undone. All audio and segments will be permanently removed.",
       "deleteSuccess": "Transcription deleted"

@@ -33,6 +33,27 @@ describe("SegmentRow Component", () => {
     expect(screen.getByText("Sample segment text")).toBeInTheDocument();
   });
 
+  it("renders rtl direction for supported rtl transcription language", () => {
+    const { container } = render(
+      <SegmentRow
+        segment={mockSegment}
+        index={0}
+        speakers={[]}
+        language="ar"
+        isEditing={false}
+        isActive={false}
+        isSearchMatch={false}
+        isCurrentSearchMatch={false}
+        isSpeakerDiarized={false}
+        onSegmentClick={vi.fn()}
+        onTextChange={vi.fn()}
+        onSpeakerChange={vi.fn()}
+      />
+    );
+
+    expect(container.querySelector("#segment-0")).toHaveAttribute("dir", "rtl");
+  });
+
   it("renders a textarea in edit mode and triggers onChange", () => {
     const handleTextChange = vi.fn();
     render(

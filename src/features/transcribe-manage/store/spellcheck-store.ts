@@ -1,13 +1,14 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import nspell, { Spellchecker } from "nspell";
-import { getSpellchecker, checkText, type MisspelledWord } from "@/lib/spellchecker";
+import { getSpellchecker, checkText, isSpellcheckerSupported, type MisspelledWord } from "@/lib/spellchecker";
 import { useSettingsStore } from "@/features/setting/store/settings-store";
 
 interface SpellcheckState {
   // State
   isEnabled: boolean;
   isLoading: boolean;
+  isSupported: boolean;
   language: string | null;
   ignoredWords: Set<string>;
   customWords: Set<string>;
@@ -31,27 +32,41 @@ export const useSpellcheckStore = create<SpellcheckState>()(
       return {
         isEnabled: false,
         isLoading: false,
+        isSupported: false,
         language: null,
         ignoredWords: new Set<string>(),
         customWords: new Set<string>(),
 
         toggleEnabled: () => {
+          if (!get().isSupported) return;
           set((state) => ({ isEnabled: !state.isEnabled }));
         },
 
         setLanguage: async (lang) => {
           if (get().language === lang && activeSpellchecker) return;
-          
-          set({ isLoading: true, language: lang });
+
+          const supported = isSpellcheckerSupported(lang);
+          set({ isLoading: true, language: lang, isSupported: supported });
+
+          if (!supported) {
+            activeSpellchecker = null;
+            set({ isLoading: false, isEnabled: false });
+            return;
+          }
+
           try {
             const spellchecker = await getSpellchecker(lang);
             activeSpellchecker = spellchecker;
             
             // Sync custom words from settings store when loading language
             get().syncCustomWords();
+            if (!activeSpellchecker) {
+              set({ isSupported: false, isEnabled: false });
+            }
           } catch (err) {
             console.error("Error initializing spellchecker in store:", err);
             activeSpellchecker = null;
+            set({ isSupported: false, isEnabled: false });
           } finally {
             set({ isLoading: false });
           }

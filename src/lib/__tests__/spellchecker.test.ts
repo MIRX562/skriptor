@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { mapLanguageCode, extractWords, checkText, getSpellchecker } from "../spellchecker";
+import { mapLanguageCode, extractWords, checkText, getSpellchecker, isSpellcheckerSupported } from "../spellchecker";
 import type { Spellchecker } from "nspell";
 
 vi.mock("nspell", () => ({
@@ -13,9 +13,13 @@ describe("Spellchecker Utility", () => {
   describe("mapLanguageCode", () => {
     it("maps codes correctly", () => {
       expect(mapLanguageCode("en-US")).toBe("en");
-      expect(mapLanguageCode("id")).toBe("id");
+      expect(mapLanguageCode("id")).toBe("en");
       expect(mapLanguageCode("default")).toBe("en");
       expect(mapLanguageCode("unknown-code")).toBe("en"); // fallback
+    });
+
+    it("does not mark Indonesian as supported when the dictionary package is unavailable", () => {
+      expect(isSpellcheckerSupported("id")).toBe(false);
     });
   });
 

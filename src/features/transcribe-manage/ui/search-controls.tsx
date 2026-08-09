@@ -4,17 +4,21 @@ import { useEffect, useRef } from "react";
 import { Search, X, ChevronDown, ChevronUp, Replace, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DirectionProvider } from "@/components/ui/direction";
 import { useTranscriptionStore } from "../store/transcription-view-store";
 import { type Dictionary } from "@/i18n/dictionaries";
+import { isRtlLanguage } from "@/features/transcibe-upload/const/supported-languages";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SearchControlsProps {
   dict: Dictionary;
   onClose: () => void;
+  language?: string | null;
 }
 
-export function SearchControls({ dict, onClose }: SearchControlsProps) {
+export function SearchControls({ dict, onClose, language }: SearchControlsProps) {
+  const direction = isRtlLanguage(language) ? "rtl" : "ltr";
   const {
     searchTerm,
     replaceTerm,
@@ -57,12 +61,14 @@ export function SearchControls({ dict, onClose }: SearchControlsProps) {
   const currentMatch = totalMatches > 0 ? currentResultIndex + 1 : 0;
 
   return (
-    <motion.div 
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: "auto", opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      className="overflow-hidden"
-    >
+    <DirectionProvider dir={direction}>
+      <motion.div 
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        className="overflow-hidden"
+        dir={direction}
+      >
       <div className="p-4 border rounded-xl bg-white dark:bg-slate-900 shadow-sm space-y-3 mb-4 ring-1 ring-slate-200 dark:ring-slate-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -177,5 +183,6 @@ export function SearchControls({ dict, onClose }: SearchControlsProps) {
         </div>
       </div>
     </motion.div>
+    </DirectionProvider>
   );
 }

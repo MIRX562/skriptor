@@ -101,10 +101,6 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                   {dict.landing.hero.getStarted}
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
-                <Button size="lg" variant="outline">
-                  {dict.landing.hero.viewDemo}
-                  <Play className="ml-1 h-4 w-4" />
-                </Button>
               </div>
             </motion.div>
             <motion.div
