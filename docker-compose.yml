@@ -1,7 +1,7 @@
 services:
   # 1. PostgreSQL Database
   db:
-    image: postgres:16-alpine
+    image: docker.io/postgres:16-alpine
     container_name: skriptor-db
     restart: always
     environment:
@@ -20,21 +20,21 @@ services:
 
   # 2. Redis (Used for BullMQ and SSE)
   redis:
-    image: redis:7-alpine
+    image: docker.io/redis:7-alpine
     container_name: skriptor-redis
     restart: always
-    command: redis-server --requirepass password
+    command: redis-server
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "password", "ping"]
+      test: ["CMD", "redis-cli", "-a", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   # 3. MinIO (S3 Compatible Storage)
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: skriptor-minio
     restart: always
     environment:
@@ -54,7 +54,7 @@ services:
 
   # 4. MinIO Bucket Creator
   minio-create-bucket:
-    image: minio/mc:latest
+    image: quay.io/minio/mc:latest
     container_name: skriptor-minio-mc
     depends_on:
       - minio

@@ -31,7 +31,7 @@ except ImportError:
     from worker.worker.config import config
     from worker.worker.transcriber import Transcriber
 
-MODELS = ["tiny", "base", "small", "medium", "large-v2", "large-v3", "turbo"]
+MODELS = ["tiny", "cahya/whisper-tiny-id", "base", "small", "cahya/whisper-small-id", "medium", "cahya/whisper-medium-id", "large-v2", "large-v3", "cahya/whisper-large-id", "turbo"]
 DATASET_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "audio_dataset")
 )

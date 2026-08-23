@@ -6,18 +6,21 @@ DOCKER_USER="mirxtreme"
 WEB_IMAGE="skriptor-web"
 WORKER_IMAGE="skriptor-worker"
 BENCHMARK_IMAGE="skriptor-benchmark"
+DASHBOARD_IMAGE="skriptor-benchmark-dashboard"
 TAG="latest"
 
 # Default flags
 BUILD_WEB=false
 BUILD_WORKER=false
 BUILD_BENCHMARK=false
+BUILD_DASHBOARD=false
 
 # If no arguments, build all
 if [ $# -eq 0 ]; then
     BUILD_WEB=true
     BUILD_WORKER=true
     BUILD_BENCHMARK=true
+    BUILD_DASHBOARD=true
 fi
 
 # Parse arguments
@@ -35,14 +38,19 @@ for arg in "$@"; do
       BUILD_BENCHMARK=true
       shift
       ;;
+    --dashboard)
+      BUILD_DASHBOARD=true
+      shift
+      ;;
     --all)
       BUILD_WEB=true
       BUILD_WORKER=true
       BUILD_BENCHMARK=true
+      BUILD_DASHBOARD=true
       shift
       ;;
   esac
-done
+ done
 
 echo "🚀 Starting build and push for Skriptor images..."
 
@@ -57,8 +65,8 @@ fi
 # Optional model pre-bake settings (override via env when running this script)
 # Example:
 # PRELOAD_MODELS=small,turbo,large PRELOAD_ALIGN_LANGS=en,id ./push_images.sh --worker
-PRELOAD_MODELS="${PRELOAD_MODELS:-small,turbo,large}"
-PRELOAD_ALIGN_LANGS="${PRELOAD_ALIGN_LANGS:-en,id}"
+PRELOAD_MODELS="${PRELOAD_MODELS:-}"
+PRELOAD_ALIGN_LANGS="${PRELOAD_ALIGN_LANGS:-}"
 PRELOAD_DIARIZATION="${PRELOAD_DIARIZATION:-false}"
 HUGGING_FACE_TOKEN="${HUGGING_FACE_TOKEN:-}"
 
@@ -79,7 +87,6 @@ fi
 # 3. Build and Push Benchmark
 if [ "$BUILD_BENCHMARK" = true ]; then
     echo "📊 Building Benchmark Image..."
-    # Benchmark Dockerfile is in the worker directory
     docker build --network=host \
       --build-arg PRELOAD_MODELS="$PRELOAD_MODELS" \
       --build-arg PRELOAD_ALIGN_LANGS="$PRELOAD_ALIGN_LANGS" \
@@ -90,7 +97,17 @@ if [ "$BUILD_BENCHMARK" = true ]; then
     docker push $DOCKER_USER/$BENCHMARK_IMAGE:$TAG
 fi
 
+# 4. Build and Push Benchmark Dashboard
+if [ "$BUILD_DASHBOARD" = true ]; then
+    echo "📊 Building Benchmark Dashboard Image..."
+    docker build --network=host \
+      -t $DOCKER_USER/$DASHBOARD_IMAGE:$TAG -f worker/Dockerfile.dashboard worker/
+    echo "📤 Pushing Benchmark Dashboard Image..."
+    docker push $DOCKER_USER/$DASHBOARD_IMAGE:$TAG
+fi
+
 echo "✅ Done!"
 [ "$BUILD_WEB" = true ] && echo "Web: $DOCKER_USER/$WEB_IMAGE:$TAG"
 [ "$BUILD_WORKER" = true ] && echo "Worker: $DOCKER_USER/$WORKER_IMAGE:$TAG"
 [ "$BUILD_BENCHMARK" = true ] && echo "Benchmark: $DOCKER_USER/$BENCHMARK_IMAGE:$TAG"
+[ "$BUILD_DASHBOARD" = true ] && echo "Dashboard: $DOCKER_USER/$DASHBOARD_IMAGE:$TAG"
