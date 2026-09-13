@@ -28,9 +28,12 @@ RUN useradd -m -u 10001 appuser && mkdir -p /app/.cache /app/audio_dataset && ch
 COPY --chown=appuser:appuser pyproject.toml uv.lock README.md ./
 COPY --chown=appuser:appuser benchmark/requirements.txt ./benchmark/requirements.txt
 
-# Install worker runtime deps from lockfile, then benchmark-only deps
+# Install worker runtime deps from lockfile, then install WhisperX explicitly.
+# The historical lockfile can omit the Git dependency even though pyproject.toml declares it.
 RUN uv sync --frozen --no-dev --no-install-project && \
-    uv pip install --python /app/.venv/bin/python --no-cache -r benchmark/requirements.txt
+        uv pip install --python /app/.venv/bin/python --no-cache \
+            "whisperx @ git+https://github.com/m-bain/whisperX.git" && \
+        uv pip install --python /app/.venv/bin/python --no-cache -r benchmark/requirements.txt
 
 # Copy source code (datasets are intentionally excluded to keep image small)
 COPY --chown=appuser:appuser worker ./worker
@@ -43,6 +46,8 @@ ARG PRELOAD_DIARIZATION="false"
 ARG HUGGING_FACE_TOKEN=""
 
 USER appuser
+
+RUN python -c "import whisperx; print('WhisperX available:', whisperx.__file__)"
 
 RUN if [ -n "${PRELOAD_MODELS}" ] || [ -n "${PRELOAD_ALIGN_LANGS}" ] || [ "${PRELOAD_DIARIZATION}" = "true" ]; then \
       echo "Preloading WhisperX artifacts into image cache..." && \

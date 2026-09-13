@@ -8,6 +8,13 @@ WORKER_IMAGE="skriptor-worker"
 BENCHMARK_IMAGE="skriptor-benchmark"
 DASHBOARD_IMAGE="skriptor-benchmark-dashboard"
 TAG="latest"
+BENCHMARK_TAG="${BENCHMARK_TAG:-benchmark-$(date -u +%Y%m%d-%H%M%S)}"
+NO_CACHE="${NO_CACHE:-false}"
+
+DOCKER_CACHE_ARGS=()
+if [ "$NO_CACHE" = "true" ]; then
+  DOCKER_CACHE_ARGS+=(--no-cache)
+fi
 
 # Default flags
 BUILD_WEB=false
@@ -57,7 +64,7 @@ echo "🚀 Starting build and push for Skriptor images..."
 # 1. Build and Push Web Image
 if [ "$BUILD_WEB" = true ]; then
     echo "🌐 Building Web App..."
-    docker build --network=host -t $DOCKER_USER/$WEB_IMAGE:$TAG -f Dockerfile .
+    docker build "${DOCKER_CACHE_ARGS[@]}" --network=host -t $DOCKER_USER/$WEB_IMAGE:$TAG -f Dockerfile .
     echo "📤 Pushing Web App..."
     docker push $DOCKER_USER/$WEB_IMAGE:$TAG
 fi
@@ -74,7 +81,7 @@ HUGGING_FACE_TOKEN="${HUGGING_FACE_TOKEN:-}"
 if [ "$BUILD_WORKER" = true ]; then
     echo "📦 Building Production Worker..."
     # Worker Dockerfile is in the worker directory
-    docker build --network=host \
+    docker build "${DOCKER_CACHE_ARGS[@]}" --network=host \
       --build-arg PRELOAD_MODELS="$PRELOAD_MODELS" \
       --build-arg PRELOAD_ALIGN_LANGS="$PRELOAD_ALIGN_LANGS" \
       --build-arg PRELOAD_DIARIZATION="$PRELOAD_DIARIZATION" \
@@ -87,20 +94,24 @@ fi
 # 3. Build and Push Benchmark
 if [ "$BUILD_BENCHMARK" = true ]; then
     echo "📊 Building Benchmark Image..."
-    docker build --network=host \
+    docker build "${DOCKER_CACHE_ARGS[@]}" --network=host \
       --build-arg PRELOAD_MODELS="$PRELOAD_MODELS" \
       --build-arg PRELOAD_ALIGN_LANGS="$PRELOAD_ALIGN_LANGS" \
       --build-arg PRELOAD_DIARIZATION="$PRELOAD_DIARIZATION" \
       --build-arg HUGGING_FACE_TOKEN="$HUGGING_FACE_TOKEN" \
-      -t $DOCKER_USER/$BENCHMARK_IMAGE:$TAG -f worker/Dockerfile.benchmark worker/
+      -t $DOCKER_USER/$BENCHMARK_IMAGE:$BENCHMARK_TAG \
+      -t $DOCKER_USER/$BENCHMARK_IMAGE:$TAG \
+      -f worker/Dockerfile.benchmark worker/
     echo "📤 Pushing Benchmark Image..."
+    docker push $DOCKER_USER/$BENCHMARK_IMAGE:$BENCHMARK_TAG
     docker push $DOCKER_USER/$BENCHMARK_IMAGE:$TAG
+    echo "🚀 Deploy this exact RunPod image: $DOCKER_USER/$BENCHMARK_IMAGE:$BENCHMARK_TAG"
 fi
 
 # 4. Build and Push Benchmark Dashboard
 if [ "$BUILD_DASHBOARD" = true ]; then
     echo "📊 Building Benchmark Dashboard Image..."
-    docker build --network=host \
+    docker build "${DOCKER_CACHE_ARGS[@]}" --network=host \
       -t $DOCKER_USER/$DASHBOARD_IMAGE:$TAG -f worker/Dockerfile.dashboard worker/
     echo "📤 Pushing Benchmark Dashboard Image..."
     docker push $DOCKER_USER/$DASHBOARD_IMAGE:$TAG
