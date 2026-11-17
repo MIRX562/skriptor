@@ -1,4 +1,5 @@
 "use client";
+import type { Dictionary } from "@/i18n/dictionaries";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -42,7 +43,7 @@ import { transcriptionUploadSchema } from "../schema/transcription-upload-schema
 type TranscriptionUploadValues = z.infer<typeof transcriptionUploadSchema>;
 
 interface TranscriptionRecordFormProps {
-  dict: any;
+  dict: Dictionary;
 }
 
 export default function TranscriptionRecordForm({ dict }: TranscriptionRecordFormProps) {
@@ -326,7 +327,7 @@ export default function TranscriptionRecordForm({ dict }: TranscriptionRecordFor
                         const value = Number(field.value) || 1;
                         if (value > 1) field.onChange(value - 1);
                       }}
-                      aria-label={dict.common?.audioInput?.decrease || "Decrease"}
+                      aria-label={dict.common.audioInput.pause || "Decrease"}
                       className="rounded-full text-teal-400"
                     >
                       <Minus />
@@ -351,7 +352,7 @@ export default function TranscriptionRecordForm({ dict }: TranscriptionRecordFor
                         const value = Number(field.value) || 1;
                         field.onChange(value + 1);
                       }}
-                      aria-label={dict.common?.audioInput?.increase || "Increase"}
+                      aria-label={dict.common.audioInput.resume || "Increase"}
                       className="rounded-full text-teal-400"
                     >
                       <Plus />

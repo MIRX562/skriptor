@@ -13,7 +13,7 @@ const settingsPatchSchema = z.object({
   defaultLanguage: z.string().max(50).optional(),
   defaultSpeakerIdentification: z.boolean().optional(),
   defaultTranscriptionMode: z.string().max(50).optional(),
-  preferences: z.record(z.string(), z.any()).optional(),
+  preferences: z.record(z.string(), z.unknown()).optional(),
 });
 
 export async function GET() {
@@ -112,7 +112,7 @@ export async function PATCH(req: Request) {
       // Handle merging preferences deep/shallow merge if preference updates are sent
       if (result.data.preferences && settings.preferences) {
         updateData.preferences = {
-          ...(settings.preferences as Record<string, any>),
+          ...(settings.preferences as Record<string, unknown>),
           ...result.data.preferences,
         };
       }

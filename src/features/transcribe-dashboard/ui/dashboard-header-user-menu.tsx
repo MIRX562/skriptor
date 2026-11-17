@@ -12,9 +12,10 @@ import {
 import { SignOut } from "@/features/sign-out/model/query";
 import { authClient } from "@/lib/auth-client";
 import { getInitials } from "@/lib/utils";
+import type { Dictionary } from "@/i18n/dictionaries";
 import Link from "next/link";
 
-export default function DashboardUserMenu({ dict }: { dict?: any }) {
+export default function DashboardUserMenu({ dict }: { dict?: Dictionary }) {
   const session = authClient.useSession();
   const user = session.data?.user;
   

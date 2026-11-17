@@ -5,7 +5,7 @@ import { ResetPasswordView } from "@/features/reset-password/ui/reset-password-v
 export default async function ResetPasswordPage() {
   const cookieStore = await cookies();
   const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
-  const dict = await getDictionary(locale as any);
+  const dict = await getDictionary(locale);
 
   return <ResetPasswordView dict={dict} />;
 }

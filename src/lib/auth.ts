@@ -32,11 +32,26 @@ export const auth = betterAuth({
     delete: async (key) => {
       await redis.del(key);
     },
+    getAndDelete: async (key) => {
+      const value = await redis.get(key);
+      if (value !== null) {
+        await redis.del(key);
+      }
+      return value;
+    },
+    increment: async (key, ttl) => {
+      const current = await redis.incr(key);
+      if (current === 1 && ttl) {
+        await redis.expire(key, ttl);
+      }
+      return current;
+    },
   },
   rateLimit: {
     enabled: true,
     window: 5,
     max: 5,
+    storage:"secondary-storage"
   },
   emailAndPassword: {
     enabled: true,

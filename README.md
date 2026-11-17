@@ -9,6 +9,21 @@ Skriptor is a full-stack transcription platform with:
 
 This guide is intentionally detailed so you can get from clone → working app with minimal guesswork.
 
+## Task runner
+
+Install [Task](https://taskfile.dev/installation/) to run project commands from the repository root. Use `task` or `task --list` to see the available tasks.
+
+Common workflows:
+
+```bash
+task infra:up
+task db:generate
+task db:migrate
+task web:dev
+```
+
+Run the worker with `task worker:run`, start the full Docker stack with `task stack:up`, or build and push selected images with `task image:push -- --worker`. Worker and benchmark commands are also available in the root [Taskfile.yml](./Taskfile.yml).
+
 ---
 
 ## Table of Contents

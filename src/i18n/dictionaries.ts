@@ -1,19 +1,29 @@
 import "server-only";
 
-const dictionaries = {
-  en: () => import("./messages/en.json").then((module) => module.default),
-  id: () => import("./messages/id.json").then((module) => module.default),
-};
+import enMessages from "./messages/en.json";
+import idMessages from "./messages/id.json";
 
-export type Dictionary = Awaited<ReturnType<(typeof dictionaries)["en"]>>;
+export type Locale = "en" | "id";
+
+export type Dictionary = typeof enMessages;
+
+// Compile-time parity check: id.json must match en.json shape.
+const _idParityCheck: Dictionary = idMessages;
+
+const dictionaries: Record<Locale, () => Promise<Dictionary>> = {
+  en: () => import("./messages/en.json").then((module) => module.default as Dictionary),
+  id: () => import("./messages/id.json").then((module) => module.default as Dictionary),
+};
 
 import { cacheLife } from "next/cache";
 
-export const getDictionary = async (locale: string): Promise<Dictionary> => {
+export const getDictionary = async (locale: Locale | string): Promise<Dictionary> => {
   "use cache";
   cacheLife("weeks");
-  if (locale in dictionaries) {
-    return dictionaries[locale as keyof typeof dictionaries]();
+  if (locale === "en" || locale === "id") {
+    return dictionaries[locale]();
   }
-  return dictionaries["en"]();
+  return dictionaries.en();
 };
+
+export { _idParityCheck };

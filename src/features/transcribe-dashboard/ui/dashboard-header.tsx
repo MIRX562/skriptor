@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import { motion } from "framer-motion";
+import type { Dictionary, Locale } from "@/i18n/dictionaries";
 import Logo from "@/components/logo";
 import DashboardUserMenu from "./dashboard-header-user-menu";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { DashboardNav } from "./dashboard-nav";
 
-export function SiteHeader({ dict, locale }: { dict?: any; locale?: string }) {
+export function SiteHeader({ dict, locale }: { dict?: Dictionary; locale?: Locale }) {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {

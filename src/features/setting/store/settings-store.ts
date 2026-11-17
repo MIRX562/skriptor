@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
+export type TourStatus = "completed" | "skipped" | "dismissed" | null;
+
+export type TourKey = "dashboard" | "editor";
+
 export interface UserSettingsData {
   theme: "light" | "dark" | "system";
   emailNotifications: boolean;
@@ -9,11 +13,11 @@ export interface UserSettingsData {
   defaultSpeakerIdentification: boolean;
   defaultTranscriptionMode: string;
   preferences: {
-    completedTours?: {
-      dashboard?: boolean;
-      editor?: boolean;
-    };
-    [key: string]: any;
+    completedTours?: Partial<Record<TourKey, boolean>>;
+    skippedTours?: Partial<Record<TourKey, boolean>>;
+    dismissedTours?: Partial<Record<TourKey, boolean>>;
+    customDictionary?: string[];
+    [key: string]: unknown;
   };
 }
 
@@ -23,9 +27,13 @@ interface SettingsState extends UserSettingsData {
   hasLoaded: boolean;
 
   fetchSettings: () => Promise<void>;
-  updateSetting: (key: keyof UserSettingsData, value: any) => Promise<void>;
-  updatePreference: (key: string, value: any) => Promise<void>;
+  updateSetting: (key: keyof UserSettingsData, value: UserSettingsData[keyof UserSettingsData]) => Promise<void>;
+  updatePreference: (key: string, value: unknown) => Promise<void>;
   saveSettings: (data: Partial<UserSettingsData>) => Promise<void>;
+
+  setTourStatus: (tourKey: TourKey, status: TourStatus) => Promise<void>;
+  restartTour: (tourKey: TourKey) => Promise<void>;
+  getTourStatus: (tourKey: TourKey) => TourStatus;
 }
 
 const defaultSettings: UserSettingsData = {
@@ -86,6 +94,61 @@ export const useSettingsStore = create<SettingsState>()(
         };
         set({ preferences: newPrefs });
         await get().saveSettings({ preferences: newPrefs });
+      },
+
+      setTourStatus: async (tourKey, status) => {
+        const prefs = get().preferences;
+        if (status === "completed") {
+          set({
+            preferences: {
+              ...prefs,
+              completedTours: { ...(prefs.completedTours || {}), [tourKey]: true },
+              skippedTours: { ...(prefs.skippedTours || {}), [tourKey]: false },
+              dismissedTours: { ...(prefs.dismissedTours || {}), [tourKey]: false },
+            },
+          });
+        } else if (status === "skipped") {
+          set({
+            preferences: {
+              ...prefs,
+              completedTours: { ...(prefs.completedTours || {}), [tourKey]: false },
+              skippedTours: { ...(prefs.skippedTours || {}), [tourKey]: true },
+              dismissedTours: { ...(prefs.dismissedTours || {}), [tourKey]: false },
+            },
+          });
+        } else if (status === "dismissed") {
+          set({
+            preferences: {
+              ...prefs,
+              completedTours: { ...(prefs.completedTours || {}), [tourKey]: false },
+              skippedTours: { ...(prefs.skippedTours || {}), [tourKey]: false },
+              dismissedTours: { ...(prefs.dismissedTours || {}), [tourKey]: true },
+            },
+          });
+        } else {
+          // null -> reset all
+          set({
+            preferences: {
+              ...prefs,
+              completedTours: { ...(prefs.completedTours || {}), [tourKey]: false },
+              skippedTours: { ...(prefs.skippedTours || {}), [tourKey]: false },
+              dismissedTours: { ...(prefs.dismissedTours || {}), [tourKey]: false },
+            },
+          });
+        }
+        await get().saveSettings({ preferences: get().preferences });
+      },
+
+      restartTour: async (tourKey) => {
+        await get().setTourStatus(tourKey, null);
+      },
+
+      getTourStatus: (tourKey) => {
+        const prefs = get().preferences;
+        if (prefs.completedTours?.[tourKey]) return "completed";
+        if (prefs.skippedTours?.[tourKey]) return "skipped";
+        if (prefs.dismissedTours?.[tourKey]) return "dismissed";
+        return null;
       },
 
       saveSettings: async (data) => {

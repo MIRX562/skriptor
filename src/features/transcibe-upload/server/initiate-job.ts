@@ -9,12 +9,21 @@ import { transcriptions } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { randomUUID } from "crypto";
-// import { z } from "zod";
-import { transcriptionUploadSchema } from "../schema/transcription-upload-schema";
+import { z } from "zod";
 import { uploadAudio, getPresignedUrl } from "@/lib/storage";
 import { transcriptionQueue, TranscriptionJobPayload } from "@/lib/queue";
 
-
+const initiateJobInputSchema = z.object({
+  title: z.string(),
+  language: z.string(),
+  model: z.enum(["small", "turbo", "large"]),
+  isSpeakerDiarized: z.boolean(),
+  numberOfSpeaker: z.number().min(1).max(10),
+  storageKey: z.string().optional(),
+  file: z.custom<File>((value) => value instanceof File).optional(),
+  fileSize: z.number().optional(),
+  fileType: z.string().optional(),
+});
 
 async function enqueueTranscriptionJob(data: TranscriptionJobPayload) {
   await transcriptionQueue.add("transcribe", data, {
@@ -22,7 +31,7 @@ async function enqueueTranscriptionJob(data: TranscriptionJobPayload) {
   });
 }
 
-export async function initiateJob(input: any) {
+export async function initiateJob(input: unknown) {
   // Auth
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -30,10 +39,20 @@ export async function initiateJob(input: any) {
   if (!session?.user?.id) throw new Error("Not authenticated");
   const userId = session.user.id;
 
-  const { title, language, model, isSpeakerDiarized, numberOfSpeaker, storageKey, file } = input;
+  const {
+    title,
+    language,
+    model,
+    isSpeakerDiarized,
+    numberOfSpeaker,
+    storageKey,
+    file,
+    fileSize,
+    fileType,
+  } = initiateJobInputSchema.parse(input);
 
   let filename = storageKey;
-  let metadata: any = {};
+  let metadata: Record<string, unknown> = {};
 
   if (!filename && file instanceof File) {
     // Legacy/Small file path: Upload from server
@@ -61,8 +80,8 @@ export async function initiateJob(input: any) {
     metadata = {
       filename,
       originalName: title, // Use title as fallback
-      size: input.fileSize || 0,
-      type: input.fileType || "audio/mpeg",
+      size: fileSize || 0,
+      type: fileType || "audio/mpeg",
       duration: 0,
     };
   } else {

@@ -1,4 +1,5 @@
 "use client";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 import { useMemo } from "react";
 import {
@@ -13,7 +14,7 @@ import {
 import { useTranscriptionList } from "@/features/transcribe-manage/model/use-transcription-list";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function TranscriptionStats({ dict }: { dict: any }) {
+export function TranscriptionStats({ dict }: { dict: Dictionary }) {
   const { data: transcriptions, isLoading } = useTranscriptionList();
 
   const shortMonths = useMemo(() => {
@@ -63,7 +64,7 @@ export function TranscriptionStats({ dict }: { dict: any }) {
   if (chartData.length === 0 || chartData.every((d) => d.count === 0)) {
     return (
       <div className="h-48 flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">{dict.dashboard.monthlyStats.empty}</p>
+        <p className="text-sm text-muted-foreground">{dict.dashboard.monthlyStats.title}</p>
       </div>
     );
   }
@@ -90,8 +91,8 @@ export function TranscriptionStats({ dict }: { dict: any }) {
               if (!active || !payload?.length) return null;
               const value = payload[0].value as number;
               const labelText = value === 1 
-                ? dict.dashboard.monthlyStats.transcription 
-                : dict.dashboard.monthlyStats.transcriptions;
+                ? dict.dashboard.monthlyStats.title 
+                : dict.dashboard.monthlyStats.title;
                 
               return (
                 <div className="rounded-md border bg-popover px-3 py-2 text-sm shadow-md">

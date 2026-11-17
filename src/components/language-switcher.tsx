@@ -23,7 +23,7 @@ export function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
   const handleLanguageChange = (locale: string) => {
     if (locale === currentLocale) return;
     startTransition(async () => {
-      await setServerLocale(locale);
+      await setServerLocale(locale as "en" | "id");
       router.refresh();
     });
   };

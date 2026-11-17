@@ -1,4 +1,5 @@
 "use client";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 import { useMemo } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -15,7 +16,7 @@ interface SpellcheckReviewProps {
   isOpen: boolean;
   onClose: () => void;
   onGoToSegment: (index: number) => void;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function SpellcheckReview({

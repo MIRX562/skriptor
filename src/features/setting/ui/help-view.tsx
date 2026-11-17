@@ -1,22 +1,34 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { HelpCircle, Mail, MessageCircle, FileText } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useSettingsStore } from "@/features/setting/store/settings-store";
+import { FileText, Mail, MessageCircle, RotateCcw } from "lucide-react";
 
 export default function HelpView() {
+  const { restartTour } = useSettingsStore();
   const faqs = [
     {
       question: "How do I upload larger files?",
-      answer: "Standard accounts support files up to 50MB. For larger files, please contact support for custom limits.",
+      answer:
+        "Standard accounts support files up to 50MB. For larger files, please contact support for custom limits.",
     },
     {
       question: "Which languages are supported?",
-      answer: "We support over 90 languages including English, Spanish, French, German, and many more using WhisperX models.",
+      answer:
+        "We support over 90 languages including English, Spanish, French, German, and many more using WhisperX models.",
     },
     {
       question: "How accurate is the transcription?",
-      answer: "Accuracy varies by audio quality and model size. 'Large' models provide the highest accuracy (95%+) for most clear recordings.",
+      answer:
+        "Accuracy varies by audio quality and model size. 'Large' models provide the highest accuracy (95%+) for most clear recordings.",
     },
   ];
+
+  const handleRestartTour = (key: "dashboard" | "editor") => {
+    restartTour(key);
+  };
 
   return (
     <div className="p-6 md:p-8">
@@ -29,14 +41,46 @@ export default function HelpView() {
         </p>
       </div>
 
+      <div className="mb-8">
+        <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/50 rounded-3xl overflow-hidden shadow-sm">
+          <CardContent className="p-8">
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <RotateCcw className="h-5 w-5" /> Onboarding Tour
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-500 mb-6">
+              Re-watch the guided tour to refresh your knowledge of
+              Skriptor&rsquo;s key features.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Button
+                onClick={() => handleRestartTour("dashboard")}
+                className="w-full"
+              >
+                Dashboard Tour
+              </Button>
+              <Button
+                onClick={() => handleRestartTour("editor")}
+                className="w-full"
+              >
+                Editor Tour
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <Card className="bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/50 rounded-3xl overflow-hidden shadow-sm hover:border-teal-500/50 transition-all duration-300 cursor-pointer group">
           <CardContent className="p-8">
             <div className="rounded-2xl bg-teal-50 dark:bg-teal-950 w-12 h-12 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
               <Mail className="h-6 w-6 text-teal-600 dark:text-teal-400" />
             </div>
-            <h3 className="font-bold text-slate-900 dark:text-white">Email Support</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">Get expert help via email within 24 hours.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">
+              Email Support
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">
+              Get expert help via email within 24 hours.
+            </p>
           </CardContent>
         </Card>
 
@@ -45,8 +89,12 @@ export default function HelpView() {
             <div className="rounded-2xl bg-teal-50 dark:bg-teal-950 w-12 h-12 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
               <FileText className="h-6 w-6 text-teal-600 dark:text-teal-400" />
             </div>
-            <h3 className="font-bold text-slate-900 dark:text-white">Documentation</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">Read our comprehensive guides and API docs.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">
+              Documentation
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">
+              Read our comprehensive guides and API docs.
+            </p>
           </CardContent>
         </Card>
 
@@ -55,8 +103,12 @@ export default function HelpView() {
             <div className="rounded-2xl bg-teal-50 dark:bg-teal-900/20 w-12 h-12 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
               <MessageCircle className="h-6 w-6 text-teal-600 dark:text-teal-400" />
             </div>
-            <h3 className="font-bold text-slate-900 dark:text-white">Community</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">Join our Discord community for quick help.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">
+              Community
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">
+              Join our Discord community for quick help.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -68,11 +120,15 @@ export default function HelpView() {
         <div className="grid grid-cols-1 gap-4">
           {faqs.map((faq, index) => (
             <div key={index} className="space-y-2">
-              <h4 className="font-medium text-slate-900 dark:text-white">{faq.question}</h4>
+              <h4 className="font-medium text-slate-900 dark:text-white">
+                {faq.question}
+              </h4>
               <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 {faq.answer}
               </p>
-              {index < faqs.length - 1 && <Separator className="mt-4 bg-slate-100 dark:bg-slate-800" />}
+              {index < faqs.length - 1 && (
+                <Separator className="mt-4 bg-slate-100 dark:bg-slate-800" />
+              )}
             </div>
           ))}
         </div>

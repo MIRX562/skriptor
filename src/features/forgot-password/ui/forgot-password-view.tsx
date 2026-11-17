@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface ForgotPasswordViewProps {
-  dict: any;
+  dict: Dictionary;
 }
 
 export function ForgotPasswordView({ dict }: ForgotPasswordViewProps) {
@@ -54,7 +55,7 @@ export function ForgotPasswordView({ dict }: ForgotPasswordViewProps) {
       toast.success(dict.auth.forgotPassword.messages.successTitle, {
         description: dict.auth.forgotPassword.messages.successDescription,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Forget password error:", err);
       toast.error(dict.auth.forgotPassword.messages.errorTitle, {
         description: dict.auth.forgotPassword.messages.errorDescription,
@@ -85,14 +86,14 @@ export function ForgotPasswordView({ dict }: ForgotPasswordViewProps) {
 
           <div className="space-y-2">
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              {dict.auth.forgotPassword.sentTo}
+              {dict.auth.forgotPassword.messages.sentTo}
             </p>
             <p className="font-medium">{email}</p>
           </div>
 
           <div className="space-y-4 pt-4">
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              {dict.auth.forgotPassword.notReceived}
+              {dict.auth.forgotPassword.messages.notReceived}
             </p>
 
             <Button
@@ -100,7 +101,7 @@ export function ForgotPasswordView({ dict }: ForgotPasswordViewProps) {
               className="w-full"
               onClick={() => setIsSubmitted(false)}
             >
-              {dict.auth.forgotPassword.tryAgain}
+              {dict.auth.forgotPassword.messages.tryAgain}
             </Button>
           </div>
         </div>

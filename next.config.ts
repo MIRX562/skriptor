@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  partialPrefetching: true,
   cacheComponents: true,
   images: {
     // Local assets are served directly; avoids shipping Sharp/libvips in the runtime image.

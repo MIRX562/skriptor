@@ -27,10 +27,11 @@ import { signUpEmailSchema } from "../model/schema";
 import { signUpEmail } from "../model/query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signInGoogle } from "@/features/sign-in/model/query";
+import type { Dictionary } from "@/i18n/dictionaries";
 import { AlertCircle } from "lucide-react";
 
 interface SignUpPageProps {
-  dict: any;
+  dict: Dictionary;
 }
 
 export default function SignUpPage({ dict }: SignUpPageProps) {

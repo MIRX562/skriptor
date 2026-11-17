@@ -5,13 +5,14 @@ import { ModeToggle } from "@/components/mode-toggle";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import type { Locale } from "@/i18n/dictionaries";
 
 export default function AuthLayout({
   children,
   locale,
 }: {
   children: React.ReactNode;
-  locale: string;
+  locale: Locale;
 }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex flex-col">

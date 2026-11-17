@@ -39,7 +39,6 @@ interface DownloadOptionsProps {
     date: string;
     duration: string;
     isSpeakerDiarized: boolean;
-    [key: string]: any;
   };
   segments: Array<{
     id: string;
@@ -213,7 +212,7 @@ export function DownloadOptions({
     let currentSpeaker: string | null = null;
     let currentSpeakerSegments: string[] = [];
     let currentStartTime: number = 0;
-    const docChildren: any[] = [
+    const docChildren: Paragraph[] = [
       new Paragraph({
         text: metadata.title,
         heading: HeadingLevel.HEADING_1,
@@ -296,7 +295,7 @@ export function DownloadOptions({
     }));
 
     const filteredRows = rows.map(row => {
-      const filtered: any = {};
+      const filtered: Record<string, unknown> = {};
       if (includeSpeaker) filtered.Speaker = row.Speaker;
       if (includeTimestamp) {
         filtered.Start = row.Start;
@@ -320,7 +319,7 @@ export function DownloadOptions({
     }));
 
     const filteredData = data.map(row => {
-      const filtered: any = {};
+      const filtered: Record<string, unknown> = {};
       if (includeSpeaker) filtered.Speaker = row.Speaker;
       if (includeTimestamp) {
         filtered.Start = row.Start;

@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface EmailVerifiedViewProps {
-  dict: any;
+  dict: Dictionary;
 }
 
 export function EmailVerifiedView({ dict }: EmailVerifiedViewProps) {

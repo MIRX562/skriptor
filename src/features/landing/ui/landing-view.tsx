@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -33,10 +33,11 @@ import { WorkInProgressBanner } from "@/components/work-in-progress";
 import { LiteTranscriptionForm } from "./lite-transcription-form";
 import SoftAurora from "@/components/SoftAurora";
 import GradientText from "@/components/GradientText";
+import type { Dictionary, Locale } from "@/i18n/dictionaries";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import Logo from "@/components/logo";
 
-export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
+export function LandingPage({ locale, dict }: { locale: Locale; dict: Dictionary }) {
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -186,7 +187,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                 title: dict.landing.features.items.vocabulary.title,
                 description: dict.landing.features.items.vocabulary.description,
               },
-            ].map((feature: any, i: number) => (
+            ].map((feature: { icon: ReactNode; title: string; description: string }, i: number) => (
               <motion.div
                 key={feature.title}
                 initial="hidden"
@@ -263,7 +264,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
                 title: dict.landing.howItWorks.steps.review.title,
                 description: dict.landing.howItWorks.steps.review.description,
               },
-            ].map((step: any, i: number) => (
+            ].map((step: { step: string; icon: ReactNode; title: string; description: string }, i: number) => (
               <motion.div
                 key={step.title}
                 initial="hidden"
@@ -321,7 +322,7 @@ export function LandingPage({ locale, dict }: { locale: string; dict: any }) {
 
           <div className="max-w-3xl mx-auto">
             <Accordion type="single" collapsible className="w-full">
-              {dict.landing.faq.items.map((faq: any, i: number) => (
+              {dict.landing.faq.items.map((faq: { question: string; answer: string }, i: number) => (
                 <motion.div
                   key={faq.question}
                   initial="hidden"

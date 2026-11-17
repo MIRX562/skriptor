@@ -1,4 +1,5 @@
 "use client";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import WaveSurfer from "wavesurfer.js";
@@ -20,7 +21,7 @@ type AudioInputProps = {
   value: File | null;
   onValueChange: (file: File | null) => void;
   className?: string;
-  dict: any;
+  dict: Dictionary;
 };
 
 function blobToFile(blob: Blob, name: string): File {

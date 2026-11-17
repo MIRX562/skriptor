@@ -5,11 +5,12 @@ import { ModeToggle } from "@/components/mode-toggle";
 import Logo from "@/components/logo";
 import DashboardUserMenu from "@/features/transcribe-dashboard/ui/dashboard-header-user-menu";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import type { Dictionary, Locale } from "@/i18n/dictionaries";
 import { ChevronLeft, Settings } from "lucide-react";
 
 interface SettingsHeaderProps {
-  dict?: any;
-  locale?: string;
+  dict?: Dictionary;
+  locale?: Locale;
 }
 
 export function SettingsHeader({ dict, locale }: SettingsHeaderProps) {

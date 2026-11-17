@@ -22,10 +22,12 @@ import { Label } from "@/components/ui/label";
 import SpotlightCard from "@/components/SpotlightCard";
 import ShinyText from "@/components/ShinyText";
 
+import type { Dictionary } from "@/i18n/dictionaries";
+
 interface LiteTranscriptionFormProps {
-  dict: any;
-  common: any;
-  fullDict: any;
+  dict: Dictionary["landing"]["liteForm"];
+  common: Dictionary["common"];
+  fullDict: Dictionary;
 }
 
 export function LiteTranscriptionForm({

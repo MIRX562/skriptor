@@ -1,0 +1,144 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  web:install:
+    desc: Install web dependencies
+    cmds:
+      - bun install
+
+  web:dev:
+    desc: Start the web app in development mode
+    cmds:
+      - bun run dev
+
+  web:build:
+    desc: Build the web app
+    cmds:
+      - bun run build
+
+  web:start:
+    desc: Start the production web app
+    cmds:
+      - bun run start
+
+  web:lint:
+    desc: Lint the web app
+    cmds:
+      - bun run lint
+
+  db:studio:
+    desc: Open Drizzle Studio
+    cmds:
+      - bun run db:studio
+
+  db:generate:
+    desc: Generate database migrations
+    cmds:
+      - bun run db:generate
+
+  db:migrate:
+    desc: Run database migrations
+    cmds:
+      - bun run db:migrate
+
+  db:push:
+    desc: Push the schema directly to the database
+    cmds:
+      - bun run db:push
+
+  infra:up:
+    desc: Start local Postgres, Redis, and MinIO
+    cmds:
+      - docker compose up -d
+
+  infra:down:
+    desc: Stop local infrastructure
+    cmds:
+      - docker compose down
+
+  infra:logs:
+    desc: Follow local infrastructure logs
+    cmds:
+      - docker compose logs -f
+
+  stack:up:
+    desc: Build and start the full production-like Docker stack
+    cmds:
+      - docker compose -f docker-compose.prod.yml up -d --build
+
+  stack:down:
+    desc: Stop the full production-like Docker stack
+    cmds:
+      - docker compose -f docker-compose.prod.yml down
+
+  stack:logs:
+    desc: Follow logs for the full production-like Docker stack
+    cmds:
+      - docker compose -f docker-compose.prod.yml logs -f
+
+  worker:install:
+    desc: Install worker dependencies
+    dir: worker
+    cmds:
+      - uv sync --index-strategy unsafe-best-match
+
+  worker:run:
+    desc: Run the transcription worker
+    dir: worker
+    cmds:
+      - uv run --locked python -m worker.main
+
+  worker:test:
+    desc: Run worker tests (pass optional pytest arguments after --)
+    dir: worker
+    cmds:
+      - uv run --locked --extra dev pytest {{.CLI_ARGS}}
+
+  benchmark:run:
+    desc: Run the transcription benchmark (pass benchmark arguments after --)
+    dir: worker
+    cmds:
+      - uv run --locked --with-requirements benchmark/requirements.txt python benchmark/benchmark.py {{.CLI_ARGS}}
+
+  benchmark:dashboard:
+    desc: Start the benchmark dashboard
+    dir: worker
+    cmds:
+      - uv run --locked --with-requirements benchmark/requirements.txt streamlit run benchmark/dashboard.py
+
+  benchmark:export:
+    desc: Export benchmark reports
+    dir: worker
+    cmds:
+      - uv run --locked --with-requirements benchmark/requirements.txt python benchmark/exporter.py
+
+  image:build:web:
+    desc: Build the web Docker image locally
+    cmds:
+      - docker build --network=host -f Dockerfile -t skriptor-web:local .
+
+  image:build:worker:
+    desc: Build the worker Docker image locally
+    cmds:
+      - docker build --network=host -f worker/Dockerfile -t skriptor-worker:local worker/
+
+  image:build:benchmark:
+    desc: Build the benchmark Docker image locally
+    cmds:
+      - docker build --network=host -f worker/Dockerfile.benchmark -t skriptor-benchmark:local worker/
+
+  image:build:dashboard:
+    desc: Build the benchmark dashboard Docker image locally
+    cmds:
+      - docker build --network=host -f worker/Dockerfile.dashboard -t skriptor-benchmark-dashboard:local worker/
+
+  image:push:
+    desc: Build and push images (pass --web, --worker, --benchmark, --dashboard, or --all after --)
+    cmds:
+      - ./push_images.sh {{.CLI_ARGS}}

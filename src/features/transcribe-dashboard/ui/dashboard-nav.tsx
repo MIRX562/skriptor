@@ -3,10 +3,11 @@
 import { useRouter, usePathname } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutDashboard, PenTool, ListMusic } from "lucide-react";
+import type { Dictionary } from "@/i18n/dictionaries";
 import { cn } from "@/lib/utils";
 
 interface DashboardNavProps {
-  dict: any;
+  dict?: Dictionary;
   className?: string;
 }
 
@@ -50,6 +51,7 @@ export function DashboardNav({ dict, className }: DashboardNavProps) {
         </TabsTrigger>
         <TabsTrigger 
           value="transcribe" 
+          data-tour-step="transcribe-tab"
           className="text-xs font-medium transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-teal-600 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-sm"
         >
           <PenTool className="h-3.5 w-3.5 mr-1.5" />
@@ -57,6 +59,7 @@ export function DashboardNav({ dict, className }: DashboardNavProps) {
         </TabsTrigger>
         <TabsTrigger 
           value="manage" 
+          data-tour-step="manage-tab"
           className="text-xs font-medium transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-teal-600 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-sm"
         >
           <ListMusic className="h-3.5 w-3.5 mr-1.5" />

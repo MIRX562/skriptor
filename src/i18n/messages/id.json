@@ -581,14 +581,25 @@
       "email": {
         "label": "Email",
         "placeholder": "skriptor@mail.com",
-        "description": "Masukkan email yang terdaftar."
+        "description": "Masukkan email yang terdaftar.",
+        "required": "Email wajib diisi",
+        "invalid": "Email tidak valid"
       },
       "submit": "Kirim Tautan Atur Ulang",
       "backToLogin": "Kembali ke masuk",
       "messages": {
         "loading": "Sedang mengirim tautan....",
         "success": "Tautan atur ulang dikirim ke email Anda",
-        "error": "Gagal mengirim tautan atur ulang"
+        "error": "Gagal mengirim tautan atur ulang",
+        "successTitle": "Check your email",
+        "successDescription": "We sent a password reset link to your inbox.",
+        "errorTitle": "Error",
+        "errorDescription": "Failed to send reset link.",
+        "checkEmail": "Check your email for the reset link",
+        "sentTo": "Sent to your email address",
+        "notReceived": "Did not receive the email? Check your spam folder.",
+        "tryAgain": "Try again",
+        "sending": "Sending reset link..."
       }
     },
     "resetPassword": {
@@ -597,19 +608,28 @@
       "password": {
         "label": "Kata Sandi Baru",
         "placeholder": "*******",
-        "description": "Buat kata sandi baru yang kuat."
+        "description": "Buat kata sandi baru yang kuat.",
+        "minLength": "Kata sandi minimal 8 karakter",
+        "required": "Kata sandi wajib diisi"
       },
       "confirmPassword": {
         "label": "Konfirmasi Kata Sandi",
         "placeholder": "*******",
-        "description": "Ulangi kata sandi baru Anda."
+        "description": "Ulangi kata sandi baru Anda.",
+        "required": "Harap konfirmasi kata sandi",
+        "match": "Kata sandi tidak cocok"
       },
       "submit": "Atur Ulang Kata Sandi",
       "messages": {
         "loading": "Sedang mengatur ulang....",
         "success": "Kata sandi berhasil diatur ulang",
         "error": "Gagal mengatur ulang kata sandi",
-        "mismatch": "Kata sandi tidak cocok"
+        "mismatch": "Kata sandi tidak cocok",
+        "successTitle": "Success",
+        "successDescription": "Your password has been reset successfully.",
+        "errorTitle": "Error",
+        "errorDescription": "Failed to reset password. Please try again.",
+        "invalidToken": "Invalid or expired reset token."
       }
     },
     "settings": "Pengaturan",

@@ -87,7 +87,7 @@ export function SearchControls({ dict, onClose, language }: SearchControlsProps)
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 ref={searchInputRef}
-                placeholder={(dict.view.search as any).placeholder}
+                placeholder={dict.view?.search?.placeholder}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);

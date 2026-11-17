@@ -1,4 +1,5 @@
 "use client";
+import type { Dictionary } from "@/i18n/dictionaries";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
@@ -48,7 +49,7 @@ import { WaveformPlayer } from "../../transcribe-manage/ui/waveform-player";
 
 type TranscriptionUploadValues = z.infer<typeof transcriptionUploadSchema>;
 
-export default function TranscriptionUploadForm({ dict }: { dict: any }) {
+export default function TranscriptionUploadForm({ dict }: { dict: Dictionary }) {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const router = useRouter();
@@ -212,6 +213,7 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
                 >
                   <FileInput
                     id="fileInput"
+                    data-tour-step="upload-dropzone"
                     className="outline-dashed outline-2 outline-slate-500 hover:outline-teal-600"
                   >
                     <div className="flex items-center justify-center flex-col p-8 w-full ">
@@ -440,7 +442,7 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
                         const value = Number(field.value) || 1;
                         if (value > 1) field.onChange(value - 1);
                       }}
-                      aria-label={dict.common?.audioInput?.decrease || "Decrease"}
+                      aria-label={dict.common.audioInput.pause || "Decrease"}
                       className="rounded-full text-teal-400"
                     >
                       <Minus />
@@ -465,7 +467,7 @@ export default function TranscriptionUploadForm({ dict }: { dict: any }) {
                         const value = Number(field.value) || 1;
                         field.onChange(value + 1);
                       }}
-                      aria-label={dict.common?.audioInput?.increase || "Increase"}
+                      aria-label={dict.common.audioInput.resume || "Increase"}
                       className="rounded-full text-teal-400"
                     >
                       <Plus />

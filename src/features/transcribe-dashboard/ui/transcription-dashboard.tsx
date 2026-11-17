@@ -1,4 +1,5 @@
 "use client";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -13,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Max "plan" hours for the usage % bar — adjust when billing is real
 const PLAN_HOURS = 10;
 
-export function TranscriptionDashboard({ dict }: { dict: any }) {
+export function TranscriptionDashboard({ dict }: { dict: Dictionary }) {
   const { data: transcriptions, isLoading, error } = useTranscriptionList();
 
   const stats = useMemo(() => {

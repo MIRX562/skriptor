@@ -621,6 +621,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
         <CardContent className="space-y-4 p-4 sm:p-6">
           <div
             id="waveform-player"
+            data-tour-step="waveform-player"
             className="p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/50 shadow-inner"
           >
             {audioUrl ? (
@@ -643,7 +644,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
             <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar max-w-full">
               <Tabs
                 value={viewMode}
-                onValueChange={(v) => setViewMode(v as any)}
+                onValueChange={(v) => setViewMode(v as "segments" | "fulltext")}
                 className="w-auto"
               >
                 <TabsList className="flex h-8 p-0 bg-transparent border-none shadow-none">
@@ -679,6 +680,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                 trigger={
                   <Button
                     id="download-btn"
+                    data-tour-step="download-btn"
                     variant="ghost"
                     size="sm"
                     className="h-8 shrink-0 hover:bg-white dark:hover:bg-slate-950"
@@ -872,6 +874,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
 
                   <Button
                     id="edit-btn"
+                    data-tour-step="edit-btn"
                     variant="ghost"
                     size="sm"
                     className="h-8 hover:bg-white dark:hover:bg-slate-950"
@@ -963,14 +966,14 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                   ) : (
                     <div className="space-y-6">
                       {segments
-                        .reduce((acc: any[], s, i) => {
+                        .reduce((acc: { speakerIndex: number; segments: ((typeof segments)[number] & { index?: number })[] }[], s: (typeof segments)[number] & { index?: number }, i: number) => {
                           const prev = i > 0 ? segments[i - 1] : null;
                           const showSpeaker =
                             !prev || prev.speakerIndex !== s.speakerIndex;
 
                           if (showSpeaker || acc.length === 0) {
                             acc.push({
-                              speakerIndex: s.speakerIndex,
+speakerIndex: s.speakerIndex ?? 0,
                               segments: [{ ...s, index: i }],
                             });
                           } else {
@@ -987,11 +990,11 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                               {getSpeakerLabel(group.speakerIndex) || "Unknown"}
                             </span>
                             <p className="text-base sm:text-lg text-justify leading-relaxed">
-                              {group.segments.map((s: any) => (
+                              {group.segments.map((s: (typeof segments)[number] & { index?: number }) => (
                                 <span key={s.id}>
                                   <span
                                     id={`read-segment-${s.index}`}
-                                    onClick={() => handleSegmentClick(s.index)}
+                                    onClick={() => handleSegmentClick(s.index ?? 0)}
                                     className={cn(
                                       "cursor-pointer transition-all duration-300 rounded px-1 -mx-1 inline",
                                       activeSegmentIndex === s.index
@@ -1001,7 +1004,7 @@ export function TranscriptionView({ id, dict }: TranscriptionViewProps) {
                                   >
                                     <SpellcheckHighlighter
                                       text={s.text}
-                                      segmentIndex={s.index}
+                                      segmentIndex={s.index ?? 0}
                                       searchTerm={searchTerm}
                                       isCurrentSearchMatch={
                                         searchResults[currentResultIndex] ===

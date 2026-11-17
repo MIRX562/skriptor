@@ -68,7 +68,7 @@ interface RetranscribeDialogProps {
   id: string;
   currentSettings: {
     language: string;
-    model: string;
+    model?: string;
     isSpeakerDiarized: boolean;
     numberOfSpeaker: number;
   };
@@ -84,7 +84,7 @@ export function RetranscribeDialog({ id, currentSettings, dict, trigger }: Retra
     resolver: zodResolver(retranscribeSchema),
     defaultValues: {
       language: currentSettings.language || "en",
-      model: (currentSettings.model as any) || "turbo",
+      model: (currentSettings.model as "small" | "turbo" | "large") || "turbo",
       isSpeakerDiarized: currentSettings.isSpeakerDiarized || false,
       numberOfSpeaker: currentSettings.numberOfSpeaker || 1,
     },
@@ -222,7 +222,7 @@ export function RetranscribeDialog({ id, currentSettings, dict, trigger }: Retra
                               {m === "small" ? "🚀" : m === "turbo" ? "⚖️" : "✨"}
                             </span>
                             <span className="text-xs font-medium uppercase">
-                              {(dict.transcribe.form.speed as any)[m === "small" ? "fast" : m === "turbo" ? "turbo" : "super"]?.label || m}
+                              {(dict.transcribe.form.speed as Record<string, { label?: string }>)[m === "small" ? "fast" : m === "turbo" ? "turbo" : "super"]?.label || m}
                             </span>
                           </Label>
                         </div>

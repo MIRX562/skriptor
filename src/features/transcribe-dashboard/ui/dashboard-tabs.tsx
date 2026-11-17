@@ -6,11 +6,12 @@ import { DashboardNav } from "./dashboard-nav";
 import { useProcessPendingJob } from "@/features/transcribe-dashboard/model/use-process-pending-job";
 import { Loader2 } from "lucide-react";
 
+import type { Dictionary, Locale } from "@/i18n/dictionaries";
 import { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 interface DashboardTabsProps {
-  dict: any;
-  locale: string;
+  dict: Dictionary;
+  locale: Locale;
   children: ReactNode;
 }
 

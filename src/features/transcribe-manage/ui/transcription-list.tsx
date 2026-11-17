@@ -91,7 +91,7 @@ function TranscriptionListItemRow({
   onRetry: (id: string, e: React.MouseEvent) => void;
   isDeleting: boolean;
   isRetrying: boolean;
-  dict: any;
+  dict: Dictionary;
 }) {
   const displayTitle = formatTitle(item.metadata, item.title);
   const displayMode = mapMode(item.model);
@@ -165,7 +165,7 @@ function TranscriptionListItemRow({
           }
           className="text-xs font-normal capitalize"
         >
-          {dict.status[currentStatus] || displayStatus.replace("_", " ")}
+          {dict.status[currentStatus as keyof typeof dict.status] || displayStatus.replace("_", " ")}
         </Badge>
 
         <DropdownMenu>
@@ -177,7 +177,7 @@ function TranscriptionListItemRow({
               onClick={(e) => e.stopPropagation()}
             >
               <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">{dict.common.options || "Options"}</span>
+              <span className="sr-only">{dict.manage?.actions?.moreOptions || "Options"}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -187,7 +187,7 @@ function TranscriptionListItemRow({
                 onSelect(item.id);
               }}
             >
-              {dict.common.view || "View"}
+              {dict.manage?.actions?.view || "View"}
             </DropdownMenuItem>
             {currentStatus === "failed" && (
               <DropdownMenuItem

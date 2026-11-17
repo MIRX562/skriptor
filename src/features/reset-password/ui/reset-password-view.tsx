@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface ResetPasswordViewProps {
-  dict: any;
+  dict: Dictionary;
 }
 
 export function ResetPasswordView({ dict }: ResetPasswordViewProps) {
@@ -92,7 +93,7 @@ export function ResetPasswordView({ dict }: ResetPasswordViewProps) {
       });
 
       router.push("/sign-in");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Reset password error:", err);
       toast.error(dict.auth.resetPassword.messages.errorTitle, {
         description: dict.auth.resetPassword.messages.errorDescription,
@@ -143,7 +144,7 @@ export function ResetPasswordView({ dict }: ResetPasswordViewProps) {
             <p className="text-xs text-red-500 mt-1">{errors.password}</p>
           )}
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {dict.auth.resetPassword.password.hint}
+            {dict.auth.resetPassword.password.description}
           </p>
         </div>
 
@@ -187,7 +188,7 @@ export function ResetPasswordView({ dict }: ResetPasswordViewProps) {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {dict.auth.resetPassword.messages.resetting}
+              {dict.auth.resetPassword.messages.loading}
             </>
           ) : (
             dict.auth.resetPassword.submit

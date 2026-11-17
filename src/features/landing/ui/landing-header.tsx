@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Menu, SquareArrowOutUpRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import type { Dictionary, Locale } from "@/i18n/dictionaries";
 import Logo from "@/components/logo";
 import { authClient } from "@/lib/auth-client";
 
-export function LandingHeader({ locale, dict }: { locale: string; dict: any }) {
+export function LandingHeader({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { data: session } = authClient.useSession();

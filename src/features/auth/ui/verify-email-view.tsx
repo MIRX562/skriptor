@@ -15,11 +15,11 @@ import { motion } from "framer-motion";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useState } from "react";
-
+import type { Dictionary } from "@/i18n/dictionaries";
 import { useSearchParams } from "next/navigation";
 
 interface VerifyEmailViewProps {
-  dict: any;
+  dict: Dictionary;
 }
 
 export function VerifyEmailView({ dict }: VerifyEmailViewProps) {

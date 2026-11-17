@@ -145,7 +145,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerRef, WaveformPlayerProps>
         onPauseRef.current?.();
       });
 
-      ws.on("error", (e: Error | any) => {
+      ws.on("error", (e: Error) => {
         if (e && e.name === "AbortError") return;
         console.error("WaveSurfer error:", e);
         setError(dict.view.errors.audioFailed);

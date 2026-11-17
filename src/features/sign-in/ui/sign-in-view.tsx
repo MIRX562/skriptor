@@ -27,9 +27,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { signInEmail, signInGoogle } from "../model/query";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface SignInPageProps {
-  dict: any;
+  dict: Dictionary;
 }
 
 export default function SignInPage({ dict }: SignInPageProps) {

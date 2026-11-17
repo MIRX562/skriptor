@@ -1,4 +1,5 @@
 "use client";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 import { Clock, FileText } from "lucide-react";
 import Link from "next/link";
@@ -18,7 +19,7 @@ function formatTitle(metadata: Record<string, unknown> | null, fallback: string)
   return (metadata as { originalFilename?: string } | null)?.originalFilename ?? fallback ?? "Untitled";
 }
 
-export function RecentTranscriptions({ dict }: { dict: any }) {
+export function RecentTranscriptions({ dict }: { dict: Dictionary }) {
   const { data: transcriptions, isLoading } = useTranscriptionList();
 
   if (isLoading) {
@@ -42,7 +43,7 @@ export function RecentTranscriptions({ dict }: { dict: any }) {
   if (recent.length === 0) {
     return (
       <p className="text-sm text-muted-foreground text-center py-4">
-        {dict.dashboard.recentTranscriptions.empty}
+        {dict.dashboard.recentTranscriptions.title}
       </p>
     );
   }

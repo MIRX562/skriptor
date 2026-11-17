@@ -581,14 +581,24 @@
       "email": {
         "label": "Email",
         "placeholder": "skriptor@mail.com",
-        "description": "Enter your registered email."
+        "description": "Enter your registered email.",
+        "required": "Email is required",
+        "invalid": "Invalid email"
       },
       "submit": "Send Reset Link",
       "backToLogin": "Back to login",
       "messages": {
         "loading": "Sending reset link....",
         "success": "Reset link sent to your email",
-        "error": "Failed to send reset link"
+        "successTitle": "Check your email",
+        "successDescription": "We sent a password reset link to your inbox.",
+        "errorTitle": "Error",
+        "errorDescription": "Failed to send reset link.",
+        "checkEmail": "Check your email for the reset link",
+        "sentTo": "Sent to your email address",
+        "notReceived": "Did not receive the email? Check your spam folder.",
+        "tryAgain": "Try again",
+        "sending": "Sending reset link..."
       }
     },
     "resetPassword": {
@@ -597,18 +607,26 @@
       "password": {
         "label": "New Password",
         "placeholder": "*******",
-        "description": "Create a new strong password."
+        "description": "Create a new strong password.",
+        "required": "Password is required",
+        "minLength": "Password must be at least 8 characters"
       },
       "confirmPassword": {
         "label": "Confirm Password",
         "placeholder": "*******",
-        "description": "Repeat your new password."
+        "description": "Repeat your new password.",
+        "required": "Please confirm your password",
+        "match": "Passwords do not match"
       },
       "submit": "Reset Password",
       "messages": {
         "loading": "Resetting password....",
         "success": "Password reset successfully",
-        "error": "Failed to reset password",
+        "successTitle": "Success",
+        "successDescription": "Your password has been reset successfully.",
+        "errorTitle": "Error",
+        "errorDescription": "Failed to reset password. Please try again.",
+        "invalidToken": "Invalid or expired reset token.",
         "mismatch": "Passwords do not match"
       }
     },

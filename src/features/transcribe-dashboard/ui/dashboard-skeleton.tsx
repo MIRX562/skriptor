@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Dictionary } from "@/i18n/dictionaries";
 
-export function DashboardSkeleton({ dict, locale }: { dict?: any; locale?: string }) {
+export function DashboardSkeleton({ dict, locale }: { dict?: Dictionary; locale?: string }) {
   return (
     <div className="space-y-8">
       {/* Stats Cards Skeleton */}
